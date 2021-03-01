@@ -1,4 +1,4 @@
-import { Address, ethereum, BigInt } from "@graphprotocol/graph-ts";
+import { Address, ethereum, BigInt, log } from "@graphprotocol/graph-ts";
 import {
   StrategyAdded as StrategyAddedEvent,
   StrategyReported as StrategyReportedEvent,
@@ -75,6 +75,7 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
 //  VAULT BALANCE UPDATES
 
 export function handleDeposit(call: DepositCall): void {
+  log.debug('[Vault mappings] Handle deposit', [])
   getOrCreateTransactionFromCall(
     call
   )

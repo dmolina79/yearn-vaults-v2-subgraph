@@ -274,6 +274,23 @@ export class Vault extends Entity {
     this.set("classification", Value.fromString(value));
   }
 
+  get latestUpdate(): string | null {
+    let value = this.get("latestUpdate");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set latestUpdate(value: string | null) {
+    if (value === null) {
+      this.unset("latestUpdate");
+    } else {
+      this.set("latestUpdate", Value.fromString(value as string));
+    }
+  }
+
   get historicalUpdates(): Array<string> {
     let value = this.get("historicalUpdates");
     return value.toStringArray();
@@ -564,15 +581,6 @@ export class VaultUpdate extends Entity {
 
   set performanceFees(value: BigInt) {
     this.set("performanceFees", Value.fromBigInt(value));
-  }
-
-  get strategistFees(): BigInt {
-    let value = this.get("strategistFees");
-    return value.toBigInt();
-  }
-
-  set strategistFees(value: BigInt) {
-    this.set("strategistFees", Value.fromBigInt(value));
   }
 }
 

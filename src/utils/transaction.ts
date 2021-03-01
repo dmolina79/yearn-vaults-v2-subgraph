@@ -8,24 +8,28 @@ export function getOrCreateTransactionFromEvent(
   event: ethereum.Event,
   action: string
 ): Transaction {
+  log.debug('[Transaction] Get or create transaction from event', [])
   let transaction = _getOrCreateTransaction(
     event.transaction,
     event.block,
     event.address,
     action
   )
+  log.debug('[Transaction] Get or create transaction from event finish', [])
   return transaction
 }
 
 export function getOrCreateTransactionFromCall(
   call: ethereum.Call
 ): Transaction {
+  log.debug('[Transaction] Get or create transaction from call', [])
   let transaction = _getOrCreateTransaction(
     call.transaction,
     call.block,
     call.to,
     ''
   )
+  log.debug('[Transaction] Get or create transaction from call finish', [])
   return transaction
 }
 
@@ -36,9 +40,9 @@ function _getOrCreateTransaction(
   action: string
 ): Transaction {
   let id = ethTransaction.hash.toHexString()
-  log.info("Creating EthTransaction with id {}", [id]);
   let transaction = Transaction.load(id)
-  if (transaction === null) {
+  if (transaction == null) {
+    log.debug("[Transaction] Creating with id {}", [id]);
     let transaction = new Transaction(id);
     transaction.event = action;
     transaction.from = ethTransaction.from;
@@ -56,6 +60,8 @@ function _getOrCreateTransaction(
       transaction.event = action
     }
     transaction.save();
+  } else {
+    log.debug("[Transaction] Found with id {}", [id]);
   }
 
   return transaction!

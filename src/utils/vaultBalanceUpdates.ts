@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, ethereum as eth } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum as eth, log } from '@graphprotocol/graph-ts';
 
 import { 
     Transfer, 
@@ -20,6 +20,7 @@ import { BIGINT_ZERO, DEFAULT_DECIMALS } from '../utils/constants';
 
 export function getOrCreateVaultUpdate(
     vaultUpdateId: string,
+    transactionHash: Bytes,
     timestamp: BigInt,
     blockNumber: BigInt,
     deposits: BigInt,
@@ -27,9 +28,11 @@ export function getOrCreateVaultUpdate(
     sharesMinted: BigInt,
     sharesBurnt: BigInt, // shares burnt don't change
     vaultId: string,
-    pricePerFullShare: BigInt,
+    pricePerShare: BigInt,
   ): VaultUpdate {
+    log.debug('[Vault Balance Updates] Get or vault update', [])
     let vault = Vault.load(vaultId)
+    let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate)
     let vaultUpdate = VaultUpdate.load(vaultUpdateId)
 
     if (vaultUpdate === null) {
@@ -38,45 +41,39 @@ export function getOrCreateVaultUpdate(
     
       vaultUpdate.timestamp = timestamp
       vaultUpdate.blockNumber = blockNumber
-      // vaultUpdate.transaction = transaction
+      vaultUpdate.transaction = transactionHash.toHexString()
       vaultUpdate.vault = vault.id;
-    
-      // TODO: refactor to new schema
-      // vaultUpdate.balance = deposits.minus(withdrawals);
-      // vaultUpdate.deposits = deposits;
-      // vaultUpdate.withdrawals = withdrawals;
-    
-      // vaultUpdate.shareBalance = sharesMinted.minus(sharesBurnt);
-      // vaultUpdate.sharesMinted = sharesMinted;
-      // vaultUpdate.sharesBurnt = sharesBurnt;
-      // NOTE: don't update vaultUpdate.sharesBurnt
-    
+  
+      // BALANCES AND SHARES
+      vaultUpdate.tokensDeposited = (latestVaultUpdate) ? latestVaultUpdate.tokensDeposited.plus(deposits) : deposits;
+      vaultUpdate.tokensWithdrawn = (latestVaultUpdate) ? latestVaultUpdate.tokensWithdrawn.minus(withdrawals) : withdrawals;
+      vaultUpdate.sharesMinted = (latestVaultUpdate) ? latestVaultUpdate.sharesMinted.plus(sharesMinted) : sharesMinted;
+      vaultUpdate.sharesBurnt = (latestVaultUpdate) ? latestVaultUpdate.sharesBurnt.minus(sharesBurnt) : sharesBurnt;
       
-      // TODO: refactor this to new schema
-      // vaultUpdate.pricePerFullShare = pricePerFullShare;
+      // vaultUpdate.balance = deposits.minus(withdrawals);
+      // vaultUpdate.shareBalance = sharesMinted.minus(sharesBurnt);
     
-      // let vaultUpdates = vault.vaultUpdates;
-      // if (vaultUpdates.length > 0) {
-      //   let previousVaultUpdate = VaultUpdate.load(vaultUpdates[vaultUpdates.length - 1]);
+      // PERFORMANCE
+      vaultUpdate.pricePerShare = pricePerShare;
+      
+      // First setup
+      if (!latestVaultUpdate) {
+        vaultUpdate.returnsGenerated = BIGINT_ZERO
+        vaultUpdate.totalFees = BIGINT_ZERO
+        vaultUpdate.managementFees = BIGINT_ZERO
+        vaultUpdate.performanceFees = BIGINT_ZERO
+      } else {
+        // TODO: Use real data
+        vaultUpdate.returnsGenerated = BIGINT_ZERO
+        vaultUpdate.totalFees = BIGINT_ZERO
+      }
     
-      //   // TODO: add update algorithm
-      //   vaultUpdate.withdrawalFees = previousVaultUpdate.withdrawalFees;
-      //   vaultUpdate.performanceFees = previousVaultUpdate.performanceFees;
-      //   vaultUpdate.earnings = vaultUpdate.withdrawalFees.plus(vaultUpdate.performanceFees);
-      // } else {
-      //   vaultUpdate.withdrawalFees = BIGINT_ZERO;
-      //   vaultUpdate.performanceFees = BIGINT_ZERO;
-      //   vaultUpdate.earnings = BIGINT_ZERO;
-      // }
+      vault.historicalUpdates.push(vaultUpdate.id);
+      vault.latestUpdate = vaultUpdateId
     
-      // vaultUpdates.push(vaultUpdate.id);
-      // vault.vaultUpdates = vaultUpdates;
-    
-      // vaultUpdate.save();
+      vaultUpdate.save();
       vault.save();
     }
-  
-  
     return vaultUpdate!
   }
 
@@ -91,7 +88,8 @@ export function getOrCreateVaultUpdate(
     pricePerShare: BigInt,
     blockTimestamp: BigInt,
     blockNumber: BigInt,
-  ): void {
+  ): Deposit {
+    log.debug('[Vault Balance Updates] Get or create deposit', [])
     let id = buildId(transactionHash, transactionIndex);
     let deposit = Deposit.load(id)
 
@@ -112,9 +110,6 @@ export function getOrCreateVaultUpdate(
       deposit.sharesMinted = sharesMinted
       deposit.transaction = transactionHash.toHexString()
 
-    
-      // TODO: vaultUpdate
-    
       let vaultUpdateId = buildUpdateId(
         vaultAddress,
         transactionHash,
@@ -123,26 +118,24 @@ export function getOrCreateVaultUpdate(
     
       getOrCreateVaultUpdate(
         vaultUpdateId,
+        transactionHash,
         blockTimestamp,
         blockNumber,
-        // call.inputs._amount, // don't pass
         inputAmount,
         BIGINT_ZERO, // withdrawal doesn't change
-        // shares, // don't pass
         sharesMinted,
         BIGINT_ZERO, // shares burnt don't change
         vault.id,
-        pricePerShare,
-        // earnings, // don't pass
-        // withdrawalFees, // don't pass
-        // performanceFees, // don't pass
+        pricePerShare
       );
 
       deposit.vaultUpdate = vaultUpdateId
     
       // TODO: accountUpdate
-      // deposit.save();
+      deposit.save();
     }
+
+    return deposit!
   }
 
  export function internalMapWithdrawal(
@@ -187,6 +180,7 @@ export function getOrCreateVaultUpdate(
 
   getOrCreateVaultUpdate(
     vaultUpdateId,
+    transactionHash,
     blockTimestamp,
     blockNumber,
     // call.inputs._amount, // don't pass
@@ -299,33 +293,3 @@ export function getOrCreateVaultUpdate(
 
   transfer.save();
 }
-  
-/*
-  export function mapTransfer(event: TransferEvent): void {
-    let id = buildId(event.transaction.hash, event.transaction.index);
-  
-    let vaultContract = VaultContract.bind(event.address);
-  
-    let token = getOrCreateToken(event.address);
-    let sender = getOrCreateAccount(event.params.sender);
-    let receiver = getOrCreateAccount(event.params.receiver);
-  
-    let transfer = new Transfer(id.toString());
-    transfer.from = sender.id;
-    transfer.to = receiver.id;
-  
-    transfer.token = token.id;
-    transfer.shares = event.params.value;
-    transfer.amount = vaultContract
-      .totalAssets()
-      .times(event.params.value)
-      .div(vaultContract.totalSupply());
-  
-    transfer.timestamp = event.block.timestamp;
-    transfer.blockNumber = event.block.number;
-  
-    // TODO: accountUpdate
-  
-    transfer.save();
-  }
-  */

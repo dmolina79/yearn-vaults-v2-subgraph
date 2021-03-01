@@ -26,7 +26,7 @@ export function handleNewVault(event: NewVaultEvent): void {
     event.params.api_version,
     event.params.deployment_id,
     true,
-    event,
+    event
   )
 }
 
