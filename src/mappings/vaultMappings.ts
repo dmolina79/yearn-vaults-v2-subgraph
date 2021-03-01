@@ -76,22 +76,22 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
 
 export function handleDeposit(call: DepositCall): void {
   log.debug('[Vault mappings] Handle deposit', [])
-  getOrCreateTransactionFromCall(
-    call
-  )
-  let vaultContract = VaultContract.bind(call.to)
-  getOrCreateDeposit(
-    call.transaction.hash,
-    call.transaction.index,
-    call.to,
-    call.from,
-    call.inputs._amount,
-    vaultContract.totalAssets(),
-    vaultContract.totalSupply(),
-    vaultContract.pricePerShare(),
-    call.block.timestamp,
-    call.block.number
-  );
+  // getOrCreateTransactionFromCall(
+  //   call
+  // )
+  // let vaultContract = VaultContract.bind(call.to)
+  // getOrCreateDeposit(
+  //   call.transaction.hash,
+  //   call.transaction.index,
+  //   call.to,
+  //   call.from,
+  //   call.inputs._amount,
+  //   vaultContract.totalAssets(),
+  //   vaultContract.totalSupply(),
+  //   vaultContract.pricePerShare(),
+  //   call.block.timestamp,
+  //   call.block.number
+  // );
 }
 
 export function handleWithdrawal(call: WithdrawCall): void {

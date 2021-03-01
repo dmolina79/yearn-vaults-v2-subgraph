@@ -43,7 +43,7 @@ function _getOrCreateTransaction(
   let transaction = Transaction.load(id)
   if (transaction == null) {
     log.debug("[Transaction] Creating with id {}", [id]);
-    let transaction = new Transaction(id);
+    transaction = new Transaction(id);
     transaction.event = action;
     transaction.from = ethTransaction.from;
     transaction.gasPrice = ethTransaction.gasPrice;
