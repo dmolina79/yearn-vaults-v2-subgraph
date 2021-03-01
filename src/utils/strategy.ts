@@ -31,7 +31,7 @@ export function createStrategyReport(
   entity.debtLimit = debtLimit
   
   entity.blockNumber = event.block.number
-  entity.timestamp = getTimestampInMillis(event)
+  entity.timestamp = getTimestampInMillis(event.block)
   entity.save()
   return entity
 }
@@ -90,7 +90,7 @@ export function createStrategy(
   entity.rateLimit = rateLimit
   entity.performanceFeeBps = performanceFee.toI32();
   entity.blockNumber = event.block.number
-  entity.timestamp = getTimestampInMillis(event)
+  entity.timestamp = getTimestampInMillis(event.block)
   entity.save()
   return entity
 }

@@ -7,15 +7,14 @@ import {
   Withdraw1Call as WithdrawCall,
   Vault as VaultContract,
 } from "../../generated/Registry/Vault";
-import { Strategy, StrategyReport, Vault } from "../../generated/schema";
 import {
-  internalMapDeposit,
+  getOrCreateDeposit,
   internalMapTransfer,
   internalMapWithdrawal,
 } from "../utils/vaultBalanceUpdates";
-import { buildIdFromEvent, createEthTransaction, getTimestampInMillis } from "../utils/commons";
 import { getOrCreateVault } from "../utils/vault";
 import { createStrategy, reportStrategy } from "../utils/strategy";
+import { getOrCreateTransactionFromCall, getOrCreateTransactionFromEvent } from "../utils/transaction";
 
 
 export function addStrategyToVault(
@@ -27,9 +26,9 @@ export function addStrategyToVault(
   rateLimit: BigInt,
   event: ethereum.Event,
 ): void {
-  let entity = getOrCreateVault(vaultAddress, false)
-  if(entity !== null) {
-    let newStrategy = createStrategy(
+  let vault = getOrCreateVault(vaultAddress, false)
+  if(vault !== null) {
+    createStrategy(
       transactionId,
       strategy,
       vaultAddress,
@@ -38,16 +37,11 @@ export function addStrategyToVault(
       performanceFee,
       event
     )
-    // NOTE: commented since field is derived
-    // let strategies = entity.strategies
-    // strategies.push(newStrategy.id)
-    // entity.strategies = strategies
-    // entity.save()
   }
 }
 
 export function handleStrategyAdded(event: StrategyAddedEvent): void {
-  let ethTransaction = createEthTransaction(event, "StrategyAddedEvent")
+  let ethTransaction = getOrCreateTransactionFromEvent(event, "StrategyAddedEvent")
 
   // TODO: refactor to createStrategy since derived links vault + strat
   addStrategyToVault(
@@ -62,7 +56,7 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
 }
 
 export function handleStrategyReported(event: StrategyReportedEvent): void {
-  let ethTransaction = createEthTransaction(event, "StrategyReportedEvent")
+  let ethTransaction = getOrCreateTransactionFromEvent(event, "StrategyReportedEvent")
   reportStrategy(
     ethTransaction.id,
     event.params.strategy.toHexString(),
@@ -81,8 +75,11 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
 //  VAULT BALANCE UPDATES
 
 export function handleDeposit(call: DepositCall): void {
+  getOrCreateTransactionFromCall(
+    call
+  )
   let vaultContract = VaultContract.bind(call.to)
-  internalMapDeposit(
+  getOrCreateDeposit(
     call.transaction.hash,
     call.transaction.index,
     call.to,

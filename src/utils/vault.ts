@@ -3,7 +3,6 @@ import {
   Vault,
 } from "../../generated/schema";
 
-import { createEthTransaction, getTimestampInMillis } from "./commons";
 import { Vault as VaultContract } from '../../generated/Registry/Vault';
 import { Vault as VaultTemplate } from "../../generated/templates";
 import { BIGINT_ZERO } from '../utils/constants';

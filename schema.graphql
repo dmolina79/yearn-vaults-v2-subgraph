@@ -7,10 +7,10 @@
 # Use plurals when referring to Tokens or Shares (e.g. totalShares, balanceTokens)
 
 type Transaction @entity {
-  "Transaction-log"
+  "Transaction hash"
   id: ID!
-  "The event name"
-  event: String!
+  "The event name" # Optional, not all transactions arise from events
+  event: String
   "The transaction sender"
   from: Bytes!
   "Gas price used in the transaction"

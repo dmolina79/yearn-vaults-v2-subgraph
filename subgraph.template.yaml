@@ -70,8 +70,8 @@ templates:
         # - event: Transfer(indexed address,indexed address,uint256)
         #   handler: handleTransfer
       # TODO: failing in graph sync at block #11595706  
-      # callHandlers:
-      #   - function: deposit(uint256)
-      #     handler: handleDeposit
+      callHandlers:
+        - function: deposit(uint256)
+          handler: handleDeposit
       #   - function: withdraw(uint256)
       #     handler: handleWithdrawal

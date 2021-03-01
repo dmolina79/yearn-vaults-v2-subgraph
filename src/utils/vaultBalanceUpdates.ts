@@ -4,6 +4,7 @@ import {
     Transfer, 
     VaultUpdate, 
     Vault,
+    Deposit
 } from '../../generated/schema';
 
 import {
@@ -16,36 +17,8 @@ import { getOrCreateVault } from './vault';
 import { getOrCreateToken } from './token';
 import { BIGINT_ZERO, DEFAULT_DECIMALS } from '../utils/constants';
 
-// TODO: remove if not needed in final implementation
-// export function createOperation(
-//     id: string,
-//     vaultId: string,
-//     accountId: string,
-//     amount: BigInt,
-//     shares: BigInt,
-//     timestamp: BigInt,
-//     blockNumber: BigInt,
-//     type: string,
-//   ): Operation {
-//     let operation = new Operation(id);
-//     operation.vault = vaultId;
-//     operation.account = accountId;
-//     operation.amount = amount;
-//     operation.shares = shares;
-  
-//     operation.shares = shares;
-//     operation.timestamp = timestamp;
-//     operation.blockNumber = blockNumber;
-  
-//     operation.type = type;
-  
-//     operation.save();
-  
-//     return operation as Operation;
-//   }
 
-
-export function createVaultUpdate(
+export function getOrCreateVaultUpdate(
     vaultUpdateId: string,
     timestamp: BigInt,
     blockNumber: BigInt,
@@ -56,54 +29,61 @@ export function createVaultUpdate(
     vaultId: string,
     pricePerFullShare: BigInt,
   ): VaultUpdate {
-    let vault = Vault.load(vaultId);
+    let vault = Vault.load(vaultId)
+    let vaultUpdate = VaultUpdate.load(vaultUpdateId)
+
+    if (vaultUpdate === null) {
+
+      vaultUpdate = new VaultUpdate(vaultUpdateId);
+    
+      vaultUpdate.timestamp = timestamp
+      vaultUpdate.blockNumber = blockNumber
+      // vaultUpdate.transaction = transaction
+      vaultUpdate.vault = vault.id;
+    
+      // TODO: refactor to new schema
+      // vaultUpdate.balance = deposits.minus(withdrawals);
+      // vaultUpdate.deposits = deposits;
+      // vaultUpdate.withdrawals = withdrawals;
+    
+      // vaultUpdate.shareBalance = sharesMinted.minus(sharesBurnt);
+      // vaultUpdate.sharesMinted = sharesMinted;
+      // vaultUpdate.sharesBurnt = sharesBurnt;
+      // NOTE: don't update vaultUpdate.sharesBurnt
+    
+      
+      // TODO: refactor this to new schema
+      // vaultUpdate.pricePerFullShare = pricePerFullShare;
+    
+      // let vaultUpdates = vault.vaultUpdates;
+      // if (vaultUpdates.length > 0) {
+      //   let previousVaultUpdate = VaultUpdate.load(vaultUpdates[vaultUpdates.length - 1]);
+    
+      //   // TODO: add update algorithm
+      //   vaultUpdate.withdrawalFees = previousVaultUpdate.withdrawalFees;
+      //   vaultUpdate.performanceFees = previousVaultUpdate.performanceFees;
+      //   vaultUpdate.earnings = vaultUpdate.withdrawalFees.plus(vaultUpdate.performanceFees);
+      // } else {
+      //   vaultUpdate.withdrawalFees = BIGINT_ZERO;
+      //   vaultUpdate.performanceFees = BIGINT_ZERO;
+      //   vaultUpdate.earnings = BIGINT_ZERO;
+      // }
+    
+      // vaultUpdates.push(vaultUpdate.id);
+      // vault.vaultUpdates = vaultUpdates;
+    
+      // vaultUpdate.save();
+      vault.save();
+    }
   
-    let vaultUpdate = new VaultUpdate(vaultUpdateId);
   
-    vaultUpdate.timestamp = timestamp;
-    vaultUpdate.blockNumber = blockNumber;
-  
-    // TODO: refactor to new schema
-    // vaultUpdate.balance = deposits.minus(withdrawals);
-    // vaultUpdate.deposits = deposits;
-    // vaultUpdate.withdrawals = withdrawals;
-  
-    // vaultUpdate.shareBalance = sharesMinted.minus(sharesBurnt);
-    // vaultUpdate.sharesMinted = sharesMinted;
-    // vaultUpdate.sharesBurnt = sharesBurnt;
-    // NOTE: don't update vaultUpdate.sharesBurnt
-  
-    vaultUpdate.vault = vault.id;
-    // TODO: refactor this to new schema
-    // vaultUpdate.pricePerFullShare = pricePerFullShare;
-  
-    // let vaultUpdates = vault.vaultUpdates;
-    // if (vaultUpdates.length > 0) {
-    //   let previousVaultUpdate = VaultUpdate.load(vaultUpdates[vaultUpdates.length - 1]);
-  
-    //   // TODO: add update algorithm
-    //   vaultUpdate.withdrawalFees = previousVaultUpdate.withdrawalFees;
-    //   vaultUpdate.performanceFees = previousVaultUpdate.performanceFees;
-    //   vaultUpdate.earnings = vaultUpdate.withdrawalFees.plus(vaultUpdate.performanceFees);
-    // } else {
-    //   vaultUpdate.withdrawalFees = BIGINT_ZERO;
-    //   vaultUpdate.performanceFees = BIGINT_ZERO;
-    //   vaultUpdate.earnings = BIGINT_ZERO;
-    // }
-  
-    // vaultUpdates.push(vaultUpdate.id);
-    // vault.vaultUpdates = vaultUpdates;
-  
-    // vaultUpdate.save();
-    vault.save();
-  
-    return vaultUpdate as VaultUpdate;
+    return vaultUpdate!
   }
 
-  export function internalMapDeposit(
-    transactionHash:Bytes,
+  export function getOrCreateDeposit(
+    transactionHash: Bytes,
     transactionIndex: BigInt,
-    to:Address,
+    to: Address,
     from: Address,
     inputAmount: BigInt,
     totalAssets: BigInt,
@@ -113,136 +93,58 @@ export function createVaultUpdate(
     blockNumber: BigInt,
   ): void {
     let id = buildId(transactionHash, transactionIndex);
-    let vaultAddress = to;
+    let deposit = Deposit.load(id)
+
+    if (deposit === null) {
+      let vaultAddress = to;
+      let account = getOrCreateAccount(from);
+      let vault = getOrCreateVault(vaultAddress, false);
+    
+      // TODO: link this line on contract
+      let sharesMinted = totalAssets.equals(BIGINT_ZERO)
+        ? inputAmount
+        : inputAmount.times(totalSupply).div(totalAssets);
   
-    let account = getOrCreateAccount(from);
-    let vault = getOrCreateVault(vaultAddress, false);
-  
-    // TODO: link this line on contract
-    let shares = totalAssets.equals(BIGINT_ZERO)
-      ? inputAmount
-      : inputAmount.times(totalSupply).div(totalAssets);
-  
-    // this is not supported by AS, yet
-    // let params: IParams = {
-    //   id: id,
-    //   vault: vault.id,
-    //   account: account.id,
-    //   amount: call.inputs._amount,
-    //   shares: shares,
-    //   timestamp: call.block.timestamp,
-    //   blockNumber: call.block.number,
-    //   type: 'Withdrawal',
-    // };
- 
-    // TODO: remove this if no longer needed for final impl
-    // createOperation(
-    //   id,
-    //   vault.id,
-    //   account.id,
-    //   inputAmount,
-    //   shares,
-    //   blockTimestamp,
-    //   blockNumber,
-    //   'Deposit',
-    // );
-  
-    // TODO: vaultUpdate
-  
-    let vaultUpdateId = buildUpdateId(
-      vaultAddress,
-      transactionHash,
-      transactionIndex,
-    );
-  
-    createVaultUpdate(
-      vaultUpdateId,
-      blockTimestamp,
-      blockNumber,
-      // call.inputs._amount, // don't pass
-      inputAmount,
-      BIGINT_ZERO, // withdrawal doesn't change
-      // shares, // don't pass
-      shares,
-      BIGINT_ZERO, // shares burnt don't change
-      vault.id,
-      pricePerShare,
-      // earnings, // don't pass
-      // withdrawalFees, // don't pass
-      // performanceFees, // don't pass
-    );
-  
-    // TODO: accountUpdate
-    // deposit.save();
+      deposit = new Deposit(id)
+      deposit.account = account.id
+      deposit.vault = vault.id
+      deposit.tokenAmount = inputAmount
+      deposit.sharesMinted = sharesMinted
+      deposit.transaction = transactionHash.toHexString()
+
+    
+      // TODO: vaultUpdate
+    
+      let vaultUpdateId = buildUpdateId(
+        vaultAddress,
+        transactionHash,
+        transactionIndex,
+      );
+    
+      getOrCreateVaultUpdate(
+        vaultUpdateId,
+        blockTimestamp,
+        blockNumber,
+        // call.inputs._amount, // don't pass
+        inputAmount,
+        BIGINT_ZERO, // withdrawal doesn't change
+        // shares, // don't pass
+        sharesMinted,
+        BIGINT_ZERO, // shares burnt don't change
+        vault.id,
+        pricePerShare,
+        // earnings, // don't pass
+        // withdrawalFees, // don't pass
+        // performanceFees, // don't pass
+      );
+
+      deposit.vaultUpdate = vaultUpdateId
+    
+      // TODO: accountUpdate
+      // deposit.save();
+    }
   }
 
-  /*
-export function mapDeposit(call: DepositCall): void {
-    let id = buildId(call.transaction.hash, call.transaction.index);
-    let vaultAddress = call.to;
-  
-    let account = getOrCreateAccount(call.from);
-    let vault = getOrCreateVault(vaultAddress);
-    let vaultContract = VaultContract.bind(vaultAddress);
-  
-    // TODO: link this line on contract
-    let shares = vaultContract.totalAssets().equals(BIGINT_ZERO)
-      ? call.inputs._amount
-      : call.inputs._amount.times(vaultContract.totalSupply()).div(vaultContract.totalAssets());
-  
-    // this is not supported by AS, yet
-    // let params: IParams = {
-    //   id: id,
-    //   vault: vault.id,
-    //   account: account.id,
-    //   amount: call.inputs._amount,
-    //   shares: shares,
-    //   timestamp: call.block.timestamp,
-    //   blockNumber: call.block.number,
-    //   type: 'Withdrawal',
-    // };
-  
-    createOperation(
-      id,
-      vault.id,
-      account.id,
-      call.inputs._amount,
-      shares,
-      call.block.timestamp,
-      call.block.number,
-      'Deposit',
-    );
-  
-    // TODO: vaultUpdate
-  
-    let vaultUpdateId = buildUpdateId(
-      vaultAddress,
-      call.transaction.hash,
-      call.transaction.index,
-    );
-  
-    createVaultUpdate(
-      vaultUpdateId,
-      call.block.timestamp,
-      call.block.number,
-      // call.inputs._amount, // don't pass
-      call.inputs._amount,
-      BIGINT_ZERO, // withdrawal doesn't change
-      // shares, // don't pass
-      shares,
-      BIGINT_ZERO, // shares burnt don't change
-      vault.id,
-      vaultContract.pricePerShare(),
-      // earnings, // don't pass
-      // withdrawalFees, // don't pass
-      // performanceFees, // don't pass
-    );
-  
-    // TODO: accountUpdate
-    // deposit.save();
-  }
-  */
-  
  export function internalMapWithdrawal(
     transactionHash:Bytes,
     transactionIndex: BigInt,
@@ -283,7 +185,7 @@ export function mapDeposit(call: DepositCall): void {
     transactionIndex,
   );
 
-  createVaultUpdate(
+  getOrCreateVaultUpdate(
     vaultUpdateId,
     blockTimestamp,
     blockNumber,
@@ -334,7 +236,7 @@ export function mapDeposit(call: DepositCall): void {
       call.transaction.index,
     );
   
-    createVaultUpdate(
+    getOrCreateVaultUpdate(
       vaultUpdateId,
       call.block.timestamp,
       call.block.number,

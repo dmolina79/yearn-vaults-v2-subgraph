@@ -42,13 +42,21 @@ export class Transaction extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get event(): string {
+  get event(): string | null {
     let value = this.get("event");
-    return value.toString();
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
   }
 
-  set event(value: string) {
-    this.set("event", Value.fromString(value));
+  set event(value: string | null) {
+    if (value === null) {
+      this.unset("event");
+    } else {
+      this.set("event", Value.fromString(value as string));
+    }
   }
 
   get from(): Bytes {
