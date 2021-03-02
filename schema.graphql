@@ -25,8 +25,6 @@ type Transaction @entity {
   to: Bytes!
   "Ether value sent in the transaction"
   value: BigInt!
-  "Contract address that emitted the event"
-  contract: Bytes!
   "Timestamp when the transaction was executed"
   timestamp: BigInt!
   "Gas limit used in the transaction"

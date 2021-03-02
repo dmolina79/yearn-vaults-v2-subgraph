@@ -6,6 +6,8 @@ import {
   Transfer as TransferEvent,
   Withdraw1Call as WithdrawCall,
   Vault as VaultContract,
+  Deposit2Call,
+  Deposit1Call,
 } from "../../generated/Registry/Vault";
 import {
   getOrCreateDeposit,
@@ -76,9 +78,14 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
 
 export function handleDeposit(call: DepositCall): void {
   log.debug('[Vault mappings] Handle deposit', [])
+  // log.warning('[Vault mappings] Handle deposit - before timestamp', [])
+  // log.warning('[Vault mappings] Handle deposit - timestamp {}', [call.block.timestamp.toString()])
+  // log.warning('[Vault mappings] Handle deposit - after timestamp', [])
+  log.warning('[Vault mappings] Handle deposit - before create from call {}', [call.transaction.hash.toHexString()])
   // getOrCreateTransactionFromCall(
   //   call
   // )
+  // log.warning('[Vault mappings] Handle deposit - after create from call', [])
   // let vaultContract = VaultContract.bind(call.to)
   // getOrCreateDeposit(
   //   call.transaction.hash,
@@ -92,6 +99,30 @@ export function handleDeposit(call: DepositCall): void {
   //   call.block.timestamp,
   //   call.block.number
   // );
+}
+
+export function handleDepositWithAmount(call: Deposit1Call): void {
+  log.debug('[Vault mappings] Handle deposit with amount', [])
+  // log.warning('[Vault mappings] Handle deposit with amount - before timestamp', [])
+  // log.warning('[Vault mappings] Handle deposit with amount - timestamp {}', [call.block.timestamp.toString()])
+  // log.warning('[Vault mappings] Handle deposit with amount - after timestamp', [])
+  log.warning('[Vault mappings] Handle deposit with amount - before create from call {}', [call.transaction.hash.toHexString()])
+  // getOrCreateTransactionFromCall(
+  //   call
+  // )
+  // log.warning('[Vault mappings] Handle deposit with amount - after create from call', [])
+}
+
+export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
+  log.debug('[Vault mappings] Handle deposit with amount and recipient', [])
+  // log.warning('[Vault mappings] Handle deposit with amount and recipient - before timestamp', [])
+  // log.warning('[Vault mappings] Handle deposit with amount and recipient - timestamp {}', [call.block.timestamp.toString()])
+  // log.warning('[Vault mappings] Handle deposit with amount and recipient - after timestamp', [])
+  log.warning('[Vault mappings] Handle deposit with amount and recipient - before create from call {}', [call.transaction.hash.toHexString()])
+  // getOrCreateTransactionFromCall(
+  //   call
+  // )
+  // log.warning('[Vault mappings] Handle deposit with amount and recipient - after create from call', [])
 }
 
 export function handleWithdrawal(call: WithdrawCall): void {

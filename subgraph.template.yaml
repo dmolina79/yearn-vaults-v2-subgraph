@@ -71,7 +71,11 @@ templates:
         #   handler: handleTransfer
       # TODO: failing in graph sync at block #11595706  
       callHandlers:
-        - function: deposit(uint256)
+        - function: deposit()
           handler: handleDeposit
+        - function: deposit(uint256)
+          handler: handleDepositWithAmount
+        - function: deposit(uint256,address)
+          handler: handleDepositWithAmountAndRecipient
       #   - function: withdraw(uint256)
       #     handler: handleWithdrawal

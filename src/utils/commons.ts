@@ -5,7 +5,7 @@ export function getTimeInMillis(time: BigInt): BigInt {
 }
 
 export function getTimestampInMillis(block: ethereum.Block): BigInt {
-  return getTimeInMillis(block.timestamp)
+  return block.timestamp.times(BigInt.fromI32(1000))
 }
 // make a derived ID from transaction hash and big number
 export function buildId(tx: Bytes, n: BigInt): string {

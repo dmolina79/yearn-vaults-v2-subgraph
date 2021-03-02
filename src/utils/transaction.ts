@@ -12,7 +12,6 @@ export function getOrCreateTransactionFromEvent(
   let transaction = _getOrCreateTransaction(
     event.transaction,
     event.block,
-    event.address,
     action
   )
   log.debug('[Transaction] Get or create transaction from event finish', [])
@@ -26,7 +25,6 @@ export function getOrCreateTransactionFromCall(
   let transaction = _getOrCreateTransaction(
     call.transaction,
     call.block,
-    call.to,
     ''
   )
   log.debug('[Transaction] Get or create transaction from call finish', [])
@@ -36,7 +34,6 @@ export function getOrCreateTransactionFromCall(
 function _getOrCreateTransaction(
   ethTransaction: ethereum.Transaction,
   block: ethereum.Block,
-  contract: Bytes, 
   action: string
 ): Transaction {
   let id = ethTransaction.hash.toHexString()
@@ -44,7 +41,6 @@ function _getOrCreateTransaction(
   if (transaction == null) {
     log.debug("[Transaction] Creating with id {}", [id]);
     transaction = new Transaction(id);
-    transaction.event = action;
     transaction.from = ethTransaction.from;
     transaction.gasPrice = ethTransaction.gasPrice;
     transaction.gasSent = ethTransaction.gasUsed;
@@ -55,7 +51,6 @@ function _getOrCreateTransaction(
     transaction.timestamp = getTimestampInMillis(block);
     transaction.gasLimit = block.gasLimit;
     transaction.blockNumber = block.number;
-    transaction.contract = contract;
     if (action !== '') {
       transaction.event = action
     }
