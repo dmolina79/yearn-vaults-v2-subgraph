@@ -6,10 +6,10 @@ import {
   VaultTagged as VaultTaggedEvent,
 } from "../../generated/Registry/Registry";
 import { getOrCreateTransactionFromEvent } from "../utils/transaction";
-import { releaseVault, createVault, tagVault } from "../utils/vault";
+import * as vaultLibrary from '../utils/vault/vault'
 
 export function handleNewRelease(event: NewReleaseEvent): void {
-  releaseVault(
+  vaultLibrary.release(
     event.params.template,
     event.params.api_version,
     event.params.release_id,
@@ -19,7 +19,7 @@ export function handleNewRelease(event: NewReleaseEvent): void {
 
 export function handleNewVault(event: NewVaultEvent): void {
   let ethTransaction = getOrCreateTransactionFromEvent(event, "NewVaultEvent");
-  createVault(
+  vaultLibrary.create(
     ethTransaction.id,
     event.params.vault,
     "Endorsed",
@@ -32,7 +32,7 @@ export function handleNewVault(event: NewVaultEvent): void {
 
 export function handleNewExperimentalVault(event: NewExperimentalVaultEvent): void {
   let ethTransaction = getOrCreateTransactionFromEvent(event, "NewExperimentalVault");
-  createVault(
+  vaultLibrary.create(
     ethTransaction.id,
     event.params.vault,
     "Experimental",
@@ -44,7 +44,7 @@ export function handleNewExperimentalVault(event: NewExperimentalVaultEvent): vo
 }
 
 export function handleVaultTagged(event: VaultTaggedEvent): void {
-  tagVault(
+  vaultLibrary.tag(
     event.params.vault,
     event.params.tag
   )

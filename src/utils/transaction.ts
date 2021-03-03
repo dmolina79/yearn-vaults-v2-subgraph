@@ -19,13 +19,14 @@ export function getOrCreateTransactionFromEvent(
 }
 
 export function getOrCreateTransactionFromCall(
-  call: ethereum.Call
+  call: ethereum.Call,
+  action: string
 ): Transaction {
   log.debug('[Transaction] Get or create transaction from call', [])
   let transaction = _getOrCreateTransaction(
     call.transaction,
     call.block,
-    ''
+    action
   )
   log.debug('[Transaction] Get or create transaction from call finish', [])
   return transaction
@@ -51,9 +52,7 @@ function _getOrCreateTransaction(
     transaction.timestamp = getTimestampInMillis(block);
     transaction.gasLimit = block.gasLimit;
     transaction.blockNumber = block.number;
-    if (action !== '') {
-      transaction.event = action
-    }
+    transaction.event = action
     transaction.save();
   } else {
     log.debug("[Transaction] Found with id {}", [id]);

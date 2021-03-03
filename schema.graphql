@@ -9,8 +9,8 @@
 type Transaction @entity {
   "Transaction hash"
   id: ID!
-  "The event name" # Optional, not all transactions arise from events
-  event: String
+  "The event name / call stacktrace"
+  event: String!
   "The transaction sender"
   from: Bytes!
   "Gas price used in the transaction"
@@ -131,10 +131,6 @@ type Vault @entity {
 type VaultUpdate @entity {
   "Vault-Transaction-Log"
   id: ID!
-  "Timestamp of update"
-  timestamp: BigInt!
-  "Block number of update"
-  blockNumber: BigInt!
   "Ethereum Transaction"
   transaction: Transaction!
   "Vault this update is for"
@@ -249,14 +245,12 @@ type AccountVaultPosition @entity {
   vault: Vault!
   "Account"
   account: Account!
-  "Vault token"
-  token: Token!
-  "Vault share token"
-  shareToken: Token!
+  "Created in transaction"
+  transaction: Transaction!
   "Latest account update for this Vault"
-  latestUpdate: AccountVaultPositionUpdate!
+  latestUpdate: AccountVaultPositionUpdate
   "Account updates over time"
-  historicalUpdates: [AccountVaultPositionUpdate!]!
+  updates: [AccountVaultPositionUpdate!]! @derivedFrom(field: "accountVaultPosition")
 
   "Share balance"
   balanceShares: BigInt!
@@ -267,12 +261,11 @@ type AccountVaultPosition @entity {
 type AccountVaultPositionUpdate @entity {
   "Account-Transaction-Log"
   id: ID!
-  "Timestamp"
-  timestamp: BigInt!
-  "Block number"
-  blockNumber: BigInt!
-  "The Account this update applies to"
-  account: Account!
+  
+  "The account vault position that this update applies to"
+  accountVaultPosition: AccountVaultPosition!
+  "Ethereum Transaction"
+  transaction: Transaction!
 
   "Token deposits"
   deposits: BigInt!
@@ -293,9 +286,6 @@ type AccountVaultPositionUpdate @entity {
   sharesSent: BigInt!
   "Share tokens received"
   sharesReceived: BigInt!
-
-  "Ethereum Transaction"
-  transaction: Transaction!
 
   "Vault Update"
   vaultUpdate: VaultUpdate!
