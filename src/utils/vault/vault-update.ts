@@ -2,14 +2,15 @@ import { BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import { Vault, VaultUpdate } from "../../../generated/schema"
 import { BIGINT_ZERO } from "../constants";
 
+
 export function buildIdFromVaultTxHashAndIndex(
-  vault: Vault,
-  transactionHash: Bytes,
-  transactionIndex: BigInt
+  vault: string,
+  transactionHash: string,
+  transactionIndex: string
 ): string {
-  return vault.id
+  return vault
     .concat('-')
-    .concat(transactionHash.toHexString().concat('-').concat(transactionIndex.toString()));
+    .concat(transactionHash.concat('-').concat(transactionIndex));
 }
 
 export function getOrCreate(
@@ -24,9 +25,9 @@ export function getOrCreate(
 ): VaultUpdate {
   log.debug('[Vault Balance Updates] Get or vault update', [])
   let vaultUpdateId = buildIdFromVaultTxHashAndIndex(
-    vault,
-    transactionHash,
-    transactionIndex
+    vault.id,
+    transactionHash.toHexString(),
+    transactionIndex.toString()
   )
   let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate)
   let vaultUpdate = VaultUpdate.load(vaultUpdateId)

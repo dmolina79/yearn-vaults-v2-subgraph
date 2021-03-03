@@ -1111,42 +1111,6 @@ export class AccountVaultPositionUpdate extends Entity {
     this.set("sharesBurnt", Value.fromBigInt(value));
   }
 
-  get tokensSent(): BigInt {
-    let value = this.get("tokensSent");
-    return value.toBigInt();
-  }
-
-  set tokensSent(value: BigInt) {
-    this.set("tokensSent", Value.fromBigInt(value));
-  }
-
-  get tokensReceived(): BigInt {
-    let value = this.get("tokensReceived");
-    return value.toBigInt();
-  }
-
-  set tokensReceived(value: BigInt) {
-    this.set("tokensReceived", Value.fromBigInt(value));
-  }
-
-  get sharesSent(): BigInt {
-    let value = this.get("sharesSent");
-    return value.toBigInt();
-  }
-
-  set sharesSent(value: BigInt) {
-    this.set("sharesSent", Value.fromBigInt(value));
-  }
-
-  get sharesReceived(): BigInt {
-    let value = this.get("sharesReceived");
-    return value.toBigInt();
-  }
-
-  set sharesReceived(value: BigInt) {
-    this.set("sharesReceived", Value.fromBigInt(value));
-  }
-
   get vaultUpdate(): string {
     let value = this.get("vaultUpdate");
     return value.toString();

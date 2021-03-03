@@ -248,7 +248,7 @@ type AccountVaultPosition @entity {
   "Created in transaction"
   transaction: Transaction!
   "Latest account update for this Vault"
-  latestUpdate: AccountVaultPositionUpdate
+  latestUpdate: AccountVaultPositionUpdate #TODO: Make required after testing
   "Account updates over time"
   updates: [AccountVaultPositionUpdate!]! @derivedFrom(field: "accountVaultPosition")
 
@@ -267,25 +267,25 @@ type AccountVaultPositionUpdate @entity {
   "Ethereum Transaction"
   transaction: Transaction!
 
-  "Token deposits"
+  "Sum of token deposits"
   deposits: BigInt!
-  "Token withdrawals"
+  "Sum of token withdrawals"
   withdrawals: BigInt!
 
-  "Share tokens minted"
+  "Sum of share tokens minted"
   sharesMinted: BigInt!
-  "Share tokens burnt"
+  "Sum of share tokens burnt"
   sharesBurnt: BigInt!
 
-  "Tokens sent"
-  tokensSent: BigInt!
-  "Tokens received"
-  tokensReceived: BigInt!
+  # "Tokens sent"
+  # tokensSent: BigInt!
+  # "Tokens received"
+  # tokensReceived: BigInt!
 
-  "Share tokens sent"
-  sharesSent: BigInt!
-  "Share tokens received"
-  sharesReceived: BigInt!
+  # "Share tokens sent"
+  # sharesSent: BigInt!
+  # "Share tokens received"
+  # sharesReceived: BigInt!
 
   "Vault Update"
   vaultUpdate: VaultUpdate!

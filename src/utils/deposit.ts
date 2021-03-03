@@ -7,7 +7,7 @@ import {
 import {
     buildId,
 } from './commons';
-import * as vaultLibrary from './vault/vault-update';
+import * as vaultUpdateLibrary from './vault/vault-update';
 
 export function getOrCreate(
   transactionHash: Bytes,
@@ -29,10 +29,10 @@ export function getOrCreate(
     deposit.sharesMinted = sharesMinted
     deposit.transaction = transactionHash.toHexString()
 
-    let vaultUpdateId = vaultLibrary.buildIdFromVaultTxHashAndIndex(
-      vault,
-      transactionHash,
-      transactionIndex,
+    let vaultUpdateId = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
+      vault.id,
+      transactionHash.toHexString(),
+      transactionIndex.toString(),
     );
 
     deposit.vaultUpdate = vaultUpdateId

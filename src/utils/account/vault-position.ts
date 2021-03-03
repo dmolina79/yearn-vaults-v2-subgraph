@@ -1,6 +1,6 @@
 import { BigInt, Result } from "@graphprotocol/graph-ts";
 import { Account, AccountVaultPosition, AccountVaultPositionUpdate, Transaction, Vault } from "../../../generated/schema";
-import * as vaulPositionUpdate from './vault-position-update'
+import * as vaultPositionUpdateLibrary from './vault-position-update'
 
 export function buildId(
   account: Account,
@@ -33,29 +33,43 @@ export class VaultPositionResponse {
 export function deposit(
   account: Account,
   vault: Vault,
-  transactionId: string,
+  transactionHash: string,
+  transactionIndex: string,
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): VaultPositionResponse{
   let id = buildId(account, vault)
   let accountVaultPosition = AccountVaultPosition.load(id)
+  // let accountVaultPositionUpdate: AccountVaultPositionUpdate
 
   if (accountVaultPosition == null) {
     accountVaultPosition = new AccountVaultPosition(id)
     accountVaultPosition.vault = vault.id
     accountVaultPosition.account = account.id
-    accountVaultPosition.transaction = transactionId
+    accountVaultPosition.transaction = transactionHash
     accountVaultPosition.balanceTokens = depositedTokens
     accountVaultPosition.balanceShares = receivedShares
+    // accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
+    //   accountVaultPosition!,
+    //   transactionHash,
+    //   transactionIndex,
+    //   depositedTokens,
+    //   receivedShares
+    // )
   } else {
     accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(depositedTokens)
     accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.plus(receivedShares)
+    // accountVaultPositionUpdate = vaultPositionUpdateLibrary.deposit(
+    //   accountVaultPosition!,
+    //   transactionHash,
+    //   transactionIndex,
+    //   depositedTokens,
+    //   receivedShares
+    // )
   }
 
-  // let accountVaultPositionUpdate = vaulPositionUpdate.getOrCreate()
   // accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id
   // accountVaultPosition.updates.push(accountVaultPositionUpdate.id)
-
   accountVaultPosition.save()
 
   return VaultPositionResponse.fromValue(
@@ -68,7 +82,8 @@ export function deposit(
 export function withdraw(
   account: Account,
   vault: Vault,
-  transaction: Transaction,
+  transactionHash: string,
+  transactionIndex: string,
   burntShares: BigInt,
   receivedTokens: BigInt
 ): VaultPositionResponse {

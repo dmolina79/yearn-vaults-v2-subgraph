@@ -54,6 +54,7 @@ const createNewVaultFromAddress = (vaultAddress: Address): Vault => {
 }
 
 export function getOrCreate(vaultAddress: Address, createTemplate: boolean): Vault {
+  log.debug('[Vault] Get or create', [])
   let id = vaultAddress.toHexString();
   let vault = Vault.load(id);
 
@@ -175,6 +176,7 @@ export function deposit(
   totalSupply: BigInt,
   pricePerShare: BigInt
 ): void {
+  log.debug('[Vault] Deposit', [])
   let account = accountLibrary.getOrCreate(from)
   let vault = getOrCreate(to, false)
   let sharesMinted = totalAssets.equals(BIGINT_ZERO)
@@ -185,18 +187,20 @@ export function deposit(
     account,
     vault,
     transactionHash.toHexString(),
+    transactionIndex.toString(),
     inputAmount,
     sharesMinted
   )
   
-  // let deposit = depositLibrary.getOrCreate(
-  //   transactionHash,
-  //   transactionIndex,
-  //   account,
-  //   vault,
-  //   inputAmount,
-  //   sharesMinted
-  // )
+  let deposit = depositLibrary.getOrCreate(
+    transactionHash,
+    transactionIndex,
+    account,
+    vault,
+    inputAmount,
+    sharesMinted
+  )
+  
   // let vaultUpdate = vaultUpdateLibrary.getOrCreate(
   //   vault,
   //   transactionHash,
