@@ -1,4 +1,4 @@
-import { BigInt, Result } from "@graphprotocol/graph-ts";
+import { BigInt, log, Result } from "@graphprotocol/graph-ts";
 import { Account, AccountVaultPosition, AccountVaultPositionUpdate, Transaction, Vault } from "../../../generated/schema";
 import * as vaultPositionUpdateLibrary from './vault-position-update'
 
@@ -38,18 +38,17 @@ export function deposit(
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): VaultPositionResponse{
-  let id = buildId(account, vault)
-  let accountVaultPosition = AccountVaultPosition.load(id)
-  let accountVaultPositionUpdate: AccountVaultPositionUpdate
+  let vaultPositionId = buildId(account, vault)
+  let accountVaultPosition = AccountVaultPosition.load(vaultPositionId)
 
   if (accountVaultPosition == null) {
-    accountVaultPosition = new AccountVaultPosition(id)
+    accountVaultPosition = new AccountVaultPosition(vaultPositionId)
     accountVaultPosition.vault = vault.id
     accountVaultPosition.account = account.id
     accountVaultPosition.transaction = transactionHash
     accountVaultPosition.balanceTokens = depositedTokens
     accountVaultPosition.balanceShares = receivedShares
-    accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
+    vaultPositionUpdateLibrary.createFirst(
       accountVaultPosition!,
       transactionHash,
       transactionIndex,
@@ -59,22 +58,35 @@ export function deposit(
   } else {
     accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(depositedTokens)
     accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.plus(receivedShares)
-    // accountVaultPositionUpdate = vaultPositionUpdateLibrary.deposit(
-    //   accountVaultPosition!,
-    //   transactionHash,
-    //   transactionIndex,
-    //   depositedTokens,
-    //   receivedShares
-    // )
+    vaultPositionUpdateLibrary.deposit(
+      accountVaultPosition!,
+      transactionHash,
+      transactionIndex,
+      depositedTokens,
+      receivedShares
+    )
   }
 
-  // accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id
-  // accountVaultPosition.updates = [accountVaultPositionUpdate.id]
+  log.error('prev v2', [])
+  // log.error('1 vault position update id {}', [accountVaultPositionUpdate.id])
+  log.error('2 vault position update id {}', [vaultPositionUpdateLibrary.buildIdFromAccountHashAndIndex(
+    account.id,
+    transactionHash,
+    transactionIndex
+  )])
+  log.error('post', [])
+  accountVaultPosition.latestUpdate = vaultPositionUpdateLibrary.buildIdFromAccountHashAndIndex(
+    account.id,
+    transactionHash,
+    transactionIndex
+  )
+  log.error('post2', [])
   accountVaultPosition.save()
 
   return VaultPositionResponse.fromValue(
     accountVaultPosition!,
     null
+    // accountVaultPositionUpdate!
   )
 }
 

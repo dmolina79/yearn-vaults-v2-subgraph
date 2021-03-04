@@ -248,7 +248,7 @@ type AccountVaultPosition @entity {
   "Created in transaction"
   transaction: Transaction!
   "Latest account update for this Vault"
-  latestUpdate: AccountVaultPositionUpdate #TODO: Make required after testing
+  latestUpdate: AccountVaultPositionUpdate!
   "Account updates over time"
   updates: [AccountVaultPositionUpdate!]! @derivedFrom(field: "accountVaultPosition")
 
