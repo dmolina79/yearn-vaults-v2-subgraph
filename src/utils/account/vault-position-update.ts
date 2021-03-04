@@ -61,6 +61,8 @@ export function createFirst(
       transactionHash,
       transactionIndex
     )
+
+    accountVaultPositionFirstUpdate.save()
   }
 
   return accountVaultPositionFirstUpdate!
@@ -96,6 +98,8 @@ export function deposit(
       transactionHash,
       transactionIndex
     )
+
+    accountVaultPositionUpdate.save()
   }
 
   return accountVaultPositionUpdate!

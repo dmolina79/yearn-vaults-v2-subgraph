@@ -40,7 +40,7 @@ export function deposit(
 ): VaultPositionResponse{
   let id = buildId(account, vault)
   let accountVaultPosition = AccountVaultPosition.load(id)
-  // let accountVaultPositionUpdate: AccountVaultPositionUpdate
+  let accountVaultPositionUpdate: AccountVaultPositionUpdate
 
   if (accountVaultPosition == null) {
     accountVaultPosition = new AccountVaultPosition(id)
@@ -49,13 +49,13 @@ export function deposit(
     accountVaultPosition.transaction = transactionHash
     accountVaultPosition.balanceTokens = depositedTokens
     accountVaultPosition.balanceShares = receivedShares
-    // accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
-    //   accountVaultPosition!,
-    //   transactionHash,
-    //   transactionIndex,
-    //   depositedTokens,
-    //   receivedShares
-    // )
+    accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
+      accountVaultPosition!,
+      transactionHash,
+      transactionIndex,
+      depositedTokens,
+      receivedShares
+    )
   } else {
     accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(depositedTokens)
     accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.plus(receivedShares)
@@ -69,7 +69,7 @@ export function deposit(
   }
 
   // accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id
-  // accountVaultPosition.updates.push(accountVaultPositionUpdate.id)
+  // accountVaultPosition.updates = [accountVaultPositionUpdate.id]
   accountVaultPosition.save()
 
   return VaultPositionResponse.fromValue(
