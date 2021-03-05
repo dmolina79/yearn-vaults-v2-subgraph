@@ -967,6 +967,24 @@ export class AccountVaultPosition extends Entity {
     this.set("account", Value.fromString(value));
   }
 
+  get token(): string {
+    let value = this.get("token");
+    return value.toString();
+  }
+
+  set token(value: string) {
+    this.set("token", Value.fromString(value));
+  }
+
+  get shareToken(): string {
+    let value = this.get("shareToken");
+    return value.toString();
+  }
+
+  set shareToken(value: string) {
+    this.set("shareToken", Value.fromString(value));
+  }
+
   get transaction(): string {
     let value = this.get("transaction");
     return value.toString();
@@ -976,21 +994,13 @@ export class AccountVaultPosition extends Entity {
     this.set("transaction", Value.fromString(value));
   }
 
-  get latestUpdate(): string | null {
+  get latestUpdate(): string {
     let value = this.get("latestUpdate");
-    if (value === null || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toString();
-    }
+    return value.toString();
   }
 
-  set latestUpdate(value: string | null) {
-    if (value === null) {
-      this.unset("latestUpdate");
-    } else {
-      this.set("latestUpdate", Value.fromString(value as string));
-    }
+  set latestUpdate(value: string) {
+    this.set("latestUpdate", Value.fromString(value));
   }
 
   get updates(): Array<string> {
@@ -1055,6 +1065,33 @@ export class AccountVaultPositionUpdate extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get account(): string {
+    let value = this.get("account");
+    return value.toString();
+  }
+
+  set account(value: string) {
+    this.set("account", Value.fromString(value));
   }
 
   get accountVaultPosition(): string {

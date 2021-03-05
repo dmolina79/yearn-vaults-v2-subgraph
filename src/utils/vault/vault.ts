@@ -1,6 +1,6 @@
 import { Address, ethereum, BigInt, log, Bytes  } from "@graphprotocol/graph-ts";
 import {
-  Vault,
+  Vault, VaultUpdate,
 } from "../../../generated/schema";
 
 import { Vault as VaultContract } from '../../../generated/Registry/Vault';
@@ -13,7 +13,10 @@ import * as accountLibrary from '../account/account'
 import * as accountVaultPositionLibrary from '../account/vault-position'
 import * as vaultUpdateLibrary from './vault-update'
 
-const createNewVaultFromAddress = (vaultAddress: Address): Vault => {
+const createNewVaultFromAddress = (
+  vaultAddress: Address,
+  transactionHash: string
+): Vault => {
   let id = vaultAddress.toHexString();
   let vaultEntity = new Vault(id);
   let vaultContract = VaultContract.bind(vaultAddress);
@@ -21,17 +24,12 @@ const createNewVaultFromAddress = (vaultAddress: Address): Vault => {
   let token = getOrCreateToken(vaultContract.token());
   let shareToken = getOrCreateToken(vaultAddress);
 
-  // TODO Create transaction vaultEntity.transaction = transactionId
-  vaultEntity.transaction = "0";
+  vaultEntity.transaction = transactionHash;
   vaultEntity.token = token.id;
   vaultEntity.shareToken = shareToken.id;
 
-  // vault fields
-  vaultEntity.activation = vaultContract.activation();
-  vaultEntity.apiVersion = vaultContract.apiVersion();
-
-  // NOTE: derived
-  // vaultEntity.strategies = [];
+  // FIX: This is hardcoded, try to get from contract
+  vaultEntity.classification = 'Experimental'
 
   // empty at creation
   vaultEntity.tags = [];
@@ -49,17 +47,27 @@ const createNewVaultFromAddress = (vaultAddress: Address): Vault => {
   // vaultEntity.managementFeeBps = vaultContract.managementFee().toI32();
   // vaultEntity.performanceFeeBps = vaultContract.performanceFee().toI32();
 
+  // vault fields
+  vaultEntity.activation = vaultContract.activation();
+  vaultEntity.apiVersion = vaultContract.apiVersion();
 
   return vaultEntity;
 }
 
-export function getOrCreate(vaultAddress: Address, createTemplate: boolean): Vault {
+export function getOrCreate(
+  vaultAddress: Address,
+  transactionHash: string,
+  createTemplate: boolean
+): Vault {
   log.debug('[Vault] Get or create', [])
   let id = vaultAddress.toHexString();
   let vault = Vault.load(id);
 
   if (vault == null) {
-    vault = createNewVaultFromAddress(vaultAddress)
+    vault = createNewVaultFromAddress(
+      vaultAddress,
+      transactionHash
+    )
 
     if(createTemplate) {
       VaultTemplate.create(vaultAddress);
@@ -70,7 +78,7 @@ export function getOrCreate(vaultAddress: Address, createTemplate: boolean): Vau
 }
 
 export function create(
-  transactionId: string,
+  transactionHash: string,
   vault: Address,
   classification: string,
   apiVersion: string,
@@ -82,8 +90,10 @@ export function create(
   let id = vault.toHexString()
   let vaultEntity = Vault.load(id)
   if(vaultEntity == null) {
-    vaultEntity = createNewVaultFromAddress(vault); 
-    vaultEntity.transaction = transactionId
+    vaultEntity = createNewVaultFromAddress(
+      vault,
+      transactionHash
+    ); 
     vaultEntity.classification = classification
     // vaultEntity.deploymentId = deploymentId
     vaultEntity.apiVersion = apiVersion
@@ -169,26 +179,30 @@ export function tag(
 export function deposit(
   transactionHash: Bytes,
   transactionIndex: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt,
   from: Address,
   to: Address,
-  inputAmount: BigInt,
+  depositedAmount: BigInt,
   totalAssets: BigInt,
   totalSupply: BigInt,
   pricePerShare: BigInt
 ): void {
   log.debug('[Vault] Deposit', [])
   let account = accountLibrary.getOrCreate(from)
-  let vault = getOrCreate(to, false)
+  let vault = getOrCreate(to, transactionHash.toHexString(), false)
   let sharesMinted = totalAssets.equals(BIGINT_ZERO)
-    ? inputAmount
-    : inputAmount.times(totalSupply).div(totalAssets)
+    ? depositedAmount
+    : depositedAmount.times(totalSupply).div(totalAssets)
     
   let vaultPositionResponse = accountVaultPositionLibrary.deposit(
     account,
     vault,
     transactionHash.toHexString(),
     transactionIndex.toString(),
-    inputAmount,
+    timestamp,
+    blockNumber,
+    depositedAmount,
     sharesMinted
   )
   
@@ -197,31 +211,37 @@ export function deposit(
     transactionIndex,
     account,
     vault,
-    inputAmount,
+    depositedAmount,
     sharesMinted
   )
 
+  let vaultUpdate: VaultUpdate
   if (!vault.latestUpdate) {
-    vaultUpdateLibrary.firstDeposit(
+    vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
       transactionHash,
       transactionIndex,
-      inputAmount,
+      depositedAmount,
       sharesMinted,
       pricePerShare
     )
   } else {
-    vaultUpdateLibrary.deposit(
+    vaultUpdate = vaultUpdateLibrary.deposit(
       vault,
       transactionHash,
       transactionIndex,
-      inputAmount,
+      depositedAmount,
       sharesMinted,
       pricePerShare
     )
   }
   
-  // vault.latestUpdate = vaultUpdate.id
+  vault.latestUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
+    vault.id,
+    transactionHash.toHexString(),
+    transactionIndex.toString()
+  )
+  vault.save()
   // create vault update
   // modift internal data
   // save

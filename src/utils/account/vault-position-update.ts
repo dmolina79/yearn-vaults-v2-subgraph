@@ -32,6 +32,8 @@ export function createFirst(
   accountVaultPosition: AccountVaultPosition,
   transactionHash: string,
   transactionIndex: string,
+  timestamp: BigInt,
+  blockNumber: BigInt,
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): AccountVaultPositionUpdate {
@@ -47,6 +49,9 @@ export function createFirst(
 
     accountVaultPositionFirstUpdate = new AccountVaultPositionUpdate(id)
 
+    accountVaultPositionFirstUpdate.timestamp = timestamp
+    accountVaultPositionFirstUpdate.blockNumber = blockNumber
+    accountVaultPositionFirstUpdate.account = accountVaultPosition.account
     accountVaultPositionFirstUpdate.accountVaultPosition = accountVaultPosition.id
     accountVaultPositionFirstUpdate.transaction = transactionHash
     
@@ -72,6 +77,8 @@ export function deposit(
   accountVaultPosition: AccountVaultPosition,
   transactionHash: string,
   transactionIndex: string,
+  timestamp: BigInt,
+  blockNumber: BigInt,
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): AccountVaultPositionUpdate {
@@ -86,6 +93,9 @@ export function deposit(
   if (accountVaultPosition == null) {
     accountVaultPositionUpdate = new AccountVaultPositionUpdate(id)
 
+    accountVaultPositionUpdate.timestamp = timestamp
+    accountVaultPositionUpdate.blockNumber = blockNumber
+    accountVaultPositionUpdate.account = accountVaultPosition.account
     accountVaultPositionUpdate.accountVaultPosition = accountVaultPosition.id
     accountVaultPositionUpdate.transaction = transactionHash
     

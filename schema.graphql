@@ -79,6 +79,8 @@ enum VaultClassification {
 type Vault @entity {
   "Vault address"
   id: ID!
+  "Ethereum Transaction"
+  transaction: Transaction!
   "Token this Vault will accrue"
   token: Token!
   "Token representing Shares in the Vault"
@@ -101,8 +103,6 @@ type Vault @entity {
   withdrawals: [Withdrawal!]! @derivedFrom(field: "vault")
   "Transfers of Vault Shares"
   transfers: [Transfer!]! @derivedFrom(field: "vault")
-  "Ethereum Transaction"
-  transaction: Transaction!
   "Tags attached to the Vault"
   tags: [String!]!
   "Balance of Tokens in the Vault and its Strategies"
@@ -245,6 +245,10 @@ type AccountVaultPosition @entity {
   vault: Vault!
   "Account"
   account: Account!
+  "Vault token"
+  token: Token!
+  "Vault share token"
+  shareToken: Token!
   "Created in transaction"
   transaction: Transaction!
   "Latest account update for this Vault"
@@ -261,7 +265,12 @@ type AccountVaultPosition @entity {
 type AccountVaultPositionUpdate @entity {
   "Account-Transaction-Log"
   id: ID!
-  
+  "Timestamp"
+  timestamp: BigInt!
+  "Block number"
+  blockNumber: BigInt!
+  "Account that owns position update"
+  account: Account!
   "The account vault position that this update applies to"
   accountVaultPosition: AccountVaultPosition!
   "Ethereum Transaction"

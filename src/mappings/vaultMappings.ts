@@ -25,7 +25,7 @@ export function addStrategyToVault(
   rateLimit: BigInt,
   event: ethereum.Event,
 ): void {
-  let vault = vaultLibrary.getOrCreate(vaultAddress, false)
+  // let vault = vaultLibrary.getOrCreate(vaultAddress, false)
   // if(vault !== null) {
   //   createStrategy(
   //     transactionId,
@@ -40,7 +40,10 @@ export function addStrategyToVault(
 }
 
 export function handleStrategyAdded(event: StrategyAddedEvent): void {
-  let ethTransaction = getOrCreateTransactionFromEvent(event, "StrategyAddedEvent")
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event, 
+    "StrategyAddedEvent"
+  )
 
   // TODO: refactor to createStrategy since derived links vault + strat
   // vaultLibrary.addStrategy(
@@ -55,7 +58,10 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
 }
 
 export function handleStrategyReported(event: StrategyReportedEvent): void {
-  let ethTransaction = getOrCreateTransactionFromEvent(event, "StrategyReportedEvent")
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event, 
+    "StrategyReportedEvent"
+  )
   // reportStrategy(
   //   ethTransaction.id,
   //   event.params.strategy.toHexString(),
@@ -91,6 +97,8 @@ export function handleDepositWithAmount(call: Deposit1Call): void {
   vaultLibrary.deposit(
     call.transaction.hash,
     call.transaction.index,
+    call.block.timestamp,
+    call.block.number,
     call.from,
     call.to,
     call.inputs._amount,

@@ -35,6 +35,8 @@ export function deposit(
   vault: Vault,
   transactionHash: string,
   transactionIndex: string,
+  timestamp: BigInt,
+  blockNumber: BigInt,
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): VaultPositionResponse{
@@ -46,6 +48,8 @@ export function deposit(
     accountVaultPosition = new AccountVaultPosition(vaultPositionId)
     accountVaultPosition.vault = vault.id
     accountVaultPosition.account = account.id
+    accountVaultPosition.token = vault.token
+    accountVaultPosition.shareToken = vault.shareToken
     accountVaultPosition.transaction = transactionHash
     accountVaultPosition.balanceTokens = depositedTokens
     accountVaultPosition.balanceShares = receivedShares
@@ -53,6 +57,8 @@ export function deposit(
       accountVaultPosition!,
       transactionHash,
       transactionIndex,
+      timestamp,
+      blockNumber,
       depositedTokens,
       receivedShares
     )
@@ -63,6 +69,8 @@ export function deposit(
       accountVaultPosition!,
       transactionHash,
       transactionIndex,
+      timestamp,
+      blockNumber,
       depositedTokens,
       receivedShares
     )
