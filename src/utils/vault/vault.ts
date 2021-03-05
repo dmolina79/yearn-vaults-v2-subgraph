@@ -200,19 +200,27 @@ export function deposit(
     inputAmount,
     sharesMinted
   )
-  
-  // let vaultUpdate = vaultUpdateLibrary.getOrCreate(
-  //   vault,
-  //   transactionHash,
-  //   transactionIndex,
-  //   inputAmount,
-  //   BIGINT_ZERO,
-  //   sharesMinted,
-  //   BIGINT_ZERO,
-  //   pricePerShare
-  // )
 
-  // vault.historicalUpdates.push(vaultUpdate.id);
+  if (!vault.latestUpdate) {
+    vaultUpdateLibrary.firstDeposit(
+      vault,
+      transactionHash,
+      transactionIndex,
+      inputAmount,
+      sharesMinted,
+      pricePerShare
+    )
+  } else {
+    vaultUpdateLibrary.deposit(
+      vault,
+      transactionHash,
+      transactionIndex,
+      inputAmount,
+      sharesMinted,
+      pricePerShare
+    )
+  }
+  
   // vault.latestUpdate = vaultUpdate.id
   // create vault update
   // modift internal data

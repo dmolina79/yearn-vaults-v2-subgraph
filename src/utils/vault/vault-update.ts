@@ -66,3 +66,93 @@ export function getOrCreate(
   
   return vaultUpdate!
 }
+
+export function firstDeposit(
+  vault: Vault,
+  transactionHash: Bytes,
+  transactionIndex: BigInt,
+  deposits: BigInt,
+  sharesMinted: BigInt,
+  pricePerShare: BigInt,
+): VaultUpdate {
+  log.debug('[Vault Balance Updates] First deposit', [])
+  let vaultUpdateId = buildIdFromVaultTxHashAndIndex(
+    vault.id,
+    transactionHash.toHexString(),
+    transactionIndex.toString()
+  )
+  let vaultUpdate = VaultUpdate.load(vaultUpdateId)
+
+  if (vaultUpdate === null) {
+    vaultUpdate = new VaultUpdate(vaultUpdateId);
+    vaultUpdate.transaction = transactionHash.toHexString()
+    vaultUpdate.vault = vault.id;
+
+    // BALANCES AND SHARES
+    vaultUpdate.tokensDeposited = deposits
+    vaultUpdate.tokensWithdrawn = BIGINT_ZERO
+    vaultUpdate.sharesMinted = sharesMinted
+    vaultUpdate.sharesBurnt = BIGINT_ZERO
+  
+    // PERFORMANCE
+    vaultUpdate.pricePerShare = pricePerShare
+    
+    vaultUpdate.returnsGenerated = BIGINT_ZERO
+    vaultUpdate.totalFees = BIGINT_ZERO
+    vaultUpdate.managementFees = BIGINT_ZERO
+    vaultUpdate.performanceFees = BIGINT_ZERO
+
+    vaultUpdate.save()
+  }
+  
+  return vaultUpdate!
+}
+
+export function deposit(
+  vault: Vault,
+  transactionHash: Bytes,
+  transactionIndex: BigInt,
+  deposits: BigInt,
+  sharesMinted: BigInt,
+  pricePerShare: BigInt,
+): VaultUpdate {
+  log.debug('[Vault Balance Updates] Deposit', [])
+  let vaultUpdateId = buildIdFromVaultTxHashAndIndex(
+    vault.id,
+    transactionHash.toHexString(),
+    transactionIndex.toString()
+  )
+  let vaultUpdate = VaultUpdate.load(vaultUpdateId)
+  let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate)
+
+  if (vaultUpdate === null) {
+    vaultUpdate = new VaultUpdate(vaultUpdateId);
+    vaultUpdate.transaction = transactionHash.toHexString()
+    vaultUpdate.vault = vault.id;
+
+    // BALANCES AND SHARES
+    vaultUpdate.tokensDeposited = vaultUpdate.tokensDeposited.plus(deposits)
+    vaultUpdate.sharesMinted = vaultUpdate.sharesMinted.plus(sharesMinted)
+
+    // BALANCES AND SHARES
+    vaultUpdate.tokensDeposited = latestVaultUpdate.tokensDeposited.plus(deposits)
+    vaultUpdate.tokensWithdrawn = latestVaultUpdate.tokensWithdrawn
+    vaultUpdate.sharesMinted = latestVaultUpdate.sharesMinted.plus(sharesMinted)
+    vaultUpdate.sharesBurnt = latestVaultUpdate.sharesBurnt
+  
+    // PERFORMANCE
+    vaultUpdate.pricePerShare = pricePerShare
+    
+    vaultUpdate.returnsGenerated = latestVaultUpdate.returnsGenerated
+    vaultUpdate.totalFees = latestVaultUpdate.totalFees
+    vaultUpdate.managementFees = latestVaultUpdate.managementFees
+    vaultUpdate.performanceFees = latestVaultUpdate.performanceFees
+  
+    // PERFORMANCE
+    vaultUpdate.pricePerShare = pricePerShare
+
+    vaultUpdate.save()
+  }
+  
+  return vaultUpdate!
+}

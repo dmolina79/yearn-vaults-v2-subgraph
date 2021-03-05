@@ -40,6 +40,7 @@ export function deposit(
 ): VaultPositionResponse{
   let vaultPositionId = buildId(account, vault)
   let accountVaultPosition = AccountVaultPosition.load(vaultPositionId)
+  let accountVaultPositionUpdate: AccountVaultPositionUpdate
 
   if (accountVaultPosition == null) {
     accountVaultPosition = new AccountVaultPosition(vaultPositionId)
@@ -48,7 +49,7 @@ export function deposit(
     accountVaultPosition.transaction = transactionHash
     accountVaultPosition.balanceTokens = depositedTokens
     accountVaultPosition.balanceShares = receivedShares
-    vaultPositionUpdateLibrary.createFirst(
+    accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
       accountVaultPosition!,
       transactionHash,
       transactionIndex,
@@ -58,7 +59,7 @@ export function deposit(
   } else {
     accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(depositedTokens)
     accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.plus(receivedShares)
-    vaultPositionUpdateLibrary.deposit(
+    accountVaultPositionUpdate = vaultPositionUpdateLibrary.deposit(
       accountVaultPosition!,
       transactionHash,
       transactionIndex,
@@ -66,27 +67,17 @@ export function deposit(
       receivedShares
     )
   }
-
-  log.error('prev v2', [])
-  // log.error('1 vault position update id {}', [accountVaultPositionUpdate.id])
-  log.error('2 vault position update id {}', [vaultPositionUpdateLibrary.buildIdFromAccountHashAndIndex(
-    account.id,
-    transactionHash,
-    transactionIndex
-  )])
-  log.error('post', [])
+  // FIX: For some reason if we refer accountVaultPositionUpdate.id it breaks down
   accountVaultPosition.latestUpdate = vaultPositionUpdateLibrary.buildIdFromAccountHashAndIndex(
     account.id,
     transactionHash,
     transactionIndex
   )
-  log.error('post2', [])
   accountVaultPosition.save()
 
   return VaultPositionResponse.fromValue(
     accountVaultPosition!,
-    null
-    // accountVaultPositionUpdate!
+    accountVaultPositionUpdate!
   )
 }
 
