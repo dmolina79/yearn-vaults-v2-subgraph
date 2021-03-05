@@ -236,13 +236,11 @@ export function deposit(
     )
   }
   
-  vault.latestUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
-    vault.id,
-    transactionHash.toHexString(),
-    transactionIndex.toString()
-  )
+  vault.latestUpdate = vaultUpdate.id
+
+  vault.balanceTokens = vault.balanceTokens.plus(depositedAmount)
+  vault.balanceTokensIdle = vault.balanceTokensIdle.plus(depositedAmount)
+  vault.sharesSupply = vault.sharesSupply.plus(sharesMinted)
+
   vault.save()
-  // create vault update
-  // modift internal data
-  // save
 }
