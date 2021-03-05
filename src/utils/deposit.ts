@@ -12,6 +12,8 @@ import * as vaultUpdateLibrary from './vault/vault-update';
 export function getOrCreate(
   transactionHash: Bytes,
   transactionIndex: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt,
   account: Account,
   vault: Vault,
   amount: BigInt,
@@ -23,6 +25,8 @@ export function getOrCreate(
 
   if (deposit === null) {
     deposit = new Deposit(id)
+    deposit.timestamp = timestamp
+    deposit.blockNumber = blockNumber
     deposit.account = account.id
     deposit.vault = vault.id
     deposit.tokenAmount = amount

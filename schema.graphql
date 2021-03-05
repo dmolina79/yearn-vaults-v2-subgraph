@@ -131,6 +131,10 @@ type Vault @entity {
 type VaultUpdate @entity {
   "Vault-Transaction-Log"
   id: ID!
+  "Timestamp of update"
+  timestamp: BigInt!
+  "Block number of update"
+  blockNumber: BigInt!
   "Ethereum Transaction"
   transaction: Transaction!
   "Vault this update is for"
@@ -182,6 +186,10 @@ type Account @entity {
 type Deposit @entity {
   "Transaction-Log"
   id: ID!
+  "Timestamp of update"
+  timestamp: BigInt!
+  "Block number of update"
+  blockNumber: BigInt!
   "Account making Deposit"
   account: Account!
   "Vault deposited into"

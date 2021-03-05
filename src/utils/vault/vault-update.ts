@@ -17,6 +17,8 @@ export function firstDeposit(
   vault: Vault,
   transactionHash: Bytes,
   transactionIndex: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt,
   depositedAmount: BigInt,
   sharesMinted: BigInt,
   pricePerShare: BigInt,
@@ -31,6 +33,8 @@ export function firstDeposit(
 
   if (vaultUpdate === null) {
     vaultUpdate = new VaultUpdate(vaultUpdateId);
+    vaultUpdate.timestamp = timestamp
+    vaultUpdate.blockNumber = blockNumber
     vaultUpdate.transaction = transactionHash.toHexString()
     vaultUpdate.vault = vault.id;
 
@@ -58,6 +62,8 @@ export function deposit(
   vault: Vault,
   transactionHash: Bytes,
   transactionIndex: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt,
   depositedAmount: BigInt,
   sharesMinted: BigInt,
   pricePerShare: BigInt,
@@ -73,9 +79,11 @@ export function deposit(
 
   if (vaultUpdate === null) {
     vaultUpdate = new VaultUpdate(vaultUpdateId);
+    vaultUpdate.timestamp = timestamp
+    vaultUpdate.blockNumber = blockNumber
     vaultUpdate.transaction = transactionHash.toHexString()
     vaultUpdate.vault = vault.id;
-    
+
     // BALANCES AND SHARES
     vaultUpdate.tokensDeposited = latestVaultUpdate.tokensDeposited.plus(depositedAmount)
     vaultUpdate.tokensWithdrawn = latestVaultUpdate.tokensWithdrawn

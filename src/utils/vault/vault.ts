@@ -209,6 +209,8 @@ export function deposit(
   let deposit = depositLibrary.getOrCreate(
     transactionHash,
     transactionIndex,
+    timestamp,
+    blockNumber,
     account,
     vault,
     depositedAmount,
@@ -221,6 +223,8 @@ export function deposit(
       vault,
       transactionHash,
       transactionIndex,
+      timestamp,
+      blockNumber,
       depositedAmount,
       sharesMinted,
       pricePerShare
@@ -230,6 +234,8 @@ export function deposit(
       vault,
       transactionHash,
       transactionIndex,
+      timestamp,
+      blockNumber,
       depositedAmount,
       sharesMinted,
       pricePerShare
@@ -237,7 +243,6 @@ export function deposit(
   }
   
   vault.latestUpdate = vaultUpdate.id
-
   vault.balanceTokens = vault.balanceTokens.plus(depositedAmount)
   vault.balanceTokensIdle = vault.balanceTokensIdle.plus(depositedAmount)
   vault.sharesSupply = vault.sharesSupply.plus(sharesMinted)
