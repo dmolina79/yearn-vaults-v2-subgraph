@@ -50,7 +50,7 @@ export function reportStrategy(
 ):void {
   let strategy = Strategy.load(strategyId)
   if (strategy !== null) {
-    let strategyReport = createStrategyReport(
+    createStrategyReport(
       transactionId,
       strategyId,
       gain,
@@ -62,9 +62,6 @@ export function reportStrategy(
       debtLimit,
       event
     )
-    let reports = strategy.reports
-    reports.push(strategyReport.id)
-    strategy.reports = reports
     strategy.save()
   }
 }
@@ -80,17 +77,14 @@ export function createStrategy(
 ): Strategy {
   let id = strategy.toHexString()
   let entity = new Strategy(id)
+  entity.blockNumber = event.block.number
+  entity.timestamp = getTimestampInMillis(event.block)
   entity.transaction = transactionId
   entity.address = strategy
   entity.vault = vault.toHexString()
-  entity.reports = []
-  // NOTE: derived
-  // entity.harvests = []
   entity.debtLimit = debtLimit
   entity.rateLimit = rateLimit
   entity.performanceFeeBps = performanceFee.toI32();
-  entity.blockNumber = event.block.number
-  entity.timestamp = getTimestampInMillis(event.block)
   entity.save()
   return entity
 }

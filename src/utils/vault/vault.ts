@@ -143,9 +143,9 @@ export function addStrategy(
   event: ethereum.Event,
 ): void {
   let id = vaultAddress.toHexString()
-  let entity = Vault.load(id)
-  if(entity !== null) {
-    let newStrategy = createStrategy(
+  let vault = Vault.load(id) // get or create ? 
+  if(vault !== null) {
+    createStrategy(
       transactionId,
       strategy,
       vaultAddress,
@@ -154,10 +154,7 @@ export function addStrategy(
       performanceFee,
       event
     )
-    let strategies = entity.strategies
-    strategies.push(newStrategy.id)
-    entity.strategies = strategies
-    entity.save()
+    vault.save()
   }
 }
 

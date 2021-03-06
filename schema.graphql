@@ -316,6 +316,10 @@ enum StrategyStatus {
 type Strategy @entity {
   "The Strategy ID."
   id: ID!
+  "Blocknumber the vault information was most recently updated."
+  blockNumber: BigInt!
+  "Timestamp the vault information was most recently updated."
+  timestamp: BigInt!
   "Ethereum Transaction"
   transaction: Transaction!
   "The Strategy address."
@@ -328,16 +332,10 @@ type Strategy @entity {
   rateLimit: BigInt!
   "Defines the strategist's fee (basis points)."
   performanceFeeBps: Int!
-  "Blocknumber the vault information was most recently updated."
-  blockNumber: BigInt!
-  "Timestamp the vault information was most recently updated."
-  timestamp: BigInt!
-
-  "The reports created by this strategy."
-  reports: [StrategyReport!]!
   "The latest report for this Strategy"
   latestReport: StrategyReport
-
+  "The reports created by this strategy."
+  reports: [StrategyReport!]! @derivedFrom(field: "strategy")
   "harvest() calls"
   harvests: [Harvest!]! @derivedFrom(field: "strategy")
 }
@@ -348,7 +346,7 @@ type StrategyReport @entity {
   "Ethereum Transaction"
   transaction: Transaction!
   "The Strategy reference."
-  strategy: Strategy! @relation
+  strategy: Strategy!
   "The reported gain amount for the strategy."
   gain: BigInt!
   "The reported loss amount for the strategy."

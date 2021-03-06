@@ -46,15 +46,15 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
   )
 
   // TODO: refactor to createStrategy since derived links vault + strat
-  // vaultLibrary.addStrategy(
-  //   ethTransaction.id,
-  //   event.address,
-  //   event.params.strategy,
-  //   event.params.debtLimit,
-  //   event.params.performanceFee,
-  //   event.params.rateLimit,
-  //   event
-  // )
+  vaultLibrary.addStrategy(
+    ethTransaction.id,
+    event.address,
+    event.params.strategy,
+    event.params.debtLimit,
+    event.params.performanceFee,
+    event.params.rateLimit,
+    event
+  )
 }
 
 export function handleStrategyReported(event: StrategyReportedEvent): void {
@@ -62,18 +62,18 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
     event, 
     "StrategyReportedEvent"
   )
-  // reportStrategy(
-  //   ethTransaction.id,
-  //   event.params.strategy.toHexString(),
-  //   event.params.gain,
-  //   event.params.loss,
-  //   event.params.totalGain,
-  //   event.params.totalLoss,
-  //   event.params.totalDebt,
-  //   event.params.debtAdded,
-  //   event.params.debtLimit,
-  //   event,
-  // )
+  reportStrategy(
+    ethTransaction.id,
+    event.params.strategy.toHexString(),
+    event.params.gain,
+    event.params.loss,
+    event.params.totalGain,
+    event.params.totalLoss,
+    event.params.totalDebt,
+    event.params.debtAdded,
+    event.params.debtLimit,
+    event,
+  )
 }
 
 
