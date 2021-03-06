@@ -6,9 +6,9 @@
     "build:kovan": "yarn prepare:kovan && graph build",
     "build:rinkeby": "yarn prepare:rinkeby && graph build",
     "build:mainnet": "yarn prepare:mainnet && graph build",
-    "thegraph:deploy:kovan": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ salazarguille/yearn-vaults-v2-subgraph-kovan",
-    "thegraph:deploy:rinkeby": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ salazarguille/yearn-vaults-v2-subgraph-rinkeby",
-    "thegraph:deploy:mainnet": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ b0dhidharma/yearnv2",
+    "thegraph:deploy:kovan": "yarn build:kovan &&graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ salazarguille/yearn-vaults-v2-subgraph-kovan",
+    "thegraph:deploy:rinkeby": "yarn build:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ salazarguille/yearn-vaults-v2-subgraph-rinkeby",
+    "thegraph:deploy:mainnet": "yarn build:mainnet && graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ b0dhidharma/yearnv2",
     "create-local": "graph create --node http://127.0.0.1:8020/ yearn-vaults-v2/subgraph",
     "remove-local": "graph remove --node http://127.0.0.1:8020/ yearn-vaults-v2/subgraph",
     "prepare:kovan": "mustache config/kovan.json subgraph.template.yaml > subgraph.yaml",
@@ -19,8 +19,8 @@
     "deploy:mainnet": "yarn build:mainnet && yarn thegraph:deploy:mainnet"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.19.0",
-    "@graphprotocol/graph-ts": "0.19.0",
+    "@graphprotocol/graph-cli": "0.20.0",
+    "@graphprotocol/graph-ts": "0.20.0",
     "mustache": "^4.0.1"
   }
 }

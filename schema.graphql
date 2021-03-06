@@ -316,6 +316,8 @@ enum StrategyStatus {
 type Strategy @entity {
   "The Strategy ID."
   id: ID!
+  "Strategy name."
+  name: String!
   "Ethereum Transaction"
   transaction: Transaction!
   "The Strategy address."

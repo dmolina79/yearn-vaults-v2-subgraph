@@ -1,8 +1,12 @@
-import { ethereum, BigInt, Address  } from "@graphprotocol/graph-ts";
+import { log, ethereum, BigInt, Address  } from "@graphprotocol/graph-ts";
 import {
   Strategy,
   StrategyReport,
 } from "../../generated/schema";
+
+import {
+  Strategy as StrategyContract
+} from "../../generated/templates/Vault/Strategy";
 
 import { buildIdFromEvent, getTimestampInMillis } from "./commons";
 
@@ -78,14 +82,16 @@ export function createStrategy(
   performanceFee: BigInt,
   event: ethereum.Event
 ): Strategy {
+  let strategyContract = StrategyContract.bind(strategy);
+  let tryName = strategyContract.try_name();
+
   let id = strategy.toHexString()
   let entity = new Strategy(id)
   entity.transaction = transactionId
+  entity.name = tryName.reverted ? "TBD" : tryName.value.toString();
   entity.address = strategy
   entity.vault = vault.toHexString()
   entity.reports = []
-  // NOTE: derived
-  // entity.harvests = []
   entity.debtLimit = debtLimit
   entity.rateLimit = rateLimit
   entity.performanceFeeBps = performanceFee.toI32();
