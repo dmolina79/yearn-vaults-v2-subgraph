@@ -15,45 +15,19 @@ import { createStrategy, reportStrategy } from "../utils/strategy"
 import { getOrCreateTransactionFromCall, getOrCreateTransactionFromEvent } from "../utils/transaction";
 import * as vaultLibrary from '../utils/vault/vault'
 
-
-export function addStrategyToVault(
-  transactionId: string,
-  vaultAddress: Address,
-  strategy: Address,
-  debtLimit: BigInt,
-  performanceFee: BigInt,
-  rateLimit: BigInt,
-  event: ethereum.Event,
-): void {
-  // let vault = vaultLibrary.getOrCreate(vaultAddress, false)
-  // if(vault !== null) {
-  //   createStrategy(
-  //     transactionId,
-  //     strategy,
-  //     vaultAddress,
-  //     debtLimit,
-  //     rateLimit,
-  //     performanceFee,
-  //     event
-  //   )
-  // }
-}
-
 export function handleStrategyAdded(event: StrategyAddedEvent): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event, 
     "StrategyAddedEvent"
   )
-
-  // TODO: refactor to createStrategy since derived links vault + strat
-  vaultLibrary.addStrategy(
+  createStrategy(
     ethTransaction.id,
-    event.address,
     event.params.strategy,
+    event.address,
     event.params.debtLimit,
-    event.params.performanceFee,
     event.params.rateLimit,
-    event
+    event.params.performanceFee,
+    event,
   )
 }
 

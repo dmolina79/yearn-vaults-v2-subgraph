@@ -12,7 +12,7 @@ dataSources:
       abi: Registry
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
         - Vault
@@ -61,6 +61,8 @@ templates:
           file: ./abis/Vault.json
         - name: ERC20
           file: ./abis/ERC20Detailed.json
+        - name: Strategy
+          file: ./abis/StrategyAPI.json
       eventHandlers:
         - event: StrategyAdded(indexed address,uint256,uint256,uint256)
           handler: handleStrategyAdded
@@ -70,18 +72,18 @@ templates:
         # - event: Transfer(indexed address,indexed address,uint256)
         #   handler: handleTransfer
       # TODO: failing in graph sync at block #11595706  
-      # callHandlers:
-        # - function: deposit()
-        #   handler: handleDeposit
-        # - function: deposit(uint256)
-        #   handler: handleDepositWithAmount
-        # - function: deposit(uint256,address)
-        #   handler: handleDepositWithAmountAndRecipient
-        # - function: withdraw()
-        #   handler: handleWithdraw
-        # - function: withdraw(uint256)
-        #   handler: handleWithdrawWithShares
-        # - function: withdraw(uint256,address)
-        #   handler: handleWithdrawWithSharesAndRecipient
+      callHandlers:
+        - function: deposit()
+          handler: handleDeposit
+        - function: deposit(uint256)
+          handler: handleDepositWithAmount
+        - function: deposit(uint256,address)
+          handler: handleDepositWithAmountAndRecipient
+        - function: withdraw()
+          handler: handleWithdraw
+        - function: withdraw(uint256)
+          handler: handleWithdrawWithShares
+        - function: withdraw(uint256,address)
+          handler: handleWithdrawWithSharesAndRecipient
         # - function: withdraw(uint256,address,uint256)
         #   handler: handleWithdrawWithSharesRecipientAndMaxLoss

@@ -1224,6 +1224,15 @@ export class Strategy extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get name(): string {
+    let value = this.get("name");
+    return value.toString();
+  }
+
+  set name(value: string) {
+    this.set("name", Value.fromString(value));
+  }
+
   get transaction(): string {
     let value = this.get("transaction");
     return value.toString();

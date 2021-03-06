@@ -316,6 +316,8 @@ enum StrategyStatus {
 type Strategy @entity {
   "The Strategy ID."
   id: ID!
+  "Strategy name."
+  name: String!
   "Blocknumber the vault information was most recently updated."
   blockNumber: BigInt!
   "Timestamp the vault information was most recently updated."
