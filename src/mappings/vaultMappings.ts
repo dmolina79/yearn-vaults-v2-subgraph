@@ -11,6 +11,7 @@ import {
   Withdraw1Call,
   Withdraw2Call,
 } from "../../generated/Registry/Vault";
+import { MAX_UINT } from "../utils/constants";
 import { createStrategy, reportStrategy } from "../utils/strategy"
 import { getOrCreateTransactionFromCall, getOrCreateTransactionFromEvent } from "../utils/transaction";
 import * as vaultLibrary from '../utils/vault/vault'
@@ -59,6 +60,19 @@ export function handleDeposit(call: DepositCall): void {
     call,
     'vault.deposit()'
   )
+  let vaultContract = VaultContract.bind(call.to)
+  vaultLibrary.deposit(
+    call.transaction.hash,
+    call.transaction.index,
+    call.block.timestamp,
+    call.block.number,
+    call.from,
+    call.to,
+    MAX_UINT,
+    vaultContract.totalAssets(),
+    vaultContract.totalSupply(),
+    vaultContract.pricePerShare()
+  );
 }
 
 export function handleDepositWithAmount(call: Deposit1Call): void {

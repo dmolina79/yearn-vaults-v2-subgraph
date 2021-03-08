@@ -6,3 +6,4 @@ export const DEFAULT_DECIMALS = 18;
 export let BIGINT_ZERO = BigInt.fromI32(0);
 export let BIGINT_ONE = BigInt.fromI32(1);
 export let BIGDECIMAL_ZERO = new BigDecimal(BIGINT_ZERO);
+export let MAX_UINT = BigInt.fromI32(2).times(BigInt.fromI32(255))
