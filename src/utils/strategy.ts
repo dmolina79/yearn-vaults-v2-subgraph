@@ -1,14 +1,9 @@
-import { log, ethereum, BigInt, Address  } from "@graphprotocol/graph-ts";
-import {
-  Strategy,
-  StrategyReport,
-} from "../../generated/schema";
+import { log, ethereum, BigInt, Address } from '@graphprotocol/graph-ts';
+import { Strategy, StrategyReport } from '../../generated/schema';
 
-import {
-  Strategy as StrategyContract
-} from "../../generated/templates/Vault/Strategy";
+import { Strategy as StrategyContract } from '../../generated/templates/Vault/Strategy';
 
-import { buildIdFromEvent, getTimestampInMillis } from "./commons";
+import { buildIdFromEvent, getTimestampInMillis } from './commons';
 
 export function createStrategyReport(
   transactionId: string,
@@ -22,22 +17,22 @@ export function createStrategyReport(
   debtLimit: BigInt,
   event: ethereum.Event
 ): StrategyReport {
-  let id = buildIdFromEvent(event)
-  let entity = new StrategyReport(id)
-  entity.strategy = strategyId
-  entity.transaction = transactionId
-  entity.gain = gain
-  entity.loss = loss
-  entity.totalGain = totalGain
-  entity.totalLoss = totalLoss
-  entity.totalDebt = totalDebt
-  entity.debtAdded = debtAdded
-  entity.debtLimit = debtLimit
-  
-  entity.blockNumber = event.block.number
-  entity.timestamp = getTimestampInMillis(event)
-  entity.save()
-  return entity
+  let id = buildIdFromEvent(event);
+  let entity = new StrategyReport(id);
+  entity.strategy = strategyId;
+  entity.transaction = transactionId;
+  entity.gain = gain;
+  entity.loss = loss;
+  entity.totalGain = totalGain;
+  entity.totalLoss = totalLoss;
+  entity.totalDebt = totalDebt;
+  entity.debtAdded = debtAdded;
+  entity.debtLimit = debtLimit;
+
+  entity.blockNumber = event.block.number;
+  entity.timestamp = getTimestampInMillis(event);
+  entity.save();
+  return entity;
 }
 
 export function reportStrategy(
@@ -51,8 +46,8 @@ export function reportStrategy(
   debtAdded: BigInt,
   debtLimit: BigInt,
   event: ethereum.Event
-):void {
-  let strategy = Strategy.load(strategyId)
+): void {
+  let strategy = Strategy.load(strategyId);
   if (strategy !== null) {
     let strategyReport = createStrategyReport(
       transactionId,
@@ -65,11 +60,11 @@ export function reportStrategy(
       debtAdded,
       debtLimit,
       event
-    )
-    let reports = strategy.reports
-    reports.push(strategyReport.id)
-    strategy.reports = reports
-    strategy.save()
+    );
+    let reports = strategy.reports;
+    reports.push(strategyReport.id);
+    strategy.reports = reports;
+    strategy.save();
   }
 }
 
@@ -85,18 +80,18 @@ export function createStrategy(
   let strategyContract = StrategyContract.bind(strategy);
   let tryName = strategyContract.try_name();
 
-  let id = strategy.toHexString()
-  let entity = new Strategy(id)
-  entity.transaction = transactionId
-  entity.name = tryName.reverted ? "TBD" : tryName.value.toString();
-  entity.address = strategy
-  entity.vault = vault.toHexString()
-  entity.reports = []
-  entity.debtLimit = debtLimit
-  entity.rateLimit = rateLimit
+  let id = strategy.toHexString();
+  let entity = new Strategy(id);
+  entity.transaction = transactionId;
+  entity.name = tryName.reverted ? 'TBD' : tryName.value.toString();
+  entity.address = strategy;
+  entity.vault = vault.toHexString();
+  entity.reports = [];
+  entity.debtLimit = debtLimit;
+  entity.rateLimit = rateLimit;
   entity.performanceFeeBps = performanceFee.toI32();
-  entity.blockNumber = event.block.number
-  entity.timestamp = getTimestampInMillis(event)
-  entity.save()
-  return entity
+  entity.blockNumber = event.block.number;
+  entity.timestamp = getTimestampInMillis(event);
+  entity.save();
+  return entity;
 }

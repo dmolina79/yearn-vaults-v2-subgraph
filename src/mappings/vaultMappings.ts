@@ -5,18 +5,17 @@ import {
   Transfer as TransferEvent,
   Withdraw1Call as WithdrawCall,
   Vault as VaultContract,
-} from "../../generated/Registry/Vault";
+} from '../../generated/Registry/Vault';
 import {
   internalMapDeposit,
   internalMapTransfer,
   internalMapWithdrawal,
-} from "../utils/vaultBalanceUpdates";
-import { createEthTransaction } from "../utils/commons";
-import { createStrategy, reportStrategy } from "../utils/strategy";
-
+} from '../utils/vaultBalanceUpdates';
+import { createEthTransaction } from '../utils/commons';
+import { createStrategy, reportStrategy } from '../utils/strategy';
 
 export function handleStrategyAdded(event: StrategyAddedEvent): void {
-  let ethTransaction = createEthTransaction(event, "StrategyAddedEvent")
+  let ethTransaction = createEthTransaction(event, 'StrategyAddedEvent');
 
   createStrategy(
     ethTransaction.id,
@@ -25,12 +24,12 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
     event.params.debtLimit,
     event.params.rateLimit,
     event.params.performanceFee,
-    event,
-  )
+    event
+  );
 }
 
 export function handleStrategyReported(event: StrategyReportedEvent): void {
-  let ethTransaction = createEthTransaction(event, "StrategyReportedEvent")
+  let ethTransaction = createEthTransaction(event, 'StrategyReportedEvent');
   reportStrategy(
     ethTransaction.id,
     event.params.strategy.toHexString(),
@@ -41,15 +40,14 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
     event.params.totalDebt,
     event.params.debtAdded,
     event.params.debtLimit,
-    event,
-  )
+    event
+  );
 }
-
 
 //  VAULT BALANCE UPDATES
 
 export function handleDeposit(call: DepositCall): void {
-  let vaultContract = VaultContract.bind(call.to)
+  let vaultContract = VaultContract.bind(call.to);
   internalMapDeposit(
     call.transaction.hash,
     call.transaction.index,
@@ -65,23 +63,23 @@ export function handleDeposit(call: DepositCall): void {
 }
 
 export function handleWithdrawal(call: WithdrawCall): void {
-  let vaultContract = VaultContract.bind(call.to)
- internalMapWithdrawal(
-  call.transaction.hash,
-  call.transaction.index,
-  call.to,
-  call.from,
-  call.inputs._shares,
-  vaultContract.totalAssets(),
-  vaultContract.totalSupply(),
-  vaultContract.pricePerShare(),
-  call.block.timestamp,
-  call.block.number
- );
+  let vaultContract = VaultContract.bind(call.to);
+  internalMapWithdrawal(
+    call.transaction.hash,
+    call.transaction.index,
+    call.to,
+    call.from,
+    call.inputs._shares,
+    vaultContract.totalAssets(),
+    vaultContract.totalSupply(),
+    vaultContract.pricePerShare(),
+    call.block.timestamp,
+    call.block.number
+  );
 }
 
 export function handleTransfer(event: TransferEvent): void {
-  let vaultContract = VaultContract.bind(event.address)
+  let vaultContract = VaultContract.bind(event.address);
   internalMapTransfer(
     event.transaction.hash,
     event.transaction.index,
