@@ -1233,15 +1233,6 @@ export class Strategy extends Entity {
     this.set("name", Value.fromString(value));
   }
 
-  get blockNumber(): BigInt {
-    let value = this.get("blockNumber");
-    return value.toBigInt();
-  }
-
-  set blockNumber(value: BigInt) {
-    this.set("blockNumber", Value.fromBigInt(value));
-  }
-
   get timestamp(): BigInt {
     let value = this.get("timestamp");
     return value.toBigInt();
@@ -1249,6 +1240,15 @@ export class Strategy extends Entity {
 
   set timestamp(value: BigInt) {
     this.set("timestamp", Value.fromBigInt(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
   }
 
   get transaction(): string {
@@ -1371,15 +1371,6 @@ export class StrategyReport extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get blockNumber(): BigInt {
-    let value = this.get("blockNumber");
-    return value.toBigInt();
-  }
-
-  set blockNumber(value: BigInt) {
-    this.set("blockNumber", Value.fromBigInt(value));
-  }
-
   get timestamp(): BigInt {
     let value = this.get("timestamp");
     return value.toBigInt();
@@ -1387,6 +1378,15 @@ export class StrategyReport extends Entity {
 
   set timestamp(value: BigInt) {
     this.set("timestamp", Value.fromBigInt(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
   }
 
   get transaction(): string {
@@ -1501,15 +1501,6 @@ export class Harvest extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get blockNumber(): BigInt {
-    let value = this.get("blockNumber");
-    return value.toBigInt();
-  }
-
-  set blockNumber(value: BigInt) {
-    this.set("blockNumber", Value.fromBigInt(value));
-  }
-
   get timestamp(): BigInt {
     let value = this.get("timestamp");
     return value.toBigInt();
@@ -1517,6 +1508,15 @@ export class Harvest extends Entity {
 
   set timestamp(value: BigInt) {
     this.set("timestamp", Value.fromBigInt(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
   }
 
   get transaction(): string {
@@ -1555,13 +1555,13 @@ export class Harvest extends Entity {
     this.set("harvester", Value.fromBytes(value));
   }
 
-  get gain(): BigInt {
-    let value = this.get("gain");
+  get profit(): BigInt {
+    let value = this.get("profit");
     return value.toBigInt();
   }
 
-  set gain(value: BigInt) {
-    this.set("gain", Value.fromBigInt(value));
+  set profit(value: BigInt) {
+    this.set("profit", Value.fromBigInt(value));
   }
 
   get loss(): BigInt {

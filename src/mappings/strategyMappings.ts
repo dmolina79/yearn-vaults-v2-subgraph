@@ -1,26 +1,24 @@
 import { Address, ethereum, BigInt, log } from "@graphprotocol/graph-ts";
-import {
-  StrategyAdded as StrategyAddedEvent,
-  StrategyReported as StrategyReportedEvent,
-  Deposit1Call as DepositCall,
-  Transfer as TransferEvent,
-  Withdraw1Call as WithdrawCall,
-  Vault as VaultContract,
-  Deposit2Call,
-  Deposit1Call,
-  Withdraw1Call,
-  Withdraw2Call,
-} from "../../generated/Registry/Vault";
-import { Harvested } from "../../generated/templates/Vault/Strategy";
-import { MAX_UINT } from "../utils/constants";
+import { Harvested as HarvestedEvent } from "../../generated/templates/Vault/Strategy";
 import * as strategyLibrary from "../utils/strategy"
-import { getOrCreateTransactionFromCall, getOrCreateTransactionFromEvent } from "../utils/transaction";
-import * as vaultLibrary from '../utils/vault/vault'
+import {  getOrCreateTransactionFromEvent } from "../utils/transaction";
 
-export function handleHarvested(event: Harvested): void {
+export function handleHarvested(event: HarvestedEvent): void {
   log.debug('[Strategy Mapping] Handle harvested', [])
-  let ethTransaction = getOrCreateTransactionFromEvent(
+  getOrCreateTransactionFromEvent(
     event, 
-    "Harvest"
+    'Harvested'
+  )
+  strategyLibrary.harvest(
+    event.transaction.from,
+    event.address,
+    event.block.timestamp,
+    event.block.number,
+    event.transaction.hash,
+    event.transaction.index,
+    event.params.profit,
+    event.params.loss,
+    event.params.debtPayment,
+    event.params.debtOutstanding
   )
 }

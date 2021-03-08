@@ -314,14 +314,14 @@ enum StrategyStatus {
 }
 
 type Strategy @entity {
-  "The Strategy ID."
+  "Strategy address"
   id: ID!
   "Strategy name."
   name: String!
-  "Blocknumber the vault information was most recently updated."
-  blockNumber: BigInt!
   "Timestamp the vault information was most recently updated."
   timestamp: BigInt!
+  "Blocknumber the vault information was most recently updated."
+  blockNumber: BigInt!
   "Ethereum Transaction"
   transaction: Transaction!
   "The Strategy address."
@@ -345,10 +345,10 @@ type Strategy @entity {
 type StrategyReport @entity {
   "The Strategy Report ID."
   id: ID!
-  "Blocknumber the strategy report was most recently updated."
-  blockNumber: BigInt!
   "Timestamp the strategy report was most recently updated."
   timestamp: BigInt!
+  "Blocknumber the strategy report was most recently updated."
+  blockNumber: BigInt!
   "Ethereum Transaction"
   transaction: Transaction!
   "The Strategy reference."
@@ -380,10 +380,10 @@ type StrategyReport @entity {
 type Harvest @entity {
   "Strategy-Transaction-Log"
   id: ID!
-  "Blocknumber the strategy report was most recently updated."
-  blockNumber: BigInt!
   "Timestamp the strategy report was most recently updated."
   timestamp: BigInt!
+  "Blocknumber the strategy report was most recently updated."
+  blockNumber: BigInt!
   "Ethereum Transaction"
   transaction: Transaction!
   "Vault that owns the strategy"
@@ -393,8 +393,8 @@ type Harvest @entity {
   "Function caller"
   harvester: Bytes!
 
-  "The reported gain amount for the strategy at the time of the harvest."
-  gain: BigInt!
+  "The reported profit amount for the strategy at the time of the harvest."
+  profit: BigInt!
   "The reported loss amount for the strategy at the time of the harvest."
   loss: BigInt!
   "The reported debt paid from strategy at the time of the harvest."
