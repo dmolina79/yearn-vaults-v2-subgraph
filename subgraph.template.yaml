@@ -87,3 +87,33 @@ templates:
           handler: handleWithdrawWithSharesAndRecipient
         # - function: withdraw(uint256,address,uint256)
         #   handler: handleWithdrawWithSharesRecipientAndMaxLoss
+
+  - name: Strategy
+    kind: ethereum/contract
+    network: {{network}}
+    source:
+      abi: Strategy
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/strategyMappings.ts
+      entities:
+        - Vault
+        - Strategy
+        - VaultUpdate
+        - Transfer
+        - Account
+        - AccountUpdate
+        - AccountVaultBalance
+        - Token
+      abis:
+        - name: Vault
+          file: ./abis/Vault.json
+        - name: ERC20
+          file: ./abis/ERC20Detailed.json
+        - name: Strategy
+          file: ./abis/StrategyAPI.json
+      eventHandlers:
+        - event: Harvested(uint256,uint256,uint256,uint256)
+          handler: handleHarvested

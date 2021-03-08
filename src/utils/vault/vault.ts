@@ -69,7 +69,7 @@ export function getOrCreate(
     )
 
     if(createTemplate) {
-      VaultTemplate.create(vaultAddress);
+      VaultTemplate.create(vaultAddress)
     }
   }
 
@@ -97,7 +97,7 @@ export function create(
     // vaultEntity.deploymentId = deploymentId
     vaultEntity.apiVersion = apiVersion
     if(createTemplate) {
-      VaultTemplate.create(vault);
+      VaultTemplate.create(vault)
     }
   } else {
     // NOTE: vault is experimental but being endorsed

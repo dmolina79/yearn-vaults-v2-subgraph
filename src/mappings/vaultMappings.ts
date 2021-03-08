@@ -11,6 +11,7 @@ import {
   Withdraw1Call,
   Withdraw2Call,
 } from "../../generated/Registry/Vault";
+import { Harvested } from "../../generated/templates/Vault/Strategy";
 import { MAX_UINT } from "../utils/constants";
 import * as strategyLibrary from "../utils/strategy"
 import { getOrCreateTransactionFromCall, getOrCreateTransactionFromEvent } from "../utils/transaction";
@@ -33,6 +34,7 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
 }
 
 export function handleStrategyReported(event: StrategyReportedEvent): void {
+  log.debug('[Vault mappings] Handle deposit', [])
   let ethTransaction = getOrCreateTransactionFromEvent(
     event, 
     "StrategyReportedEvent"

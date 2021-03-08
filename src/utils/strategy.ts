@@ -3,7 +3,7 @@ import {
   Strategy,
   StrategyReport,
 } from "../../generated/schema";
-
+import { Strategy as StrategyTemplate } from "../../generated/templates";
 import {
   Strategy as StrategyContract
 } from "../../generated/templates/Vault/Strategy";
@@ -71,6 +71,7 @@ export function create(
     strategy.rateLimit = rateLimit
     strategy.performanceFeeBps = performanceFee.toI32();
     strategy.save()
+    StrategyTemplate.create(strategyAddress)
   }
   return strategy!
 }
