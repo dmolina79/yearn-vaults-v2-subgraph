@@ -178,7 +178,7 @@ export function deposit(
   transactionIndex: BigInt,
   timestamp: BigInt,
   blockNumber: BigInt,
-  from: Address,
+  receiver: Address,
   to: Address,
   depositedAmount: BigInt,
   totalAssets: BigInt,
@@ -186,7 +186,7 @@ export function deposit(
   pricePerShare: BigInt
 ): void {
   log.debug('[Vault] Deposit', [])
-  let account = accountLibrary.getOrCreate(from)
+  let account = accountLibrary.getOrCreate(receiver)
   let vault = getOrCreate(to, transactionHash.toHexString(), false)
   let sharesMinted = totalAssets.equals(BIGINT_ZERO)
     ? depositedAmount

@@ -88,6 +88,19 @@ export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
     call,
     'vault.deposit(uint,address)'
   )
+  let vaultContract = VaultContract.bind(call.to)
+  vaultLibrary.deposit(
+    call.transaction.hash,
+    call.transaction.index,
+    call.block.timestamp,
+    call.block.number,
+    call.inputs._recipient,
+    call.to,
+    call.inputs._amount,
+    vaultContract.totalAssets(),
+    vaultContract.totalSupply(),
+    vaultContract.pricePerShare()
+  );
 }
 
 export function handleWithdraw(call: WithdrawCall): void {
