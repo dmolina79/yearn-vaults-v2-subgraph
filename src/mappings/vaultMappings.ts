@@ -12,7 +12,7 @@ import {
   Withdraw2Call,
 } from "../../generated/Registry/Vault";
 import { MAX_UINT } from "../utils/constants";
-import { createStrategy, reportStrategy } from "../utils/strategy"
+import * as strategyLibrary from "../utils/strategy"
 import { getOrCreateTransactionFromCall, getOrCreateTransactionFromEvent } from "../utils/transaction";
 import * as vaultLibrary from '../utils/vault/vault'
 
@@ -21,7 +21,7 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
     event, 
     "StrategyAddedEvent"
   )
-  createStrategy(
+  strategyLibrary.create(
     ethTransaction.id,
     event.params.strategy,
     event.address,
@@ -37,7 +37,7 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
     event, 
     "StrategyReportedEvent"
   )
-  reportStrategy(
+  strategyLibrary.createReport(
     ethTransaction.id,
     event.params.strategy.toHexString(),
     event.params.gain,

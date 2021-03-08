@@ -7,7 +7,6 @@ import { Vault as VaultContract } from '../../../generated/Registry/Vault';
 import { Vault as VaultTemplate } from "../../../generated/templates";
 import { BIGINT_ZERO } from '../constants';
 import { getOrCreateToken } from '../token';
-import { createStrategy } from "../strategy";
 import * as depositLibrary from '../deposit'
 import * as accountLibrary from '../account/account'
 import * as accountVaultPositionLibrary from '../account/vault-position'
@@ -131,31 +130,6 @@ export function release(
     // entity.save()
   }
   return entity
-}
-
-export function addStrategy(
-  transactionId: string,
-  vaultAddress: Address,
-  strategy: Address,
-  debtLimit: BigInt,
-  performanceFee: BigInt,
-  rateLimit: BigInt,
-  event: ethereum.Event,
-): void {
-  let id = vaultAddress.toHexString()
-  let vault = Vault.load(id) // get or create ? 
-  if(vault !== null) {
-    createStrategy(
-      transactionId,
-      strategy,
-      vaultAddress,
-      debtLimit,
-      rateLimit,
-      performanceFee,
-      event
-    )
-    vault.save()
-  }
 }
 
 export function tag(

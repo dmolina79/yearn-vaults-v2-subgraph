@@ -10,7 +10,7 @@ import {
 
 import { buildIdFromEvent, getTimestampInMillis } from "./commons";
 
-export function createStrategyReport(
+export function createReport(
   transactionId: string,
   strategyId: string,
   gain: BigInt,
@@ -22,75 +22,55 @@ export function createStrategyReport(
   debtLimit: BigInt,
   event: ethereum.Event
 ): StrategyReport {
-  let id = buildIdFromEvent(event)
-  let strategy = new StrategyReport(id)
-  strategy.strategy = strategyId
-  strategy.blockNumber = event.block.number
-  strategy.timestamp = getTimestampInMillis(event.block)
-  strategy.transaction = transactionId
-  strategy.gain = gain
-  strategy.loss = loss
-  strategy.totalGain = totalGain
-  strategy.totalLoss = totalLoss
-  strategy.totalDebt = totalDebt
-  strategy.debtAdded = debtAdded
-  strategy.debtLimit = debtLimit
-  strategy.save()
-  return strategy
-}
-
-export function reportStrategy(
-  transactionId: string,
-  strategyId: string,
-  gain: BigInt,
-  loss: BigInt,
-  totalGain: BigInt,
-  totalLoss: BigInt,
-  totalDebt: BigInt,
-  debtAdded: BigInt,
-  debtLimit: BigInt,
-  event: ethereum.Event
-):void {
   let strategy = Strategy.load(strategyId)
   if (strategy !== null) {
-    createStrategyReport(
-      transactionId,
-      strategyId,
-      gain,
-      loss,
-      totalGain,
-      totalLoss,
-      totalDebt,
-      debtAdded,
-      debtLimit,
-      event
-    )
+    let strategyReportId = buildIdFromEvent(event)
+    let strategyReport = StrategyReport.load(strategyReportId)
+    if (strategyReport == null) {
+      strategyReport = new StrategyReport(strategyReportId)
+      strategyReport.strategy = strategyId
+      strategyReport.blockNumber = event.block.number
+      strategyReport.timestamp = getTimestampInMillis(event.block)
+      strategyReport.transaction = transactionId
+      strategyReport.gain = gain
+      strategyReport.loss = loss
+      strategyReport.totalGain = totalGain
+      strategyReport.totalLoss = totalLoss
+      strategyReport.totalDebt = totalDebt
+      strategyReport.debtAdded = debtAdded
+      strategyReport.debtLimit = debtLimit
+      strategyReport.save()
+    }
+    return strategyReport!
   }
+  return null
 }
 
-export function createStrategy(
+export function create(
   transactionId: string,
-  strategy: Address,
+  strategyAddress: Address,
   vault: Address,
   debtLimit: BigInt,
   rateLimit: BigInt,
   performanceFee: BigInt,
   event: ethereum.Event
 ): Strategy {
-  let strategyContract = StrategyContract.bind(strategy);
-  let tryName = strategyContract.try_name();
-
-  let id = strategy.toHexString()
-  let entity = new Strategy(id)
-  entity.blockNumber = event.block.number
-  entity.timestamp = getTimestampInMillis(event.block)
-  entity.transaction = transactionId
-  entity.name = tryName.reverted ? "TBD" : tryName.value.toString();
-  entity.address = strategy
-  entity.vault = vault.toHexString()
-  entity.debtLimit = debtLimit
-  entity.rateLimit = rateLimit
-  entity.performanceFeeBps = performanceFee.toI32();
-  entity.save()
-  return entity
+  let id = strategyAddress.toHexString()
+  let strategy = Strategy.load(id)
+  if (strategy == null) {
+    let strategyContract = StrategyContract.bind(strategyAddress);
+    strategy = new Strategy(id)
+    strategy.blockNumber = event.block.number
+    strategy.timestamp = getTimestampInMillis(event.block)
+    strategy.transaction = transactionId
+    let tryName = strategyContract.try_name();
+    strategy.name = tryName.reverted ? "TBD" : tryName.value.toString();
+    strategy.address = strategyAddress
+    strategy.vault = vault.toHexString()
+    strategy.debtLimit = debtLimit
+    strategy.rateLimit = rateLimit
+    strategy.performanceFeeBps = performanceFee.toI32();
+    strategy.save()
+  }
+  return strategy!
 }

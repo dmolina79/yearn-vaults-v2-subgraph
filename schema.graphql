@@ -345,6 +345,10 @@ type Strategy @entity {
 type StrategyReport @entity {
   "The Strategy Report ID."
   id: ID!
+  "Blocknumber the strategy report was most recently updated."
+  blockNumber: BigInt!
+  "Timestamp the strategy report was most recently updated."
+  timestamp: BigInt!
   "Ethereum Transaction"
   transaction: Transaction!
   "The Strategy reference."
@@ -363,10 +367,6 @@ type StrategyReport @entity {
   debtAdded: BigInt!
   "The reported debt limit amount for the strategy."
   debtLimit: BigInt!
-  "Blocknumber the strategy report was most recently updated."
-  blockNumber: BigInt!
-  "Timestamp the strategy report was most recently updated."
-  timestamp: BigInt!
   # "Vault state"
   # vaultUpdate: VaultUpdate!
 
@@ -380,7 +380,15 @@ type StrategyReport @entity {
 type Harvest @entity {
   "Strategy-Transaction-Log"
   id: ID!
+  "Blocknumber the strategy report was most recently updated."
+  blockNumber: BigInt!
+  "Timestamp the strategy report was most recently updated."
+  timestamp: BigInt!
+  "Ethereum Transaction"
+  transaction: Transaction!
+  "Vault that owns the strategy"
   vault: Vault!
+  "Strategy that harvested"
   strategy: Strategy!
   "Function caller"
   harvester: Bytes!
@@ -393,7 +401,4 @@ type Harvest @entity {
   debtPayment: BigInt!
   "The reported outstanding debt from strategy at the time of the harvest."
   debtOutstanding: BigInt!
-
-  timestamp: BigInt!
-  blockNumber: BigInt!
 }
