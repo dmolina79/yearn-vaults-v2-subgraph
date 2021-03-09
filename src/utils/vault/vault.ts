@@ -189,7 +189,7 @@ export function deposit(
   transaction: ethereum.Transaction,
 ): void {
   log.debug('[Vault] Deposit', [])
-  let account = accountLibrary.getOrCreateAccount(from)
+  let account = accountLibrary.getOrCreateAccount(receiver)
   let vault = getOrCreateVault(to, transaction.hash.toHexString(), false)
   let sharesMinted = totalAssets.equals(BIGINT_ZERO)
     ? depositedAmount

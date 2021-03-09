@@ -63,8 +63,6 @@ export function handleDeposit(call: DepositCall): void {
   )
   let vaultContract = VaultContract.bind(call.to)
   vaultLibrary.deposit(
-    call.transaction.hash,
-    call.transaction.index,
     call.block.timestamp,
     call.block.number,
     call.from,
@@ -72,7 +70,8 @@ export function handleDeposit(call: DepositCall): void {
     MAX_UINT,
     vaultContract.totalAssets(),
     vaultContract.totalSupply(),
-    vaultContract.pricePerShare()
+    vaultContract.pricePerShare(),
+    call.transaction
   );
 }
 
@@ -104,8 +103,6 @@ export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
   )
   let vaultContract = VaultContract.bind(call.to)
   vaultLibrary.deposit(
-    call.transaction.hash,
-    call.transaction.index,
     call.block.timestamp,
     call.block.number,
     call.inputs._recipient,
@@ -113,7 +110,8 @@ export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
     call.inputs._amount,
     vaultContract.totalAssets(),
     vaultContract.totalSupply(),
-    vaultContract.pricePerShare()
+    vaultContract.pricePerShare(),
+    call.transaction
   );
 }
 
