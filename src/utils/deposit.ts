@@ -1,4 +1,4 @@
-import { BigInt, Bytes, log } from '@graphprotocol/graph-ts';
+import { BigInt, ethereum, log } from '@graphprotocol/graph-ts';
 
 import {
     Account, Deposit, Vault
@@ -6,21 +6,20 @@ import {
 
 import {
     buildId,
+    buildIdFromVaultIdAndTransaction
 } from './commons';
-import * as vaultUpdateLibrary from './vault/vault-update';
 
 export function getOrCreate(
-  transactionHash: Bytes,
-  transactionIndex: BigInt,
   timestamp: BigInt,
   blockNumber: BigInt,
   account: Account,
   vault: Vault,
   amount: BigInt,
-  sharesMinted: BigInt
+  sharesMinted: BigInt,
+  transaction: ethereum.Transaction,
 ): Deposit {
   log.debug('[Deposit] Get or create', [])
-  let id = buildId(transactionHash, transactionIndex);
+  let id = buildId(transaction.hash, transaction.index);
   let deposit = Deposit.load(id)
 
   if (deposit === null) {
@@ -31,12 +30,11 @@ export function getOrCreate(
     deposit.vault = vault.id
     deposit.tokenAmount = amount
     deposit.sharesMinted = sharesMinted
-    deposit.transaction = transactionHash.toHexString()
+    deposit.transaction = transaction.hash.toHexString()
 
-    let vaultUpdateId = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
+    let vaultUpdateId = buildIdFromVaultIdAndTransaction(
       vault.id,
-      transactionHash.toHexString(),
-      transactionIndex.toString(),
+      transaction,
     );
 
     deposit.vaultUpdate = vaultUpdateId

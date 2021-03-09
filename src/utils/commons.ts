@@ -16,6 +16,10 @@ export function buildIdFromEvent(event: ethereum.Event): string {
   return buildId(event.transaction.hash, event.logIndex);
 }
 
+export function buildIdFromVaultIdAndTransaction(id: string, tx:ethereum.Transaction): string {
+  return id.concat('-').concat(tx.hash.toHexString()).concat("-").concat(tx.index.toString());
+}
+
 export function buildBlockId(block: ethereum.Block): string {
   return block.hash.toHex() + "-" + block.number.toString() + "-" + block.timestamp.toString();
 }

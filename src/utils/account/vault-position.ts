@@ -1,5 +1,5 @@
-import { BigInt, log, Result } from "@graphprotocol/graph-ts";
-import { Account, AccountVaultPosition, AccountVaultPositionUpdate, Transaction, Vault } from "../../../generated/schema";
+import { BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Account, AccountVaultPosition, AccountVaultPositionUpdate, Vault } from "../../../generated/schema";
 import * as vaultPositionUpdateLibrary from './vault-position-update'
 
 export function buildId(
@@ -30,15 +30,34 @@ export class VaultPositionResponse {
   }
 }
 
+export function createAccountVaultPosition(
+  account: Account,
+  vault: Vault,
+  balanceTokens: BigInt,
+  balanceShares: BigInt,
+  transaction: ethereum.Transaction,
+): AccountVaultPosition {
+  let id = buildId(account, vault)
+  let entity = new AccountVaultPosition(id)
+  entity.vault = vault.id
+  entity.account = account.id
+  entity.token = vault.token
+  entity.shareToken = vault.shareToken
+  entity.transaction = transaction.hash.toHexString()
+  entity.balanceTokens = balanceTokens
+  entity.balanceShares = balanceShares
+  entity.save()
+  return entity
+}
+
 export function deposit(
   account: Account,
   vault: Vault,
-  transactionHash: string,
-  transactionIndex: string,
   timestamp: BigInt,
   blockNumber: BigInt,
   depositedTokens: BigInt,
-  receivedShares: BigInt
+  receivedShares: BigInt,
+  transaction: ethereum.Transaction,
 ): VaultPositionResponse{
   let vaultPositionId = buildId(account, vault)
   let accountVaultPosition = AccountVaultPosition.load(vaultPositionId)
@@ -50,36 +69,34 @@ export function deposit(
     accountVaultPosition.account = account.id
     accountVaultPosition.token = vault.token
     accountVaultPosition.shareToken = vault.shareToken
-    accountVaultPosition.transaction = transactionHash
+    accountVaultPosition.transaction = transaction.hash.toHexString()
     accountVaultPosition.balanceTokens = depositedTokens
     accountVaultPosition.balanceShares = receivedShares
     accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
       accountVaultPosition!,
-      transactionHash,
-      transactionIndex,
       timestamp,
       blockNumber,
       depositedTokens,
-      receivedShares
+      receivedShares,
+      transaction,
     )
   } else {
     accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(depositedTokens)
     accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.plus(receivedShares)
     accountVaultPositionUpdate = vaultPositionUpdateLibrary.deposit(
       accountVaultPosition!,
-      transactionHash,
-      transactionIndex,
       timestamp,
       blockNumber,
       depositedTokens,
-      receivedShares
+      receivedShares,
+      transaction,
     )
   }
   // FIX: For some reason if we refer accountVaultPositionUpdate.id it breaks down
   accountVaultPosition.latestUpdate = vaultPositionUpdateLibrary.buildIdFromAccountHashAndIndex(
     account.id,
-    transactionHash,
-    transactionIndex
+    transaction.hash.toHexString(),
+    transaction.index.toString(),
   )
   accountVaultPosition.save()
 
@@ -88,7 +105,6 @@ export function deposit(
     accountVaultPositionUpdate!
   )
 }
-
 
 export function withdraw(
   account: Account,

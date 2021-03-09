@@ -19,7 +19,7 @@ export function handleNewRelease(event: NewReleaseEvent): void {
 
 export function handleNewVault(event: NewVaultEvent): void {
   let ethTransaction = getOrCreateTransactionFromEvent(event, "NewVaultEvent");
-  vaultLibrary.create(
+  vaultLibrary.createVault(
     ethTransaction.id,
     event.params.vault,
     "Endorsed",
@@ -32,7 +32,7 @@ export function handleNewVault(event: NewVaultEvent): void {
 
 export function handleNewExperimentalVault(event: NewExperimentalVaultEvent): void {
   let ethTransaction = getOrCreateTransactionFromEvent(event, "NewExperimentalVault");
-  vaultLibrary.create(
+  vaultLibrary.createVault(
     ethTransaction.id,
     event.params.vault,
     "Experimental",

@@ -1,5 +1,7 @@
-import { Address, ethereum, BigInt, log, Bytes  } from "@graphprotocol/graph-ts";
+import { Address, ethereum, BigInt, log } from "@graphprotocol/graph-ts";
 import {
+  AccountVaultPosition,
+  AccountVaultPositionUpdate,
   Vault, VaultUpdate,
 } from "../../../generated/schema";
 
@@ -12,6 +14,8 @@ import * as depositLibrary from '../deposit'
 import * as accountLibrary from '../account/account'
 import * as accountVaultPositionLibrary from '../account/vault-position'
 import * as vaultUpdateLibrary from './vault-update'
+import { buildIdFromAccountVaultPositionHashAndIndex, createAccountVaultPositionUpdate } from "../account/vault-position-update";
+import { buildIdFromVaultIdAndTransaction } from "../commons";
 
 const createNewVaultFromAddress = (
   vaultAddress: Address,
@@ -54,7 +58,7 @@ const createNewVaultFromAddress = (
   return vaultEntity;
 }
 
-export function getOrCreate(
+export function getOrCreateVault(
   vaultAddress: Address,
   transactionHash: string,
   createTemplate: boolean
@@ -77,7 +81,7 @@ export function getOrCreate(
   return vault as Vault;
 }
 
-export function create(
+export function createVault(
   transactionHash: string,
   vault: Address,
   classification: string,
@@ -174,8 +178,6 @@ export function tag(
 }
 
 export function deposit(
-  transactionHash: Bytes,
-  transactionIndex: BigInt,
   timestamp: BigInt,
   blockNumber: BigInt,
   receiver: Address,
@@ -183,11 +185,12 @@ export function deposit(
   depositedAmount: BigInt,
   totalAssets: BigInt,
   totalSupply: BigInt,
-  pricePerShare: BigInt
+  pricePerShare: BigInt,
+  transaction: ethereum.Transaction,
 ): void {
   log.debug('[Vault] Deposit', [])
-  let account = accountLibrary.getOrCreate(receiver)
-  let vault = getOrCreate(to, transactionHash.toHexString(), false)
+  let account = accountLibrary.getOrCreateAccount(from)
+  let vault = getOrCreateVault(to, transaction.hash.toHexString(), false)
   let sharesMinted = totalAssets.equals(BIGINT_ZERO)
     ? depositedAmount
     : depositedAmount.times(totalSupply).div(totalAssets)
@@ -195,47 +198,43 @@ export function deposit(
   let vaultPositionResponse = accountVaultPositionLibrary.deposit(
     account,
     vault,
-    transactionHash.toHexString(),
-    transactionIndex.toString(),
     timestamp,
     blockNumber,
     depositedAmount,
-    sharesMinted
+    sharesMinted,
+    transaction,
   )
   
   let deposit = depositLibrary.getOrCreate(
-    transactionHash,
-    transactionIndex,
     timestamp,
     blockNumber,
     account,
     vault,
     depositedAmount,
-    sharesMinted
+    sharesMinted,
+    transaction,
   )
 
   let vaultUpdate: VaultUpdate
   if (!vault.latestUpdate) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
-      transactionHash,
-      transactionIndex,
       timestamp,
       blockNumber,
       depositedAmount,
       sharesMinted,
-      pricePerShare
+      pricePerShare,
+      transaction,
     )
   } else {
     vaultUpdate = vaultUpdateLibrary.deposit(
       vault,
-      transactionHash,
-      transactionIndex,
       timestamp,
       blockNumber,
       depositedAmount,
       sharesMinted,
-      pricePerShare
+      pricePerShare,
+      transaction,
     )
   }
   
@@ -245,4 +244,73 @@ export function deposit(
   vault.sharesSupply = vault.sharesSupply.plus(sharesMinted)
 
   vault.save()
+}
+
+export function withdraw(
+  timestamp: BigInt,
+  blockNumber: BigInt,
+  from: Address,
+  to: Address,
+  withdrawnAmount: BigInt,
+  sharesBurnt: BigInt,
+  pricePerShare: BigInt,
+  transaction: ethereum.Transaction,
+): void {
+  let account = accountLibrary.getOrCreateAccount(from)
+  let vault = getOrCreateVault(to, transaction.hash.toHexString(), false)
+
+  // Updating Account Vault Position Update
+  let accountVaultPositionId = accountVaultPositionLibrary.buildId(account, vault)
+  let accountVaultPosition = AccountVaultPosition.load(accountVaultPositionId)
+  // This scenario where accountVaultPosition === null shouldn't happen. Acount vault position should have been created when the account deposited the tokens.
+  if (accountVaultPosition !== null) {
+    let latestAccountVaultPositionUpdate = AccountVaultPositionUpdate.load(accountVaultPosition.latestUpdate);
+    // The scenario where latestAccountVaultPositionUpdate === null shouldn't happen. One account vault position update should have created when user deposited the tokens.
+    if(latestAccountVaultPositionUpdate !== null) {
+      let newAccountVaultPositionUpdate = createAccountVaultPositionUpdate(
+        buildIdFromAccountVaultPositionHashAndIndex(
+          accountVaultPosition as AccountVaultPosition,
+          transaction.hash.toHexString(),
+          transaction.index.toString(),
+        ),
+        accountVaultPosition as AccountVaultPosition,
+        timestamp,
+        blockNumber,
+        latestAccountVaultPositionUpdate.deposits,
+        latestAccountVaultPositionUpdate.withdrawals.plus(withdrawnAmount),
+        latestAccountVaultPositionUpdate.sharesMinted,
+        latestAccountVaultPositionUpdate.sharesBurnt.plus(sharesBurnt),
+        transaction
+      )
+      accountVaultPosition.latestUpdate = newAccountVaultPositionUpdate.id
+      accountVaultPosition.save()
+    }
+  }
+
+  // Updating Vault Update
+  let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate)
+  // This scenario where latestVaultUpdate === null shouldn't happen. One vault update should have created when user deposited the tokens.
+  if (latestVaultUpdate !== null) {
+    let newVaultUpdate = vaultUpdateLibrary.createVaultUpdate(
+      buildIdFromVaultIdAndTransaction(
+        vault.id,
+        transaction,
+      ),
+      vault,
+      timestamp,
+      blockNumber,
+      latestVaultUpdate.tokensDeposited,
+      latestVaultUpdate.tokensWithdrawn.plus(withdrawnAmount),
+      latestVaultUpdate.sharesMinted,
+      latestVaultUpdate.sharesBurnt.plus(sharesBurnt),
+      pricePerShare,
+      latestVaultUpdate.returnsGenerated,
+      latestVaultUpdate.totalFees,
+      latestVaultUpdate.managementFees,
+      latestVaultUpdate.performanceFees,
+      transaction,
+    )
+    vault.latestUpdate = newVaultUpdate.id
+    vault.save()
+  }
 }

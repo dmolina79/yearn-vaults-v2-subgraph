@@ -85,5 +85,3 @@ templates:
           handler: handleWithdrawWithShares
         - function: withdraw(uint256,address)
           handler: handleWithdrawWithSharesAndRecipient
-        # - function: withdraw(uint256,address,uint256)
-        #   handler: handleWithdrawWithSharesRecipientAndMaxLoss

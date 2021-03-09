@@ -1,7 +1,7 @@
-import { BigInt, Bytes, Result } from "@graphprotocol/graph-ts";
-import { Account, AccountVaultPosition, AccountVaultPositionUpdate } from "../../../generated/schema";
+import { BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { AccountVaultPosition, AccountVaultPositionUpdate } from "../../../generated/schema";
 import { BIGINT_ZERO } from "../constants";
-import * as vaultUpdateLibrary from '../vault/vault-update'
+import { buildIdFromVaultIdAndTransaction } from '../commons'
 
 export function buildIdFromAccountHashAndIndex(
   account: string,
@@ -27,21 +27,48 @@ export function buildIdFromAccountVaultPositionHashAndIndex (
   )
 }
 
+export function createAccountVaultPositionUpdate(
+  id: string,
+  accountVaultPosition: AccountVaultPosition,
+  timestamp: BigInt,
+  blockNumber: BigInt,
+  deposits: BigInt,
+  withdrawals: BigInt,
+  sharesMinted: BigInt,
+  sharesBurnt: BigInt,
+  transaction: ethereum.Transaction,
+): AccountVaultPositionUpdate {
+  let entity = new AccountVaultPositionUpdate(id)
+  entity.account = accountVaultPosition.account
+  entity.accountVaultPosition = accountVaultPosition.id
+  entity.timestamp = timestamp
+  entity.blockNumber = blockNumber
+  entity.transaction = transaction.hash.toHexString()
+  entity.deposits = deposits
+  entity.withdrawals = withdrawals
+  entity.sharesMinted = sharesMinted
+  entity.sharesBurnt = sharesBurnt
+  entity.vaultUpdate = buildIdFromVaultIdAndTransaction(
+    accountVaultPosition.vault,
+    transaction,
+  )
+  entity.save()
+  return entity;
+}
 
 export function createFirst(
   accountVaultPosition: AccountVaultPosition,
-  transactionHash: string,
-  transactionIndex: string,
   timestamp: BigInt,
   blockNumber: BigInt,
   depositedTokens: BigInt,
-  receivedShares: BigInt
+  receivedShares: BigInt,
+  transaction: ethereum.Transaction,
 ): AccountVaultPositionUpdate {
 
   let id = buildIdFromAccountVaultPositionHashAndIndex(
     accountVaultPosition,
-    transactionHash,
-    transactionIndex
+    transaction.hash.toHexString(),
+    transaction.index.toString()
   )
   let accountVaultPositionFirstUpdate = AccountVaultPositionUpdate.load(id)
 
@@ -53,7 +80,7 @@ export function createFirst(
     accountVaultPositionFirstUpdate.blockNumber = blockNumber
     accountVaultPositionFirstUpdate.account = accountVaultPosition.account
     accountVaultPositionFirstUpdate.accountVaultPosition = accountVaultPosition.id
-    accountVaultPositionFirstUpdate.transaction = transactionHash
+    accountVaultPositionFirstUpdate.transaction = transaction.hash.toHexString()
     
     accountVaultPositionFirstUpdate.deposits = depositedTokens
     accountVaultPositionFirstUpdate.withdrawals = BIGINT_ZERO
@@ -61,10 +88,9 @@ export function createFirst(
     accountVaultPositionFirstUpdate.sharesMinted = receivedShares
     accountVaultPositionFirstUpdate.sharesBurnt = BIGINT_ZERO
   
-    accountVaultPositionFirstUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
+    accountVaultPositionFirstUpdate.vaultUpdate = buildIdFromVaultIdAndTransaction(
       accountVaultPosition.vault,
-      transactionHash,
-      transactionIndex
+      transaction
     )
 
     accountVaultPositionFirstUpdate.save()
@@ -75,18 +101,17 @@ export function createFirst(
 
 export function deposit(
   accountVaultPosition: AccountVaultPosition,
-  transactionHash: string,
-  transactionIndex: string,
   timestamp: BigInt,
   blockNumber: BigInt,
   depositedTokens: BigInt,
-  receivedShares: BigInt
+  receivedShares: BigInt,
+  transaction: ethereum.Transaction
 ): AccountVaultPositionUpdate {
 
   let id = buildIdFromAccountVaultPositionHashAndIndex(
     accountVaultPosition,
-    transactionHash,
-    transactionIndex
+    transaction.hash.toHexString(),
+    transaction.index.toString()
   )
   let accountVaultPositionUpdate = AccountVaultPositionUpdate.load(id)
 
@@ -97,16 +122,15 @@ export function deposit(
     accountVaultPositionUpdate.blockNumber = blockNumber
     accountVaultPositionUpdate.account = accountVaultPosition.account
     accountVaultPositionUpdate.accountVaultPosition = accountVaultPosition.id
-    accountVaultPositionUpdate.transaction = transactionHash
+    accountVaultPositionUpdate.transaction = transaction.hash.toHexString()
     
     accountVaultPositionUpdate.deposits = accountVaultPositionUpdate.deposits.plus(depositedTokens)
   
     accountVaultPositionUpdate.sharesMinted = accountVaultPositionUpdate.sharesMinted.plus(receivedShares)
   
-    accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
+    accountVaultPositionUpdate.vaultUpdate = buildIdFromVaultIdAndTransaction(
       accountVaultPosition.vault,
-      transactionHash,
-      transactionIndex
+      transaction,
     )
 
     accountVaultPositionUpdate.save()
@@ -117,16 +141,15 @@ export function deposit(
 
 export function withdraw(
   accountVaultPosition: AccountVaultPosition,
-  transactionHash: string,
-  transactionIndex: string,
   withdrawedTokens: BigInt,
-  sharesBurnt: BigInt
+  sharesBurnt: BigInt,
+  transaction: ethereum.Transaction,
 ): AccountVaultPositionUpdate {
 
   let id = buildIdFromAccountVaultPositionHashAndIndex(
     accountVaultPosition,
-    transactionHash,
-    transactionIndex
+    transaction.hash.toHexString(),
+    transaction.index.toString(),
   )
 
   let accountVaultPositionUpdate = AccountVaultPositionUpdate.load(id)
@@ -135,16 +158,15 @@ export function withdraw(
     accountVaultPositionUpdate = new AccountVaultPositionUpdate(id)
     
     accountVaultPositionUpdate.accountVaultPosition = accountVaultPosition.id
-    accountVaultPositionUpdate.transaction = transactionHash
+    accountVaultPositionUpdate.transaction = transaction.hash.toHexString()
     
     accountVaultPositionUpdate.withdrawals = accountVaultPositionUpdate.withdrawals.plus(withdrawedTokens)
 
     accountVaultPositionUpdate.sharesBurnt = accountVaultPositionUpdate.sharesBurnt.plus(sharesBurnt)
 
-    accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
+    accountVaultPositionUpdate.vaultUpdate = buildIdFromVaultIdAndTransaction(
       accountVaultPosition.vault,
-      transactionHash,
-      transactionIndex
+      transaction,
     )
   }
 

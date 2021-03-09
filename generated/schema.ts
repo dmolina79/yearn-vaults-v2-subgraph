@@ -1233,6 +1233,24 @@ export class Strategy extends Entity {
     this.set("name", Value.fromString(value));
   }
 
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+
   get transaction(): string {
     let value = this.get("transaction");
     return value.toString();
@@ -1287,33 +1305,6 @@ export class Strategy extends Entity {
     this.set("performanceFeeBps", Value.fromI32(value));
   }
 
-  get blockNumber(): BigInt {
-    let value = this.get("blockNumber");
-    return value.toBigInt();
-  }
-
-  set blockNumber(value: BigInt) {
-    this.set("blockNumber", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-
-  get reports(): Array<string> {
-    let value = this.get("reports");
-    return value.toStringArray();
-  }
-
-  set reports(value: Array<string>) {
-    this.set("reports", Value.fromStringArray(value));
-  }
-
   get latestReport(): string | null {
     let value = this.get("latestReport");
     if (value === null || value.kind == ValueKind.NULL) {
@@ -1329,6 +1320,15 @@ export class Strategy extends Entity {
     } else {
       this.set("latestReport", Value.fromString(value as string));
     }
+  }
+
+  get reports(): Array<string> {
+    let value = this.get("reports");
+    return value.toStringArray();
+  }
+
+  set reports(value: Array<string>) {
+    this.set("reports", Value.fromStringArray(value));
   }
 
   get harvests(): Array<string> {
