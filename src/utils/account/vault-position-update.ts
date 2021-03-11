@@ -138,37 +138,3 @@ export function deposit(
 
   return accountVaultPositionUpdate!
 }
-
-export function withdraw(
-  accountVaultPosition: AccountVaultPosition,
-  withdrawedTokens: BigInt,
-  sharesBurnt: BigInt,
-  transaction: ethereum.Transaction,
-): AccountVaultPositionUpdate {
-
-  let id = buildIdFromAccountVaultPositionHashAndIndex(
-    accountVaultPosition,
-    transaction.hash.toHexString(),
-    transaction.index.toString(),
-  )
-
-  let accountVaultPositionUpdate = AccountVaultPositionUpdate.load(id)
-
-  if (accountVaultPosition == null) {
-    accountVaultPositionUpdate = new AccountVaultPositionUpdate(id)
-    
-    accountVaultPositionUpdate.accountVaultPosition = accountVaultPosition.id
-    accountVaultPositionUpdate.transaction = transaction.hash.toHexString()
-    
-    accountVaultPositionUpdate.withdrawals = accountVaultPositionUpdate.withdrawals.plus(withdrawedTokens)
-
-    accountVaultPositionUpdate.sharesBurnt = accountVaultPositionUpdate.sharesBurnt.plus(sharesBurnt)
-
-    accountVaultPositionUpdate.vaultUpdate = buildIdFromVaultIdAndTransaction(
-      accountVaultPosition.vault,
-      transaction,
-    )
-  }
-
-  return accountVaultPositionUpdate!
-}
