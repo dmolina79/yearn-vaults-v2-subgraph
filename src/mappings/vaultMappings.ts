@@ -11,7 +11,7 @@ import {
   Withdraw1Call,
   Withdraw2Call,
 } from "../../generated/Registry/Vault";
-import { MAX_UINT } from "../utils/constants";
+import { BIGINT_ZERO, MAX_UINT } from "../utils/constants";
 import { createStrategy, reportStrategy } from "../utils/strategy"
 import { getOrCreateTransactionFromCall, getOrCreateTransactionFromEvent } from "../utils/transaction";
 import * as vaultLibrary from '../utils/vault/vault'
@@ -123,15 +123,19 @@ export function handleWithdraw(call: WithdrawCall): void {
   )
   log.info('[Vault mappings] Handle withdraw(): Vault address {}', [call.to.toHexString()])
   let vaultContract = VaultContract.bind(call.to);
-  let totalSharesToBurnt = vaultContract.balanceOf(call.from);
+
+  let withdrawnAmount = call.outputs.value0;
+  let totalAssets = vaultContract.totalAssets()
+  let totalSupply = vaultContract.totalSupply()
+  let totalSharesBurnt = totalAssets.equals(BIGINT_ZERO) ? withdrawnAmount : withdrawnAmount.times(totalSupply).div(totalAssets)
 
   vaultLibrary.withdraw(
     call.block.timestamp,
     call.block.number,
     call.from,
     call.to,
-    call.outputs.value0,
-    totalSharesToBurnt,
+    withdrawnAmount,
+    totalSharesBurnt,
     vaultContract.pricePerShare(),
     call.transaction,
   )

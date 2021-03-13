@@ -113,3 +113,39 @@ export function deposit(
   }
   return vaultUpdate as VaultUpdate
 }
+
+export function withdraw(
+  vault: Vault,
+  latestVaultUpdate: VaultUpdate,
+  pricePerShare: BigInt,
+  withdrawnAmount: BigInt,
+  sharesBurnt: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt,
+  transaction: ethereum.Transaction,
+): VaultUpdate {
+  let newVaultUpdate = createVaultUpdate(
+    buildIdFromVaultIdAndTransaction(
+      vault.id,
+      transaction,
+    ),
+    vault,
+    timestamp,
+    blockNumber,
+    latestVaultUpdate.tokensDeposited,
+    latestVaultUpdate.tokensWithdrawn.plus(withdrawnAmount),
+    latestVaultUpdate.sharesMinted,
+    latestVaultUpdate.sharesBurnt.plus(sharesBurnt),
+    pricePerShare,
+    latestVaultUpdate.returnsGenerated,
+    latestVaultUpdate.totalFees,
+    latestVaultUpdate.managementFees,
+    latestVaultUpdate.performanceFees,
+    transaction,
+  )
+  vault.sharesSupply = vault.sharesSupply.minus(sharesBurnt)
+  vault.balanceTokens = vault.balanceTokens.minus(withdrawnAmount)
+  vault.latestUpdate = newVaultUpdate.id
+  vault.save()
+  return newVaultUpdate
+}

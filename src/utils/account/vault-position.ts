@@ -107,27 +107,30 @@ export function deposit(
 }
 
 export function withdraw(
-  account: Account,
-  vault: Vault,
-  transactionHash: string,
-  transactionIndex: string,
-  burntShares: BigInt,
-  receivedTokens: BigInt
-): VaultPositionResponse {
-  let id = buildId(account, vault)
-  let accountVaultPosition = AccountVaultPosition.load(id)
-
-  accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.minus(burntShares)
-  accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.minus(receivedTokens)
-
-  // let accountVaultPositionUpdate = vaulPositionUpdate.getOrCreate()
-  // accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id
-  // accountVaultPosition.updates.push(accountVaultPositionUpdate.id)
-
-  accountVaultPosition.save()
-
-  return VaultPositionResponse.fromValue(
-    accountVaultPosition!,
-    null
+  accountVaultPosition: AccountVaultPosition,
+  latestAccountVaultPositionUpdate: AccountVaultPositionUpdate,
+  withdrawnAmount: BigInt,
+  sharesBurnt: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt,
+  transaction: ethereum.Transaction,
+): AccountVaultPositionUpdate {
+  let newAccountVaultPositionUpdate = vaultPositionUpdateLibrary.createAccountVaultPositionUpdate(
+    vaultPositionUpdateLibrary.buildIdFromAccountVaultPositionHashAndIndex(
+      accountVaultPosition,
+      transaction.hash.toHexString(),
+      transaction.index.toString(),
+    ),
+    accountVaultPosition as AccountVaultPosition,
+    timestamp,
+    blockNumber,
+    latestAccountVaultPositionUpdate.deposits,
+    latestAccountVaultPositionUpdate.withdrawals.plus(withdrawnAmount),
+    latestAccountVaultPositionUpdate.sharesMinted,
+    latestAccountVaultPositionUpdate.sharesBurnt.plus(sharesBurnt),
+    transaction
   )
+  accountVaultPosition.latestUpdate = newAccountVaultPositionUpdate.id
+  accountVaultPosition.save()
+  return newAccountVaultPositionUpdate
 }

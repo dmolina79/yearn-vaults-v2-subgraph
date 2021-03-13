@@ -267,23 +267,15 @@ export function withdraw(
     let latestAccountVaultPositionUpdate = AccountVaultPositionUpdate.load(accountVaultPosition.latestUpdate);
     // The scenario where latestAccountVaultPositionUpdate === null shouldn't happen. One account vault position update should have created when user deposited the tokens.
     if(latestAccountVaultPositionUpdate !== null) {
-      let newAccountVaultPositionUpdate = createAccountVaultPositionUpdate(
-        buildIdFromAccountVaultPositionHashAndIndex(
-          accountVaultPosition as AccountVaultPosition,
-          transaction.hash.toHexString(),
-          transaction.index.toString(),
-        ),
+      accountVaultPositionLibrary.withdraw(
         accountVaultPosition as AccountVaultPosition,
+        latestAccountVaultPositionUpdate as AccountVaultPositionUpdate,
+        withdrawnAmount,
+        sharesBurnt,
         timestamp,
         blockNumber,
-        latestAccountVaultPositionUpdate.deposits,
-        latestAccountVaultPositionUpdate.withdrawals.plus(withdrawnAmount),
-        latestAccountVaultPositionUpdate.sharesMinted,
-        latestAccountVaultPositionUpdate.sharesBurnt.plus(sharesBurnt),
         transaction
-      )
-      accountVaultPosition.latestUpdate = newAccountVaultPositionUpdate.id
-      accountVaultPosition.save()
+      );
     }
   }
 
@@ -291,26 +283,15 @@ export function withdraw(
   let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate)
   // This scenario where latestVaultUpdate === null shouldn't happen. One vault update should have created when user deposited the tokens.
   if (latestVaultUpdate !== null) {
-    let newVaultUpdate = vaultUpdateLibrary.createVaultUpdate(
-      buildIdFromVaultIdAndTransaction(
-        vault.id,
-        transaction,
-      ),
+    vaultUpdateLibrary.withdraw(
       vault,
+      latestVaultUpdate as VaultUpdate,
+      pricePerShare,
+      withdrawnAmount,
+      sharesBurnt,
       timestamp,
       blockNumber,
-      latestVaultUpdate.tokensDeposited,
-      latestVaultUpdate.tokensWithdrawn.plus(withdrawnAmount),
-      latestVaultUpdate.sharesMinted,
-      latestVaultUpdate.sharesBurnt.plus(sharesBurnt),
-      pricePerShare,
-      latestVaultUpdate.returnsGenerated,
-      latestVaultUpdate.totalFees,
-      latestVaultUpdate.managementFees,
-      latestVaultUpdate.performanceFees,
       transaction,
     )
-    vault.latestUpdate = newVaultUpdate.id
-    vault.save()
   }
 }
