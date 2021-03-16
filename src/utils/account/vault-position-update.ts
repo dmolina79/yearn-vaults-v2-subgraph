@@ -48,15 +48,10 @@ function createAccountVaultPositionUpdate(
   accountVaultPositionUpdate.withdrawals = withdrawals
   accountVaultPositionUpdate.sharesMinted = sharesMinted
   accountVaultPositionUpdate.sharesBurnt = sharesBurnt
-  accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
-    vault.id,
-    transaction.id,
-    transaction.index.toString()
+  accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultAndTransaction(
+    vault,
+    transaction
   )
-  // accountVaultPositionUpdate.vaultUpdate = buildIdFromVaultIdAndTransaction(
-  //   accountVaultPosition.vault,
-  //   transaction,
-  // )
   accountVaultPositionUpdate.save()
   return accountVaultPositionUpdate
 }

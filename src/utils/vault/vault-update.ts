@@ -66,7 +66,7 @@ export function firstDeposit(
   sharesMinted: BigInt,
   pricePerShare: BigInt,
 ): VaultUpdate {
-  log.debug('[Vault Updates] First deposit', [])
+  log.debug('[VaultUpdate] First deposit', [])
   let vaultUpdateId = buildIdFromVaultAndTransaction(
     vault,
     transaction
@@ -100,7 +100,7 @@ export function deposit(
   sharesMinted: BigInt,
   pricePerShare: BigInt,
 ): VaultUpdate {
-  log.debug('[Vault Updates] Deposit', [])
+  log.debug('[VaultUpdate] Deposit', [])
   let vaultUpdateId = buildIdFromVaultAndTransaction(
     vault,
     transaction
