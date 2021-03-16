@@ -37,6 +37,7 @@ export function deposit(
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): VaultPositionResponse{
+  log.debug('[VaultPosition] Deposit', [])
   let vaultPositionId = buildId(account, vault)
   let accountVaultPosition = AccountVaultPosition.load(vaultPositionId)
   let accountVaultPositionUpdate: AccountVaultPositionUpdate

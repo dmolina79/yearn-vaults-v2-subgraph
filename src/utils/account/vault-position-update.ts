@@ -1,4 +1,4 @@
-import { BigInt, Bytes, ethereum, Result } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, ethereum, log, Result } from "@graphprotocol/graph-ts";
 import { Account, AccountVaultPosition, AccountVaultPositionUpdate, Transaction, Vault } from "../../../generated/schema";
 import { BIGINT_ZERO } from "../constants";
 import * as vaultUpdateLibrary from '../vault/vault-update'
@@ -37,6 +37,7 @@ function createAccountVaultPositionUpdate(
   sharesMinted: BigInt,
   sharesBurnt: BigInt
 ): AccountVaultPositionUpdate {
+  log.debug('[VaultPositionUpdate] Creating vault position update with id {}', [id])
   let accountVaultPositionUpdate = new AccountVaultPositionUpdate(id)
   accountVaultPositionUpdate.account = account.id
   accountVaultPositionUpdate.accountVaultPosition = vaultPositionId
@@ -69,7 +70,7 @@ export function createFirst(
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): AccountVaultPositionUpdate {
-
+  log.debug('[VaultPositionUpdate] Create first', [])
   let id = buildIdFromAccountAndTransaction(
     account,
     transaction
@@ -103,7 +104,8 @@ export function deposit(
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): AccountVaultPositionUpdate {
-
+  log.debug('[VaultPositionUpdate] Deposit', [])
+  
   let previousVaultPositionUpdate = AccountVaultPositionUpdate.load(latestUpdateId)
 
   let id = buildIdFromAccountAndTransaction(

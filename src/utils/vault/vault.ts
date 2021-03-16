@@ -206,10 +206,7 @@ export function deposit(
   if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
-      transaction.hash,
-      transaction.index,
-      transaction.timestamp,
-      transaction.blockNumber,
+      transaction,
       depositedAmount,
       sharesMinted,
       pricePerShare
@@ -217,10 +214,7 @@ export function deposit(
   } else {
     vaultUpdate = vaultUpdateLibrary.deposit(
       vault,
-      transaction.hash,
-      transaction.index,
-      transaction.timestamp,
-      transaction.blockNumber,
+      transaction,
       depositedAmount,
       sharesMinted,
       pricePerShare

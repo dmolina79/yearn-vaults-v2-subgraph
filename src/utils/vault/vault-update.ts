@@ -1,5 +1,5 @@
 import { BigInt, Bytes, log } from "@graphprotocol/graph-ts"
-import { Vault, VaultUpdate } from "../../../generated/schema"
+import { Transaction, Vault, VaultUpdate } from "../../../generated/schema"
 import { BIGINT_ZERO } from "../constants";
 
 
@@ -13,46 +13,81 @@ export function buildIdFromVaultTxHashAndIndex(
     .concat(transactionHash.concat('-').concat(transactionIndex));
 }
 
+export function buildIdFromVaultAndTransaction(
+  vault: Vault,
+  transaction: Transaction
+): string {
+  return buildIdFromVaultTxHashAndIndex(
+    vault.id,
+    transaction.id,
+    transaction.index.toString()
+  )
+}
+
+function createVaultUpdate(
+  id: string,
+  vault: Vault,
+  transaction: Transaction,
+  tokensDeposited: BigInt,
+  tokensWithdrawn: BigInt,
+  sharesMinted: BigInt,
+  sharesBurnt: BigInt,
+  pricePerShare: BigInt,
+  returnsGenerated: BigInt,
+  totalFees: BigInt,
+  managementFees: BigInt,
+  performanceFees: BigInt
+): VaultUpdate {
+  log.debug('[VaultUpdate] Creating vault update with id {}', [vault.id])
+  let vaultUpdate = new VaultUpdate(id)
+  vaultUpdate.timestamp = transaction.timestamp
+  vaultUpdate.blockNumber = transaction.blockNumber
+  vaultUpdate.transaction = transaction.id
+  vaultUpdate.vault = vault.id;
+  // Balances & Shares
+  vaultUpdate.tokensDeposited = tokensDeposited
+  vaultUpdate.tokensWithdrawn = tokensWithdrawn
+  vaultUpdate.sharesMinted = sharesMinted
+  vaultUpdate.sharesBurnt = sharesBurnt
+  // Performance
+  vaultUpdate.pricePerShare = pricePerShare
+  vaultUpdate.returnsGenerated = returnsGenerated
+  vaultUpdate.totalFees = totalFees
+  vaultUpdate.managementFees = managementFees
+  vaultUpdate.performanceFees = performanceFees
+  vaultUpdate.save()
+  return vaultUpdate;
+}
+
 export function firstDeposit(
   vault: Vault,
-  transactionHash: Bytes,
-  transactionIndex: BigInt,
-  timestamp: BigInt,
-  blockNumber: BigInt,
+  transaction: Transaction,
   depositedAmount: BigInt,
   sharesMinted: BigInt,
   pricePerShare: BigInt,
 ): VaultUpdate {
-  log.debug('[Vault Balance Updates] First deposit', [])
-  let vaultUpdateId = buildIdFromVaultTxHashAndIndex(
-    vault.id,
-    transactionHash.toHexString(),
-    transactionIndex.toString()
+  log.debug('[Vault Updates] First deposit', [])
+  let vaultUpdateId = buildIdFromVaultAndTransaction(
+    vault,
+    transaction
   )
   let vaultUpdate = VaultUpdate.load(vaultUpdateId)
 
   if (vaultUpdate === null) {
-    vaultUpdate = new VaultUpdate(vaultUpdateId);
-    vaultUpdate.timestamp = timestamp
-    vaultUpdate.blockNumber = blockNumber
-    vaultUpdate.transaction = transactionHash.toHexString()
-    vaultUpdate.vault = vault.id;
-
-    // BALANCES AND SHARES
-    vaultUpdate.tokensDeposited = depositedAmount
-    vaultUpdate.tokensWithdrawn = BIGINT_ZERO
-    vaultUpdate.sharesMinted = sharesMinted
-    vaultUpdate.sharesBurnt = BIGINT_ZERO
-  
-    // PERFORMANCE
-    vaultUpdate.pricePerShare = pricePerShare
-    
-    vaultUpdate.returnsGenerated = BIGINT_ZERO
-    vaultUpdate.totalFees = BIGINT_ZERO
-    vaultUpdate.managementFees = BIGINT_ZERO
-    vaultUpdate.performanceFees = BIGINT_ZERO
-
-    vaultUpdate.save()
+    vaultUpdate = createVaultUpdate(
+      vaultUpdateId,
+      vault,
+      transaction,
+      depositedAmount,
+      BIGINT_ZERO,
+      sharesMinted,
+      BIGINT_ZERO,
+      pricePerShare,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO
+    )
   }
   
   return vaultUpdate!
@@ -60,48 +95,34 @@ export function firstDeposit(
 
 export function deposit(
   vault: Vault,
-  transactionHash: Bytes,
-  transactionIndex: BigInt,
-  timestamp: BigInt,
-  blockNumber: BigInt,
+  transaction: Transaction,
   depositedAmount: BigInt,
   sharesMinted: BigInt,
   pricePerShare: BigInt,
 ): VaultUpdate {
-  log.debug('[Vault Balance Updates] Deposit', [])
-  let vaultUpdateId = buildIdFromVaultTxHashAndIndex(
-    vault.id,
-    transactionHash.toHexString(),
-    transactionIndex.toString()
+  log.debug('[Vault Updates] Deposit', [])
+  let vaultUpdateId = buildIdFromVaultAndTransaction(
+    vault,
+    transaction
   )
   let vaultUpdate = VaultUpdate.load(vaultUpdateId)
   let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate)
 
   if (vaultUpdate === null) {
-    vaultUpdate = new VaultUpdate(vaultUpdateId);
-    vaultUpdate.timestamp = timestamp
-    vaultUpdate.blockNumber = blockNumber
-    vaultUpdate.transaction = transactionHash.toHexString()
-    vaultUpdate.vault = vault.id;
-
-    // BALANCES AND SHARES
-    vaultUpdate.tokensDeposited = latestVaultUpdate.tokensDeposited.plus(depositedAmount)
-    vaultUpdate.tokensWithdrawn = latestVaultUpdate.tokensWithdrawn
-    vaultUpdate.sharesMinted = latestVaultUpdate.sharesMinted.plus(sharesMinted)
-    vaultUpdate.sharesBurnt = latestVaultUpdate.sharesBurnt
-  
-    // PERFORMANCE
-    vaultUpdate.pricePerShare = pricePerShare
-    
-    vaultUpdate.returnsGenerated = latestVaultUpdate.returnsGenerated
-    vaultUpdate.totalFees = latestVaultUpdate.totalFees
-    vaultUpdate.managementFees = latestVaultUpdate.managementFees
-    vaultUpdate.performanceFees = latestVaultUpdate.performanceFees
-  
-    // PERFORMANCE
-    vaultUpdate.pricePerShare = pricePerShare
-
-    vaultUpdate.save()
+    vaultUpdate = createVaultUpdate(
+      vaultUpdateId,
+      vault,
+      transaction,
+      latestVaultUpdate.tokensDeposited.plus(depositedAmount),
+      latestVaultUpdate.tokensWithdrawn,
+      latestVaultUpdate.sharesMinted.plus(sharesMinted),
+      latestVaultUpdate.sharesBurnt,
+      pricePerShare,
+      latestVaultUpdate.returnsGenerated,
+      latestVaultUpdate.totalFees,
+      latestVaultUpdate.managementFees,
+      latestVaultUpdate.performanceFees
+    )
   }
   
   return vaultUpdate!
