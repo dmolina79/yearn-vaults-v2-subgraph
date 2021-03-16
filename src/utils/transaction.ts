@@ -1,35 +1,33 @@
-import { log, ethereum, Bytes} from "@graphprotocol/graph-ts";
-import {
-  Transaction,
-} from "../../generated/schema";
-import { getTimestampInMillis } from "./commons";
+import { log, ethereum, Bytes } from '@graphprotocol/graph-ts';
+import { Transaction } from '../../generated/schema';
+import { getTimestampInMillis } from './commons';
 
 export function getOrCreateTransactionFromEvent(
   event: ethereum.Event,
   action: string
 ): Transaction {
-  log.debug('[Transaction] Get or create transaction from event', [])
+  log.debug('[Transaction] Get or create transaction from event', []);
   let transaction = _getOrCreateTransaction(
     event.transaction,
     event.block,
     action
-  )
-  log.debug('[Transaction] Get or create transaction from event finish', [])
-  return transaction
+  );
+  log.debug('[Transaction] Get or create transaction from event finish', []);
+  return transaction;
 }
 
 export function getOrCreateTransactionFromCall(
   call: ethereum.Call,
   action: string
 ): Transaction {
-  log.debug('[Transaction] Get or create transaction from call', [])
+  log.debug('[Transaction] Get or create transaction from call', []);
   let transaction = _getOrCreateTransaction(
     call.transaction,
     call.block,
     action
-  )
-  log.debug('[Transaction] Get or create transaction from call finish', [])
-  return transaction
+  );
+  log.debug('[Transaction] Get or create transaction from call finish', []);
+  return transaction;
 }
 
 function _getOrCreateTransaction(
@@ -37,10 +35,10 @@ function _getOrCreateTransaction(
   block: ethereum.Block,
   action: string
 ): Transaction {
-  let id = ethTransaction.hash.toHexString()
-  let transaction = Transaction.load(id)
+  let id = ethTransaction.hash.toHexString();
+  let transaction = Transaction.load(id);
   if (transaction == null) {
-    log.debug("[Transaction] Creating with id {}", [id]);
+    log.debug('[Transaction] Creating with id {}', [id]);
     transaction = new Transaction(id);
     transaction.from = ethTransaction.from;
     transaction.gasPrice = ethTransaction.gasPrice;
@@ -52,11 +50,11 @@ function _getOrCreateTransaction(
     transaction.timestamp = getTimestampInMillis(block);
     transaction.gasLimit = block.gasLimit;
     transaction.blockNumber = block.number;
-    transaction.event = action
+    transaction.event = action;
     transaction.save();
   } else {
-    log.debug("[Transaction] Found with id {}", [id]);
+    log.debug('[Transaction] Found with id {}', [id]);
   }
 
-  return transaction!
+  return transaction!;
 }
