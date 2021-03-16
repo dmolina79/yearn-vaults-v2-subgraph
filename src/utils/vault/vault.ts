@@ -181,6 +181,7 @@ export function deposit(
   receiver: Address,
   to: Address,
   depositedAmount: BigInt,
+  sharesMinted: BigInt,
   totalAssets: BigInt,
   totalSupply: BigInt,
   pricePerShare: BigInt
@@ -188,9 +189,6 @@ export function deposit(
   log.debug('[Vault] Deposit', [])
   let account = accountLibrary.getOrCreate(receiver)
   let vault = getOrCreate(to, transactionHash.toHexString(), false)
-  let sharesMinted = totalAssets.equals(BIGINT_ZERO)
-    ? depositedAmount
-    : depositedAmount.times(totalSupply).div(totalAssets)
     
   let vaultPositionResponse = accountVaultPositionLibrary.deposit(
     account,
