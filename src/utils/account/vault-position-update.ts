@@ -1,35 +1,62 @@
-import { BigInt, Bytes, Result } from "@graphprotocol/graph-ts";
-import { Account, AccountVaultPosition, AccountVaultPositionUpdate } from "../../../generated/schema";
+import { BigInt, Bytes, ethereum, Result } from "@graphprotocol/graph-ts";
+import { Account, AccountVaultPosition, AccountVaultPositionUpdate, Vault } from "../../../generated/schema";
 import { BIGINT_ZERO } from "../constants";
 import * as vaultUpdateLibrary from '../vault/vault-update'
 
-export function buildIdFromAccountHashAndIndex(
-  account: string,
+export function buildIdFromAccountHashAndIndex (
+  account: Account,
   transactionHash: string,
   transactionIndex: string
 ): string {
-  return account.concat('-').concat(
+  return account.id.concat('-').concat(
     transactionHash
   ).concat('-').concat(
     transactionIndex
   )
 }
 
-export function buildIdFromAccountVaultPositionHashAndIndex (
-  accountVaultPosition: AccountVaultPosition,
+function createAccountVaultPositionUpdate(
+  id: string,
+  account: Account,
+  vault: Vault,
+  vaultPositionId: string,
+  timestamp: BigInt,
+  blockNumber: BigInt,
+  deposits: BigInt,
+  withdrawals: BigInt,
+  sharesMinted: BigInt,
+  sharesBurnt: BigInt,
   transactionHash: string,
   transactionIndex: string
-): string {
-  return buildIdFromAccountHashAndIndex(
-    accountVaultPosition.account,
+): AccountVaultPositionUpdate {
+  let accountVaultPositionUpdate = new AccountVaultPositionUpdate(id)
+  accountVaultPositionUpdate.account = account.id
+  accountVaultPositionUpdate.accountVaultPosition = vaultPositionId
+  accountVaultPositionUpdate.timestamp = timestamp
+  accountVaultPositionUpdate.blockNumber = blockNumber
+  accountVaultPositionUpdate.transaction = transactionHash
+  accountVaultPositionUpdate.deposits = deposits
+  accountVaultPositionUpdate.withdrawals = withdrawals
+  accountVaultPositionUpdate.sharesMinted = sharesMinted
+  accountVaultPositionUpdate.sharesBurnt = sharesBurnt
+  accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
+    vault.id,
     transactionHash,
     transactionIndex
   )
+  // accountVaultPositionUpdate.vaultUpdate = buildIdFromVaultIdAndTransaction(
+  //   accountVaultPosition.vault,
+  //   transaction,
+  // )
+  accountVaultPositionUpdate.save()
+  return accountVaultPositionUpdate
 }
 
 
 export function createFirst(
-  accountVaultPosition: AccountVaultPosition,
+  account: Account,
+  vault: Vault,
+  vaultPositionId: string,
   transactionHash: string,
   transactionIndex: string,
   timestamp: BigInt,
@@ -38,8 +65,8 @@ export function createFirst(
   receivedShares: BigInt
 ): AccountVaultPositionUpdate {
 
-  let id = buildIdFromAccountVaultPositionHashAndIndex(
-    accountVaultPosition,
+  let id = buildIdFromAccountHashAndIndex(
+    account,
     transactionHash,
     transactionIndex
   )
@@ -47,34 +74,30 @@ export function createFirst(
 
   if (accountVaultPositionFirstUpdate == null) {
 
-    accountVaultPositionFirstUpdate = new AccountVaultPositionUpdate(id)
-
-    accountVaultPositionFirstUpdate.timestamp = timestamp
-    accountVaultPositionFirstUpdate.blockNumber = blockNumber
-    accountVaultPositionFirstUpdate.account = accountVaultPosition.account
-    accountVaultPositionFirstUpdate.accountVaultPosition = accountVaultPosition.id
-    accountVaultPositionFirstUpdate.transaction = transactionHash
-    
-    accountVaultPositionFirstUpdate.deposits = depositedTokens
-    accountVaultPositionFirstUpdate.withdrawals = BIGINT_ZERO
-  
-    accountVaultPositionFirstUpdate.sharesMinted = receivedShares
-    accountVaultPositionFirstUpdate.sharesBurnt = BIGINT_ZERO
-  
-    accountVaultPositionFirstUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
-      accountVaultPosition.vault,
+    accountVaultPositionFirstUpdate = createAccountVaultPositionUpdate(
+      id,
+      account,
+      vault,
+      vaultPositionId,
+      timestamp,
+      blockNumber,
+      depositedTokens,
+      BIGINT_ZERO,
+      receivedShares,
+      BIGINT_ZERO,
       transactionHash,
       transactionIndex
     )
-
-    accountVaultPositionFirstUpdate.save()
   }
 
   return accountVaultPositionFirstUpdate!
 }
 
 export function deposit(
-  accountVaultPosition: AccountVaultPosition,
+  account: Account,
+  vault: Vault,
+  vaultPositionId: string,
+  latestUpdateId: string,
   transactionHash: string,
   transactionIndex: string,
   timestamp: BigInt,
@@ -83,33 +106,31 @@ export function deposit(
   receivedShares: BigInt
 ): AccountVaultPositionUpdate {
 
-  let id = buildIdFromAccountVaultPositionHashAndIndex(
-    accountVaultPosition,
+  let previousVaultPositionUpdate = AccountVaultPositionUpdate.load(latestUpdateId)
+
+  let id = buildIdFromAccountHashAndIndex(
+    account,
     transactionHash,
     transactionIndex
   )
   let accountVaultPositionUpdate = AccountVaultPositionUpdate.load(id)
 
-  if (accountVaultPosition == null) {
-    accountVaultPositionUpdate = new AccountVaultPositionUpdate(id)
-
-    accountVaultPositionUpdate.timestamp = timestamp
-    accountVaultPositionUpdate.blockNumber = blockNumber
-    accountVaultPositionUpdate.account = accountVaultPosition.account
-    accountVaultPositionUpdate.accountVaultPosition = accountVaultPosition.id
-    accountVaultPositionUpdate.transaction = transactionHash
-    
-    accountVaultPositionUpdate.deposits = accountVaultPositionUpdate.deposits.plus(depositedTokens)
+  if (accountVaultPositionUpdate == null) {
   
-    accountVaultPositionUpdate.sharesMinted = accountVaultPositionUpdate.sharesMinted.plus(receivedShares)
-  
-    accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
-      accountVaultPosition.vault,
+    accountVaultPositionUpdate = createAccountVaultPositionUpdate(
+      id,
+      account,
+      vault,
+      vaultPositionId,
+      timestamp,
+      blockNumber,
+      previousVaultPositionUpdate.deposits.plus(depositedTokens),
+      previousVaultPositionUpdate.withdrawals,
+      previousVaultPositionUpdate.sharesMinted.plus(receivedShares),
+      previousVaultPositionUpdate.sharesBurnt,
       transactionHash,
       transactionIndex
     )
-
-    accountVaultPositionUpdate.save()
   }
 
   return accountVaultPositionUpdate!
@@ -123,8 +144,8 @@ export function withdraw(
   sharesBurnt: BigInt
 ): AccountVaultPositionUpdate {
 
-  let id = buildIdFromAccountVaultPositionHashAndIndex(
-    accountVaultPosition,
+  let id = buildIdFromAccountHashAndIndex(
+    Account.load(accountVaultPosition.account),
     transactionHash,
     transactionIndex
   )

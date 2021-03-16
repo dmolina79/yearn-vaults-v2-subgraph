@@ -182,8 +182,6 @@ export function deposit(
   to: Address,
   depositedAmount: BigInt,
   sharesMinted: BigInt,
-  totalAssets: BigInt,
-  totalSupply: BigInt,
   pricePerShare: BigInt
 ): void {
   log.debug('[Vault] Deposit', [])
@@ -213,7 +211,7 @@ export function deposit(
   )
 
   let vaultUpdate: VaultUpdate
-  if (!vault.latestUpdate) {
+  if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
       transactionHash,

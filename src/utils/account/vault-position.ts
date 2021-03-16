@@ -54,7 +54,9 @@ export function deposit(
     accountVaultPosition.balanceTokens = depositedTokens
     accountVaultPosition.balanceShares = receivedShares
     accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
-      accountVaultPosition!,
+      account,
+      vault,
+      vaultPositionId,
       transactionHash,
       transactionIndex,
       timestamp,
@@ -66,7 +68,10 @@ export function deposit(
     accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(depositedTokens)
     accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.plus(receivedShares)
     accountVaultPositionUpdate = vaultPositionUpdateLibrary.deposit(
-      accountVaultPosition!,
+      account,
+      vault,
+      vaultPositionId,
+      accountVaultPosition.latestUpdate,
       transactionHash,
       transactionIndex,
       timestamp,
@@ -77,7 +82,7 @@ export function deposit(
   }
   // FIX: For some reason if we refer accountVaultPositionUpdate.id it breaks down
   accountVaultPosition.latestUpdate = vaultPositionUpdateLibrary.buildIdFromAccountHashAndIndex(
-    account.id,
+    account,
     transactionHash,
     transactionIndex
   )

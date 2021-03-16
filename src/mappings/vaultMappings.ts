@@ -70,8 +70,6 @@ export function handleDeposit(call: DepositCall): void {
     call.to,
     MAX_UINT,
     call.outputs.value0,
-    vaultContract.totalAssets(),
-    vaultContract.totalSupply(),
     vaultContract.pricePerShare()
   );
 }
@@ -92,8 +90,6 @@ export function handleDepositWithAmount(call: Deposit1Call): void {
     call.to,
     call.inputs._amount,
     call.outputs.value0,
-    vaultContract.totalAssets(),
-    vaultContract.totalSupply(),
     vaultContract.pricePerShare()
   );
 }
@@ -114,8 +110,6 @@ export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
     call.to,
     call.inputs._amount,
     call.outputs.value0,
-    vaultContract.totalAssets(),
-    vaultContract.totalSupply(),
     vaultContract.pricePerShare()
   );
 }
