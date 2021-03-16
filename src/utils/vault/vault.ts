@@ -195,12 +195,9 @@ export function deposit(
   )
   
   let deposit = depositLibrary.getOrCreate(
-    transaction.hash,
-    transaction.index,
-    transaction.timestamp,
-    transaction.blockNumber,
     account,
     vault,
+    transaction,
     depositedAmount,
     sharesMinted
   )
