@@ -33,10 +33,7 @@ export class VaultPositionResponse {
 export function deposit(
   account: Account,
   vault: Vault,
-  transactionHash: string,
-  transactionIndex: string,
-  timestamp: BigInt,
-  blockNumber: BigInt,
+  transaction: Transaction,
   depositedTokens: BigInt,
   receivedShares: BigInt
 ): VaultPositionResponse{
@@ -50,17 +47,14 @@ export function deposit(
     accountVaultPosition.account = account.id
     accountVaultPosition.token = vault.token
     accountVaultPosition.shareToken = vault.shareToken
-    accountVaultPosition.transaction = transactionHash
+    accountVaultPosition.transaction = transaction.id
     accountVaultPosition.balanceTokens = depositedTokens
     accountVaultPosition.balanceShares = receivedShares
     accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
       account,
       vault,
       vaultPositionId,
-      transactionHash,
-      transactionIndex,
-      timestamp,
-      blockNumber,
+      transaction,
       depositedTokens,
       receivedShares
     )
@@ -72,20 +66,13 @@ export function deposit(
       vault,
       vaultPositionId,
       accountVaultPosition.latestUpdate,
-      transactionHash,
-      transactionIndex,
-      timestamp,
-      blockNumber,
+      transaction,
       depositedTokens,
       receivedShares
     )
   }
-  // FIX: For some reason if we refer accountVaultPositionUpdate.id it breaks down
-  accountVaultPosition.latestUpdate = vaultPositionUpdateLibrary.buildIdFromAccountHashAndIndex(
-    account,
-    transactionHash,
-    transactionIndex
-  )
+
+  accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id
   accountVaultPosition.save()
 
   return VaultPositionResponse.fromValue(

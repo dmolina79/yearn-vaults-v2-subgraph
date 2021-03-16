@@ -1,5 +1,6 @@
 import { Address, ethereum, BigInt, log, Bytes  } from "@graphprotocol/graph-ts";
 import {
+  Transaction,
   Vault, VaultUpdate,
 } from "../../../generated/schema";
 
@@ -174,10 +175,7 @@ export function tag(
 }
 
 export function deposit(
-  transactionHash: Bytes,
-  transactionIndex: BigInt,
-  timestamp: BigInt,
-  blockNumber: BigInt,
+  transaction: Transaction,
   receiver: Address,
   to: Address,
   depositedAmount: BigInt,
@@ -186,24 +184,21 @@ export function deposit(
 ): void {
   log.debug('[Vault] Deposit', [])
   let account = accountLibrary.getOrCreate(receiver)
-  let vault = getOrCreate(to, transactionHash.toHexString(), false)
+  let vault = getOrCreate(to, transaction.id, false)
     
   let vaultPositionResponse = accountVaultPositionLibrary.deposit(
     account,
     vault,
-    transactionHash.toHexString(),
-    transactionIndex.toString(),
-    timestamp,
-    blockNumber,
+    transaction,
     depositedAmount,
     sharesMinted
   )
   
   let deposit = depositLibrary.getOrCreate(
-    transactionHash,
-    transactionIndex,
-    timestamp,
-    blockNumber,
+    transaction.hash,
+    transaction.index,
+    transaction.timestamp,
+    transaction.blockNumber,
     account,
     vault,
     depositedAmount,
@@ -214,10 +209,10 @@ export function deposit(
   if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
-      transactionHash,
-      transactionIndex,
-      timestamp,
-      blockNumber,
+      transaction.hash,
+      transaction.index,
+      transaction.timestamp,
+      transaction.blockNumber,
       depositedAmount,
       sharesMinted,
       pricePerShare
@@ -225,10 +220,10 @@ export function deposit(
   } else {
     vaultUpdate = vaultUpdateLibrary.deposit(
       vault,
-      transactionHash,
-      transactionIndex,
-      timestamp,
-      blockNumber,
+      transaction.hash,
+      transaction.index,
+      transaction.timestamp,
+      transaction.blockNumber,
       depositedAmount,
       sharesMinted,
       pricePerShare

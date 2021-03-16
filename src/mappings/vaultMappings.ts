@@ -56,16 +56,13 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
 
 export function handleDeposit(call: DepositCall): void {
   log.debug('[Vault mappings] Handle deposit', [])
-  getOrCreateTransactionFromCall(
+  let transaction = getOrCreateTransactionFromCall(
     call,
     'vault.deposit()'
   )
   let vaultContract = VaultContract.bind(call.to)
   vaultLibrary.deposit(
-    call.transaction.hash,
-    call.transaction.index,
-    call.block.timestamp,
-    call.block.number,
+    transaction,
     call.from,
     call.to,
     MAX_UINT,
@@ -76,16 +73,13 @@ export function handleDeposit(call: DepositCall): void {
 
 export function handleDepositWithAmount(call: Deposit1Call): void {
   log.debug('[Vault mappings] Handle deposit with amount', [])
-  getOrCreateTransactionFromCall(
+  let transaction = getOrCreateTransactionFromCall(
     call,
     'vault.deposit(uint)'
   )
   let vaultContract = VaultContract.bind(call.to)
   vaultLibrary.deposit(
-    call.transaction.hash,
-    call.transaction.index,
-    call.block.timestamp,
-    call.block.number,
+    transaction,
     call.from,
     call.to,
     call.inputs._amount,
@@ -96,16 +90,13 @@ export function handleDepositWithAmount(call: Deposit1Call): void {
 
 export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
   log.debug('[Vault mappings] Handle deposit with amount and recipient', [])
-  getOrCreateTransactionFromCall(
+  let transaction = getOrCreateTransactionFromCall(
     call,
     'vault.deposit(uint,address)'
   )
   let vaultContract = VaultContract.bind(call.to)
   vaultLibrary.deposit(
-    call.transaction.hash,
-    call.transaction.index,
-    call.block.timestamp,
-    call.block.number,
+    transaction,
     call.inputs._recipient,
     call.to,
     call.inputs._amount,
