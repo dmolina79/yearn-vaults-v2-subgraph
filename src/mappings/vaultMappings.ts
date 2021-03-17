@@ -1,4 +1,4 @@
-import { Address, ethereum, BigInt, log } from "@graphprotocol/graph-ts";
+import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import {
   StrategyAdded as StrategyAddedEvent,
   StrategyReported as StrategyReportedEvent,
@@ -10,18 +10,21 @@ import {
   Deposit1Call,
   Withdraw1Call,
   Withdraw2Call,
-} from "../../generated/Registry/Vault";
-import { Harvested } from "../../generated/templates/Vault/Strategy";
-import { MAX_UINT } from "../utils/constants";
-import * as strategyLibrary from "../utils/strategy"
-import { getOrCreateTransactionFromCall, getOrCreateTransactionFromEvent } from "../utils/transaction";
-import * as vaultLibrary from '../utils/vault/vault'
+} from '../../generated/Registry/Vault';
+import { Harvested } from '../../generated/templates/Vault/Strategy';
+import { MAX_UINT } from '../utils/constants';
+import * as strategyLibrary from '../utils/strategy';
+import {
+  getOrCreateTransactionFromCall,
+  getOrCreateTransactionFromEvent,
+} from '../utils/transaction';
+import * as vaultLibrary from '../utils/vault/vault';
 
 export function handleStrategyAdded(event: StrategyAddedEvent): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
-    event, 
-    "StrategyAddedEvent"
-  )
+    event,
+    'StrategyAddedEvent'
+  );
   strategyLibrary.create(
     ethTransaction.id,
     event.params.strategy,
@@ -29,16 +32,16 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
     event.params.debtLimit,
     event.params.rateLimit,
     event.params.performanceFee,
-    event,
-  )
+    event
+  );
 }
 
 export function handleStrategyReported(event: StrategyReportedEvent): void {
-  log.debug('[Vault mappings] Handle deposit', [])
+  log.debug('[Vault mappings] Handle deposit', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
-    event, 
-    "StrategyReportedEvent"
-  )
+    event,
+    'StrategyReportedEvent'
+  );
   strategyLibrary.createReport(
     ethTransaction.id,
     event.params.strategy.toHexString(),
@@ -49,98 +52,72 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
     event.params.totalDebt,
     event.params.debtAdded,
     event.params.debtLimit,
-    event,
-  )
+    event
+  );
 }
-
 
 //  VAULT BALANCE UPDATES
 
 export function handleDeposit(call: DepositCall): void {
-  log.debug('[Vault mappings] Handle deposit', [])
-  getOrCreateTransactionFromCall(
-    call,
-    'vault.deposit()'
-  )
-  let vaultContract = VaultContract.bind(call.to)
+  log.debug('[Vault mappings] Handle deposit', []);
+  let transaction = getOrCreateTransactionFromCall(call, 'vault.deposit()');
+  let vaultContract = VaultContract.bind(call.to);
   vaultLibrary.deposit(
-    call.transaction.hash,
-    call.transaction.index,
-    call.block.timestamp,
-    call.block.number,
+    transaction,
     call.from,
     call.to,
     MAX_UINT,
-    vaultContract.totalAssets(),
-    vaultContract.totalSupply(),
+    call.outputs.value0,
     vaultContract.pricePerShare()
   );
 }
 
 export function handleDepositWithAmount(call: Deposit1Call): void {
-  log.debug('[Vault mappings] Handle deposit with amount', [])
-  getOrCreateTransactionFromCall(
-    call,
-    'vault.deposit(uint)'
-  )
-  let vaultContract = VaultContract.bind(call.to)
+  log.debug('[Vault mappings] Handle deposit with amount', []);
+  let transaction = getOrCreateTransactionFromCall(call, 'vault.deposit(uint)');
+  let vaultContract = VaultContract.bind(call.to);
   vaultLibrary.deposit(
-    call.transaction.hash,
-    call.transaction.index,
-    call.block.timestamp,
-    call.block.number,
+    transaction,
     call.from,
     call.to,
     call.inputs._amount,
-    vaultContract.totalAssets(),
-    vaultContract.totalSupply(),
+    call.outputs.value0,
     vaultContract.pricePerShare()
   );
 }
 
 export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
-  log.debug('[Vault mappings] Handle deposit with amount and recipient', [])
-  getOrCreateTransactionFromCall(
+  log.debug('[Vault mappings] Handle deposit with amount and recipient', []);
+  let transaction = getOrCreateTransactionFromCall(
     call,
     'vault.deposit(uint,address)'
-  )
-  let vaultContract = VaultContract.bind(call.to)
+  );
+  let vaultContract = VaultContract.bind(call.to);
   vaultLibrary.deposit(
-    call.transaction.hash,
-    call.transaction.index,
-    call.block.timestamp,
-    call.block.number,
+    transaction,
     call.inputs._recipient,
     call.to,
     call.inputs._amount,
-    vaultContract.totalAssets(),
-    vaultContract.totalSupply(),
+    call.outputs.value0,
     vaultContract.pricePerShare()
   );
 }
 
 export function handleWithdraw(call: WithdrawCall): void {
-  log.debug('[Vault mappings] Handle withdraw', [])
-  getOrCreateTransactionFromCall(
-    call,
-    'vault.withdraw()'
-  )
+  log.debug('[Vault mappings] Handle withdraw', []);
+  getOrCreateTransactionFromCall(call, 'vault.withdraw()');
 }
 
 export function handleWithdrawWithShares(call: Withdraw1Call): void {
-  log.debug('[Vault mappings] Handle withdraw with shares', [])
-  getOrCreateTransactionFromCall(
-    call,
-    'vault.withdraw(uint256)'
-  )
+  log.debug('[Vault mappings] Handle withdraw with shares', []);
+  getOrCreateTransactionFromCall(call, 'vault.withdraw(uint256)');
 }
 
-export function handleWithdrawWithSharesAndRecipient(call: Withdraw2Call): void {
-  log.debug('[Vault mappings] Handle withdraw with shares and recipient', [])
-  getOrCreateTransactionFromCall(
-    call,
-    'vault.withdraw(uint256,address)'
-  )
+export function handleWithdrawWithSharesAndRecipient(
+  call: Withdraw2Call
+): void {
+  log.debug('[Vault mappings] Handle withdraw with shares and recipient', []);
+  getOrCreateTransactionFromCall(call, 'vault.withdraw(uint256,address)');
 }
 
 // export function handleWithdrawWithSharesRecipientAndMaxLoss(call: Withdraw3Call): void {

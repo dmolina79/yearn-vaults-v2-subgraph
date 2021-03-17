@@ -8,12 +8,12 @@ It is based on [this feature branch](https://github.com/iearn-finance/yearn-vaul
 
 To get started, you need to install the dependencies:
 
-- Using Yarn: ```yarn install```
-- Using NPM: ```npm install```
+- Using Yarn: `yarn install`
+- Using NPM: `npm install`
 
 ## Network Configuration
 
-Once the smart contracts are deployed on a testnet or mainnet, the JSON files located at folder ```config``` must be updated.
+Once the smart contracts are deployed on a testnet or mainnet, the JSON files located at folder `config` must be updated.
 
 The final **subgraph.yaml** file is used to deploy on the network.
 

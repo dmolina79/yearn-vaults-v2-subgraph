@@ -1,11 +1,11 @@
-import { BigInt, ethereum, Bytes, Address } from "@graphprotocol/graph-ts";
+import { BigInt, ethereum, Bytes, Address } from '@graphprotocol/graph-ts';
 
 export function getTimeInMillis(time: BigInt): BigInt {
   return time.times(BigInt.fromI32(1000));
 }
 
 export function getTimestampInMillis(block: ethereum.Block): BigInt {
-  return block.timestamp.times(BigInt.fromI32(1000))
+  return block.timestamp.times(BigInt.fromI32(1000));
 }
 // make a derived ID from transaction hash and big number
 export function buildId(tx: Bytes, n: BigInt): string {
@@ -17,7 +17,13 @@ export function buildIdFromEvent(event: ethereum.Event): string {
 }
 
 export function buildBlockId(block: ethereum.Block): string {
-  return block.hash.toHex() + "-" + block.number.toString() + "-" + block.timestamp.toString();
+  return (
+    block.hash.toHex() +
+    '-' +
+    block.number.toString() +
+    '-' +
+    block.timestamp.toString()
+  );
 }
 
 export function buildUpdateId(address: Address, tx: Bytes, n: BigInt): string {

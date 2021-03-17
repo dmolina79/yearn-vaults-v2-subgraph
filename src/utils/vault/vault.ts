@@ -1,16 +1,14 @@
-import { Address, ethereum, BigInt, log, Bytes  } from "@graphprotocol/graph-ts";
-import {
-  Vault, VaultUpdate,
-} from "../../../generated/schema";
+import { Address, ethereum, BigInt, log, Bytes } from '@graphprotocol/graph-ts';
+import { Transaction, Vault, VaultUpdate } from '../../../generated/schema';
 
 import { Vault as VaultContract } from '../../../generated/Registry/Vault';
-import { Vault as VaultTemplate } from "../../../generated/templates";
+import { Vault as VaultTemplate } from '../../../generated/templates';
 import { BIGINT_ZERO } from '../constants';
 import { getOrCreateToken } from '../token';
-import * as depositLibrary from '../deposit'
-import * as accountLibrary from '../account/account'
-import * as accountVaultPositionLibrary from '../account/vault-position'
-import * as vaultUpdateLibrary from './vault-update'
+import * as depositLibrary from '../deposit';
+import * as accountLibrary from '../account/account';
+import * as accountVaultPositionLibrary from '../account/vault-position';
+import * as vaultUpdateLibrary from './vault-update';
 
 const createNewVaultFromAddress = (
   vaultAddress: Address,
@@ -28,7 +26,7 @@ const createNewVaultFromAddress = (
   vaultEntity.shareToken = shareToken.id;
 
   // FIX: This is hardcoded, try to get from contract
-  vaultEntity.classification = 'Experimental'
+  vaultEntity.classification = 'Experimental';
 
   // empty at creation
   vaultEntity.tags = [];
@@ -41,39 +39,33 @@ const createNewVaultFromAddress = (
   vaultEntity.managementFeeBps = 0;
   vaultEntity.performanceFeeBps = 0;
 
-  // vaultEntity.tokensDepositLimit = vaultContract.depositLimit();
-  // vaultEntity.sharesSupply = vaultContract.totalSupply();
-  // vaultEntity.managementFeeBps = vaultContract.managementFee().toI32();
-  // vaultEntity.performanceFeeBps = vaultContract.performanceFee().toI32();
+  // vaultEntity.tokensDepositLimit = vaultContract.depositLimit()
+  // vaultEntity.sharesSupply = vaultContract.totalSupply()
+  // vaultEntity.managementFeeBps = vaultContract.managementFee().toI32()
+  // vaultEntity.performanceFeeBps = vaultContract.performanceFee().toI32()
 
   // vault fields
   vaultEntity.activation = vaultContract.activation();
   vaultEntity.apiVersion = vaultContract.apiVersion();
 
   return vaultEntity;
-}
+};
 
 export function getOrCreate(
   vaultAddress: Address,
-  transactionHash: string,
-  createTemplate: boolean
+  transactionHash: string
 ): Vault {
-  log.debug('[Vault] Get or create', [])
+  log.debug('[Vault] Get or create', []);
   let id = vaultAddress.toHexString();
   let vault = Vault.load(id);
 
   if (vault == null) {
-    vault = createNewVaultFromAddress(
-      vaultAddress,
-      transactionHash
-    )
+    vault = createNewVaultFromAddress(vaultAddress, transactionHash);
 
-    if(createTemplate) {
-      VaultTemplate.create(vaultAddress)
-    }
+    VaultTemplate.create(vaultAddress);
   }
 
-  return vault as Vault;
+  return vault!;
 }
 
 export function create(
@@ -82,23 +74,17 @@ export function create(
   classification: string,
   apiVersion: string,
   deploymentId: BigInt,
-  createTemplate: boolean,
   event: ethereum.Event
 ): Vault {
-  log.info('[Vault] Create vault', [])
-  let id = vault.toHexString()
-  let vaultEntity = Vault.load(id)
-  if(vaultEntity == null) {
-    vaultEntity = createNewVaultFromAddress(
-      vault,
-      transactionHash
-    ); 
-    vaultEntity.classification = classification
+  log.info('[Vault] Create vault', []);
+  let id = vault.toHexString();
+  let vaultEntity = Vault.load(id);
+  if (vaultEntity == null) {
+    vaultEntity = createNewVaultFromAddress(vault, transactionHash);
+    vaultEntity.classification = classification;
     // vaultEntity.deploymentId = deploymentId
-    vaultEntity.apiVersion = apiVersion
-    if(createTemplate) {
-      VaultTemplate.create(vault)
-    }
+    vaultEntity.apiVersion = apiVersion;
+    VaultTemplate.create(vault);
   } else {
     // NOTE: vault is experimental but being endorsed
     if (vaultEntity.classification !== classification) {
@@ -107,10 +93,10 @@ export function create(
   }
   // vaultEntity.blockNumber = event.block.number
   // vaultEntity.timestamp = getTimestampInMillis(event)
-  vaultEntity.save()
-  return vaultEntity as Vault
+  vaultEntity.save();
+  return vaultEntity!;
 }
-  
+
 // TODO: implement this
 export function release(
   vault: Address,
@@ -118,9 +104,9 @@ export function release(
   releaseId: BigInt,
   event: ethereum.Event
 ): Vault | null {
-  let id = vault.toHexString()
-  let entity = Vault.load(id)
-  if(entity !== null) {
+  let id = vault.toHexString();
+  let entity = Vault.load(id);
+  if (entity !== null) {
     // TODO: implement this
     // entity.status = 'Released'
     // entity.apiVersion = apiVersion
@@ -129,94 +115,72 @@ export function release(
     // entity.timestamp = getTimestampInMillis(event)
     // entity.save()
   }
-  return entity
+  return entity;
 }
 
-export function tag(
-  vault: Address,
-  tag: string
-): Vault {
-  let id = vault.toHexString()
-  log.info("Processing tag for vault address: {}", [id])
-  let entity = Vault.load(id)
-  if(entity == null) {
+export function tag(vault: Address, tag: string): Vault {
+  let id = vault.toHexString();
+  log.info('Processing tag for vault address: {}', [id]);
+  let entity = Vault.load(id);
+  if (entity == null) {
   } else {
-    entity.tags = tag.split(",")
-    entity.save()
+    entity.tags = tag.split(',');
+    entity.save();
   }
-  return entity as Vault
+  return entity as Vault;
 }
 
 export function deposit(
-  transactionHash: Bytes,
-  transactionIndex: BigInt,
-  timestamp: BigInt,
-  blockNumber: BigInt,
+  transaction: Transaction,
   receiver: Address,
   to: Address,
   depositedAmount: BigInt,
-  totalAssets: BigInt,
-  totalSupply: BigInt,
+  sharesMinted: BigInt,
   pricePerShare: BigInt
 ): void {
-  log.debug('[Vault] Deposit', [])
-  let account = accountLibrary.getOrCreate(receiver)
-  let vault = getOrCreate(to, transactionHash.toHexString(), false)
-  let sharesMinted = totalAssets.equals(BIGINT_ZERO)
-    ? depositedAmount
-    : depositedAmount.times(totalSupply).div(totalAssets)
-    
+  log.debug('[Vault] Deposit', []);
+  let account = accountLibrary.getOrCreate(receiver);
+  let vault = getOrCreate(to, transaction.id);
+
   let vaultPositionResponse = accountVaultPositionLibrary.deposit(
     account,
     vault,
-    transactionHash.toHexString(),
-    transactionIndex.toString(),
-    timestamp,
-    blockNumber,
+    transaction,
     depositedAmount,
     sharesMinted
-  )
-  
+  );
+
   let deposit = depositLibrary.getOrCreate(
-    transactionHash,
-    transactionIndex,
-    timestamp,
-    blockNumber,
     account,
     vault,
+    transaction,
     depositedAmount,
     sharesMinted
-  )
+  );
 
-  let vaultUpdate: VaultUpdate
-  if (!vault.latestUpdate) {
+  let vaultUpdate: VaultUpdate;
+  if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
-      transactionHash,
-      transactionIndex,
-      timestamp,
-      blockNumber,
+      transaction,
       depositedAmount,
       sharesMinted,
       pricePerShare
-    )
+    );
   } else {
     vaultUpdate = vaultUpdateLibrary.deposit(
       vault,
-      transactionHash,
-      transactionIndex,
-      timestamp,
-      blockNumber,
+      transaction,
       depositedAmount,
       sharesMinted,
       pricePerShare
-    )
+    );
   }
-  
-  vault.latestUpdate = vaultUpdate.id
-  vault.balanceTokens = vault.balanceTokens.plus(depositedAmount)
-  vault.balanceTokensIdle = vault.balanceTokensIdle.plus(depositedAmount)
-  vault.sharesSupply = vault.sharesSupply.plus(sharesMinted)
 
-  vault.save()
+  vault.latestUpdate = vaultUpdate.id;
+  vault.balanceTokens = vault.balanceTokens.plus(depositedAmount);
+  vault.balanceTokensIdle = vault.balanceTokensIdle.plus(depositedAmount);
+  vault.sharesSupply = vault.sharesSupply.plus(sharesMinted);
+
+  vault.save();
 }

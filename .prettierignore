@@ -1,0 +1,21 @@
+# General
+.prettierignore
+.solhintignore
+.husky
+.gitignore
+.gitattributes
+.versionrc
+.env
+.env.example
+
+# The graph
+generated
+build
+schema.graphql
+subgraph.template.yaml
+subgraph.yaml
+
+# JS
+node_modules
+yarn.lock
+yarn-error.log

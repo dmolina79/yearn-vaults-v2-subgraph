@@ -1,9 +1,7 @@
 {
   "abi": [
     {
-      "inputs": [
-        { "internalType": "address", "name": "_vault", "type": "address" }
-      ],
+      "inputs": [{ "internalType": "address", "name": "_vault", "type": "address" }],
       "stateMutability": "nonpayable",
       "type": "constructor"
     },
@@ -125,36 +123,28 @@
     {
       "inputs": [],
       "name": "CRV",
-      "outputs": [
-        { "internalType": "contract ICrvV3", "name": "", "type": "address" }
-      ],
+      "outputs": [{ "internalType": "contract ICrvV3", "name": "", "type": "address" }],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [],
       "name": "LDO",
-      "outputs": [
-        { "internalType": "contract IERC20", "name": "", "type": "address" }
-      ],
+      "outputs": [{ "internalType": "contract IERC20", "name": "", "type": "address" }],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [],
       "name": "LiquidityGaugeV2",
-      "outputs": [
-        { "internalType": "contract Gauge", "name": "", "type": "address" }
-      ],
+      "outputs": [{ "internalType": "contract Gauge", "name": "", "type": "address" }],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [],
       "name": "StableSwapSTETH",
-      "outputs": [
-        { "internalType": "contract ICurveFi", "name": "", "type": "address" }
-      ],
+      "outputs": [{ "internalType": "contract ICurveFi", "name": "", "type": "address" }],
       "stateMutability": "view",
       "type": "function"
     },
@@ -208,9 +198,7 @@
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "uint256", "name": "callCost", "type": "uint256" }
-      ],
+      "inputs": [{ "internalType": "uint256", "name": "callCost", "type": "uint256" }],
       "name": "harvestTrigger",
       "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
       "stateMutability": "view",
@@ -238,9 +226,7 @@
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "address", "name": "_newStrategy", "type": "address" }
-      ],
+      "inputs": [{ "internalType": "address", "name": "_newStrategy", "type": "address" }],
       "name": "migrate",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -288,18 +274,14 @@
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "address", "name": "_keeper", "type": "address" }
-      ],
+      "inputs": [{ "internalType": "address", "name": "_keeper", "type": "address" }],
       "name": "setKeeper",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "uint256", "name": "_delay", "type": "uint256" }
-      ],
+      "inputs": [{ "internalType": "uint256", "name": "_delay", "type": "uint256" }],
       "name": "setMaxReportDelay",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -319,18 +301,14 @@
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "address", "name": "_rewards", "type": "address" }
-      ],
+      "inputs": [{ "internalType": "address", "name": "_rewards", "type": "address" }],
       "name": "setRewards",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "address", "name": "_strategist", "type": "address" }
-      ],
+      "inputs": [{ "internalType": "address", "name": "_strategist", "type": "address" }],
       "name": "setStrategist",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -339,9 +317,7 @@
     {
       "inputs": [],
       "name": "stETH",
-      "outputs": [
-        { "internalType": "contract ISteth", "name": "", "type": "address" }
-      ],
+      "outputs": [{ "internalType": "contract ISteth", "name": "", "type": "address" }],
       "stateMutability": "view",
       "type": "function"
     },
@@ -353,9 +329,7 @@
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "address", "name": "_token", "type": "address" }
-      ],
+      "inputs": [{ "internalType": "address", "name": "_token", "type": "address" }],
       "name": "sweep",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -369,9 +343,7 @@
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "uint256", "name": "callCost", "type": "uint256" }
-      ],
+      "inputs": [{ "internalType": "uint256", "name": "callCost", "type": "uint256" }],
       "name": "tendTrigger",
       "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
       "stateMutability": "view",
@@ -393,18 +365,14 @@
     {
       "inputs": [],
       "name": "vault",
-      "outputs": [
-        { "internalType": "contract VaultAPI", "name": "", "type": "address" }
-      ],
+      "outputs": [{ "internalType": "contract VaultAPI", "name": "", "type": "address" }],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [],
       "name": "want",
-      "outputs": [
-        { "internalType": "contract IERC20", "name": "", "type": "address" }
-      ],
+      "outputs": [{ "internalType": "contract IERC20", "name": "", "type": "address" }],
       "stateMutability": "view",
       "type": "function"
     },
@@ -424,9 +392,7 @@
         }
       ],
       "name": "withdraw",
-      "outputs": [
-        { "internalType": "uint256", "name": "_loss", "type": "uint256" }
-      ],
+      "outputs": [{ "internalType": "uint256", "name": "_loss", "type": "uint256" }],
       "stateMutability": "nonpayable",
       "type": "function"
     },
