@@ -237,7 +237,7 @@ type Transfer @entity {
   "Vault Share Token"
   shareToken: Token!
   "Number of Vault Shares transferred"
-  amount: BigInt!
+  shareAmount: BigInt!
   "Vault Token"
   token: Token!
   "Number of Tokens redeemable for shares transferred"
@@ -299,14 +299,14 @@ type AccountVaultPositionUpdate @entity {
   sharesBurnt: BigInt!
 
   # "Tokens sent"
-  # tokensSent: BigInt!
+  tokensSent: BigInt!
   # "Tokens received"
-  # tokensReceived: BigInt!
+  tokensReceived: BigInt!
 
   # "Share tokens sent"
-  # sharesSent: BigInt!
+  sharesSent: BigInt!
   # "Share tokens received"
-  # sharesReceived: BigInt!
+  sharesReceived: BigInt!
 
   "Vault Update"
   vaultUpdate: VaultUpdate!

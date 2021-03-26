@@ -16,6 +16,8 @@ import * as withdrawalLibrary from '../withdrawal';
 import * as accountLibrary from '../account/account';
 import * as accountVaultPositionLibrary from '../account/vault-position';
 import * as vaultUpdateLibrary from './vault-update';
+import * as transferLibrary from '../transfer';
+import * as tokenLibrary from '../token';
 
 const createNewVaultFromAddress = (
   vaultAddress: Address,
@@ -247,4 +249,39 @@ export function withdraw(
       transaction
     );
   }
+}
+
+export function transfer(
+  from: Address,
+  to: Address,
+  amount: BigInt,
+  tokenAddress: Address,
+  shareAmount: BigInt,
+  vaultAddress: Address,
+  transaction: Transaction
+): void {
+  let token = tokenLibrary.getOrCreateToken(tokenAddress);
+  let shareToken = tokenLibrary.getOrCreateToken(vaultAddress);
+  let fromAccount = accountLibrary.getOrCreate(from);
+  let toAccount = accountLibrary.getOrCreate(to);
+  let vault = getOrCreate(vaultAddress, transaction.hash.toHexString());
+  transferLibrary.getOrCreate(
+    fromAccount,
+    toAccount,
+    vault,
+    token,
+    amount,
+    shareToken,
+    shareAmount,
+    transaction
+  );
+
+  accountVaultPositionLibrary.transfer(
+    fromAccount,
+    toAccount,
+    vault,
+    amount,
+    shareAmount,
+    transaction
+  );
 }

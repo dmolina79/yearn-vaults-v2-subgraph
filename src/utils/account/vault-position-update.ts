@@ -41,7 +41,11 @@ export function createAccountVaultPositionUpdate(
   deposits: BigInt,
   withdrawals: BigInt,
   sharesMinted: BigInt,
-  sharesBurnt: BigInt
+  sharesBurnt: BigInt,
+  sharesSent: BigInt,
+  sharesReceived: BigInt,
+  tokensSent: BigInt,
+  tokensReceived: BigInt
 ): AccountVaultPositionUpdate {
   log.debug('[VaultPositionUpdate] Creating vault position update with id {}', [
     id,
@@ -56,6 +60,10 @@ export function createAccountVaultPositionUpdate(
   accountVaultPositionUpdate.withdrawals = withdrawals;
   accountVaultPositionUpdate.sharesMinted = sharesMinted;
   accountVaultPositionUpdate.sharesBurnt = sharesBurnt;
+  accountVaultPositionUpdate.sharesSent = sharesSent;
+  accountVaultPositionUpdate.sharesReceived = sharesReceived;
+  accountVaultPositionUpdate.tokensSent = tokensSent;
+  accountVaultPositionUpdate.tokensReceived = tokensReceived;
   accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultAndTransaction(
     vault,
     transaction
@@ -86,6 +94,10 @@ export function createFirst(
       depositedTokens,
       BIGINT_ZERO,
       receivedShares,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
       BIGINT_ZERO
     );
   }
@@ -121,48 +133,56 @@ export function deposit(
       previousVaultPositionUpdate.deposits.plus(depositedTokens),
       previousVaultPositionUpdate.withdrawals,
       previousVaultPositionUpdate.sharesMinted.plus(receivedShares),
-      previousVaultPositionUpdate.sharesBurnt
+      previousVaultPositionUpdate.sharesBurnt,
+      previousVaultPositionUpdate.sharesSent,
+      previousVaultPositionUpdate.sharesReceived,
+      previousVaultPositionUpdate.tokensSent,
+      previousVaultPositionUpdate.tokensReceived
     );
   }
 
   return accountVaultPositionUpdate!;
 }
 
-export function withdraw(
+export function transfer(
   accountVaultPosition: AccountVaultPosition,
-  transactionHash: string,
-  transactionIndex: string,
-  withdrawedTokens: BigInt,
-  sharesBurnt: BigInt
-): AccountVaultPositionUpdate {
-  let id = buildIdFromAccountHashAndIndex(
-    Account.load(accountVaultPosition.account),
-    transactionHash,
-    transactionIndex
+  account: Account,
+  receivingTransfer: boolean,
+  vault: Vault,
+  tokenAmount: BigInt,
+  shareAmount: BigInt,
+  transaction: Transaction
+): void {
+  log.debug('[AccountVaultPositionUpdate] Transfer', []);
+  let latestAccountVaultPositionUpdate = AccountVaultPositionUpdate.load(
+    accountVaultPosition.latestUpdate
   );
-
-  let accountVaultPositionUpdate = AccountVaultPositionUpdate.load(id);
-
-  if (accountVaultPosition == null) {
-    accountVaultPositionUpdate = new AccountVaultPositionUpdate(id);
-
-    accountVaultPositionUpdate.accountVaultPosition = accountVaultPosition.id;
-    accountVaultPositionUpdate.transaction = transactionHash;
-
-    accountVaultPositionUpdate.withdrawals = accountVaultPositionUpdate.withdrawals.plus(
-      withdrawedTokens
+  if (latestAccountVaultPositionUpdate !== null) {
+    let id = buildIdFromAccountAndTransaction(account, transaction);
+    createAccountVaultPositionUpdate(
+      id,
+      account,
+      vault,
+      accountVaultPosition.id,
+      transaction,
+      latestAccountVaultPositionUpdate.deposits,
+      latestAccountVaultPositionUpdate.withdrawals,
+      latestAccountVaultPositionUpdate.sharesMinted,
+      latestAccountVaultPositionUpdate.sharesBurnt,
+      receivingTransfer
+        ? latestAccountVaultPositionUpdate.sharesSent
+        : latestAccountVaultPositionUpdate.sharesSent.plus(shareAmount),
+      receivingTransfer
+        ? latestAccountVaultPositionUpdate.sharesReceived.plus(shareAmount)
+        : latestAccountVaultPositionUpdate.sharesReceived,
+      receivingTransfer
+        ? latestAccountVaultPositionUpdate.tokensSent
+        : latestAccountVaultPositionUpdate.tokensSent.plus(tokenAmount),
+      receivingTransfer
+        ? latestAccountVaultPositionUpdate.tokensReceived.plus(tokenAmount)
+        : latestAccountVaultPositionUpdate.tokensReceived
     );
-
-    accountVaultPositionUpdate.sharesBurnt = accountVaultPositionUpdate.sharesBurnt.plus(
-      sharesBurnt
-    );
-
-    accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultTxHashAndIndex(
-      accountVaultPosition.vault,
-      transactionHash,
-      transactionIndex
-    );
+    accountVaultPosition.latestUpdate = id;
+    accountVaultPosition.save();
   }
-
-  return accountVaultPositionUpdate!;
 }

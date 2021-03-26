@@ -110,9 +110,62 @@ export function withdraw(
     latestAccountVaultPositionUpdate.deposits,
     latestAccountVaultPositionUpdate.withdrawals.plus(withdrawnAmount),
     latestAccountVaultPositionUpdate.sharesMinted,
-    latestAccountVaultPositionUpdate.sharesBurnt.plus(sharesBurnt)
+    latestAccountVaultPositionUpdate.sharesBurnt.plus(sharesBurnt),
+    latestAccountVaultPositionUpdate.sharesSent,
+    latestAccountVaultPositionUpdate.sharesReceived,
+    latestAccountVaultPositionUpdate.tokensSent,
+    latestAccountVaultPositionUpdate.tokensReceived
+  );
+  accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.minus(
+    sharesBurnt
+  );
+  accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.minus(
+    withdrawnAmount
   );
   accountVaultPosition.latestUpdate = newAccountVaultPositionUpdate.id;
   accountVaultPosition.save();
   return newAccountVaultPositionUpdate;
+}
+
+export function transfer(
+  fromAccount: Account,
+  toAccount: Account,
+  vault: Vault,
+  tokenAmount: BigInt,
+  shareAmount: BigInt,
+  transaction: Transaction
+): void {
+  log.debug('[AccountVaultPosition] Transfer {} from {} to {} ', [
+    tokenAmount.toString(),
+    fromAccount.id,
+    toAccount.id,
+  ]);
+
+  let fromId = buildId(fromAccount, vault);
+  let fromAccountVaultPosition = AccountVaultPosition.load(fromId);
+  // The account vault position should exist.
+  if (fromAccountVaultPosition !== null) {
+    vaultPositionUpdateLibrary.transfer(
+      fromAccountVaultPosition as AccountVaultPosition,
+      fromAccount,
+      false, // Receiving transfer? False, it is the 'from' account.
+      vault,
+      tokenAmount,
+      shareAmount,
+      transaction
+    );
+  }
+  let toId = buildId(toAccount, vault);
+  let toAccountVaultPosition = AccountVaultPosition.load(toId);
+  if (toAccountVaultPosition !== null) {
+    vaultPositionUpdateLibrary.transfer(
+      toAccountVaultPosition as AccountVaultPosition,
+      toAccount,
+      true, // Receiving transfer? True, it is the 'to' account.
+      vault,
+      tokenAmount,
+      shareAmount,
+      transaction
+    );
+  }
 }
