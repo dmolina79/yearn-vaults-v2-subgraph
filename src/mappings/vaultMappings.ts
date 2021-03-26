@@ -11,7 +11,7 @@ import {
   Withdraw1Call,
   Withdraw2Call,
 } from '../../generated/Registry/Vault';
-import { BIGINT_ZERO, MAX_UINT } from '../utils/constants';
+import { BIGINT_ZERO, MAX_UINT, ZERO_ADDRESS } from '../utils/constants';
 import * as strategyLibrary from '../utils/strategy';
 import {
   getOrCreateTransactionFromCall,
@@ -180,17 +180,51 @@ export function handleWithdrawWithSharesAndRecipient(
 }
 
 export function handleTransfer(event: TransferEvent): void {
-  // let vaultContract = VaultContract.bind(event.address)
-  // internalMapTransfer(
-  //   event.transaction.hash,
-  //   event.transaction.index,
-  //   event.address,
-  //   event.params.sender,
-  //   event.params.receiver,
-  //   event.params.value,
-  //   vaultContract.totalAssets(),
-  //   vaultContract.totalSupply(),
-  //   event.block.timestamp,
-  //   event.block.number
-  // );
+  log.info('[Vault mappings] Handle transfer: From: {} - To: {}. TX hash: {}', [
+    event.params.sender.toHexString(),
+    event.params.receiver.toHexString(),
+    event.transaction.hash.toHexString(),
+  ]);
+  if (
+    event.params.sender.toHexString() != ZERO_ADDRESS &&
+    event.params.receiver.toHexString() != ZERO_ADDRESS
+  ) {
+    log.info(
+      '[Vault mappings] Processing transfer: From: {} - To: {}. TX hash: {}',
+      [
+        event.params.sender.toHexString(),
+        event.params.receiver.toHexString(),
+        event.transaction.hash.toHexString(),
+      ]
+    );
+    let transaction = getOrCreateTransactionFromEvent(
+      event,
+      'vault.transfer(address,uint256)'
+    );
+    let vaultContract = VaultContract.bind(event.address);
+    let totalAssets = vaultContract.totalAssets();
+    let totalSupply = vaultContract.totalSupply();
+    let sharesAmount = event.params.value;
+    let amount = sharesAmount.times(totalAssets).div(totalSupply);
+    // share  = (amount * totalSupply) / totalAssets
+    // amount = (shares * totalAssets) / totalSupply
+    vaultLibrary.transfer(
+      event.params.sender,
+      event.params.receiver,
+      amount,
+      vaultContract.token(),
+      sharesAmount,
+      event.address,
+      transaction
+    );
+  } else {
+    log.info(
+      '[Vault mappings] Not processing transfer: From: {} - To: {}. TX hash: {}',
+      [
+        event.params.sender.toHexString(),
+        event.params.receiver.toHexString(),
+        event.transaction.hash.toHexString(),
+      ]
+    );
+  }
 }
