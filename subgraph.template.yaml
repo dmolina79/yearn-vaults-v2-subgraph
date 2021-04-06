@@ -53,9 +53,13 @@ templates:
         - VaultUpdate
         - Transfer
         - Account
-        - AccountUpdate
-        - AccountVaultBalance
+        - Deposit
+        - VaultUpdate
+        - Transfer
+        - Transaction
         - Token
+        - AccountVaultPosition
+        - AccountVaultPositionUpdate
       abis:
         - name: Vault
           file: ./abis/Vault.json

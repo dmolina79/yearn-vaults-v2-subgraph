@@ -150,3 +150,29 @@ export function withdraw(
   vault.save();
   return newVaultUpdate;
 }
+
+export function strategyReported(
+  vault: Vault,
+  latestVaultUpdate: VaultUpdate,
+  transaction: Transaction,
+  pricePerShare: BigInt
+): VaultUpdate {
+  let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
+  let newVaultUpdate = createVaultUpdate(
+    vaultUpdateId,
+    vault,
+    transaction,
+    latestVaultUpdate.tokensDeposited,
+    latestVaultUpdate.tokensWithdrawn,
+    latestVaultUpdate.sharesMinted,
+    latestVaultUpdate.sharesBurnt,
+    pricePerShare,
+    latestVaultUpdate.returnsGenerated,
+    latestVaultUpdate.totalFees,
+    latestVaultUpdate.managementFees,
+    latestVaultUpdate.performanceFees
+  );
+  vault.latestUpdate = newVaultUpdate.id;
+  vault.save();
+  return newVaultUpdate;
+}

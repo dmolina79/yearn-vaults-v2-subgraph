@@ -285,3 +285,21 @@ export function transfer(
     transaction
   );
 }
+
+export function strategyReported(
+  transaction: Transaction,
+  vaultAddress: Address,
+  pricePerShare: BigInt
+): void {
+  let vault = getOrCreate(vaultAddress, transaction.hash.toHexString());
+  let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
+  // The latest vault update should exist
+  if (latestVaultUpdate !== null) {
+    vaultUpdateLibrary.strategyReported(
+      vault,
+      latestVaultUpdate as VaultUpdate,
+      transaction,
+      pricePerShare
+    );
+  }
+}

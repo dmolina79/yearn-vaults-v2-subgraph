@@ -36,7 +36,7 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
 }
 
 export function handleStrategyReported(event: StrategyReportedEvent): void {
-  log.debug('[Vault mappings] Handle deposit', []);
+  log.debug('[Vault mappings] Handle strategy reported', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'StrategyReportedEvent'
@@ -52,6 +52,18 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
     event.params.debtAdded,
     event.params.debtLimit,
     event
+  );
+
+  log.info(
+    '[Vault mappings] Updating price per share (strategy reported): {}',
+    [event.transaction.hash.toHexString()]
+  );
+  let vaultContractAddress = event.address;
+  let vaultContract = VaultContract.bind(vaultContractAddress);
+  vaultLibrary.strategyReported(
+    ethTransaction,
+    vaultContractAddress,
+    vaultContract.pricePerShare()
   );
 }
 
