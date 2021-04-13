@@ -1,15 +1,32 @@
-import { BigInt, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, log } from '@graphprotocol/graph-ts';
 import {
   Account,
   AccountVaultPosition,
   AccountVaultPositionUpdate,
+  Token,
   Transaction,
   Vault,
 } from '../../../generated/schema';
+import { Vault as VaultContract } from '../../../generated/Registry/Vault';
 import * as vaultPositionUpdateLibrary from './vault-position-update';
 
 export function buildId(account: Account, vault: Vault): string {
   return account.id.concat('-').concat(vault.id);
+}
+
+export function getBalancePosition(
+  account: Account,
+  token: Token,
+  vaultContract: VaultContract
+): BigInt {
+  let pricePerShare = vaultContract.pricePerShare();
+  let decimals = vaultContract.decimals();
+  let accountAddress = Address.fromString(account.id);
+  let accountBalance = vaultContract.balanceOf(accountAddress);
+  // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
+  return accountBalance.times(
+    pricePerShare.div(BigInt.fromI32(10).pow(decimals as u8))
+  );
 }
 
 export class VaultPositionResponse {
@@ -34,6 +51,7 @@ export class VaultPositionResponse {
 }
 
 export function deposit(
+  vaultContract: VaultContract,
   account: Account,
   vault: Vault,
   transaction: Transaction,
@@ -44,7 +62,8 @@ export function deposit(
   let vaultPositionId = buildId(account, vault);
   let accountVaultPosition = AccountVaultPosition.load(vaultPositionId);
   let accountVaultPositionUpdate: AccountVaultPositionUpdate;
-
+  let token = Token.load(vault.token) as Token;
+  let balancePosition = getBalancePosition(account, token, vaultContract);
   if (accountVaultPosition == null) {
     accountVaultPosition = new AccountVaultPosition(vaultPositionId);
     accountVaultPosition.vault = vault.id;
@@ -60,7 +79,8 @@ export function deposit(
       vaultPositionId,
       transaction,
       depositedTokens,
-      receivedShares
+      receivedShares,
+      balancePosition
     );
   } else {
     accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(
@@ -76,10 +96,11 @@ export function deposit(
       accountVaultPosition.latestUpdate,
       transaction,
       depositedTokens,
-      receivedShares
+      receivedShares,
+      balancePosition
     );
   }
-
+  accountVaultPosition.balancePosition = balancePosition;
   accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id;
   accountVaultPosition.save();
 
@@ -90,6 +111,7 @@ export function deposit(
 }
 
 export function withdraw(
+  vaultContract: VaultContract,
   accountVaultPosition: AccountVaultPosition,
   latestAccountVaultPositionUpdate: AccountVaultPositionUpdate,
   withdrawnAmount: BigInt,
@@ -98,6 +120,8 @@ export function withdraw(
 ): AccountVaultPositionUpdate {
   let account = Account.load(accountVaultPosition.account) as Account;
   let vault = Vault.load(accountVaultPosition.vault) as Vault;
+  let token = Token.load(vault.token) as Token;
+  let balancePosition = getBalancePosition(account, token, vaultContract);
   let newAccountVaultPositionUpdate = vaultPositionUpdateLibrary.createAccountVaultPositionUpdate(
     vaultPositionUpdateLibrary.buildIdFromAccountAndTransaction(
       account,
@@ -114,7 +138,8 @@ export function withdraw(
     latestAccountVaultPositionUpdate.sharesSent,
     latestAccountVaultPositionUpdate.sharesReceived,
     latestAccountVaultPositionUpdate.tokensSent,
-    latestAccountVaultPositionUpdate.tokensReceived
+    latestAccountVaultPositionUpdate.tokensReceived,
+    balancePosition
   );
   accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.minus(
     sharesBurnt
@@ -122,12 +147,14 @@ export function withdraw(
   accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.minus(
     withdrawnAmount
   );
+  accountVaultPosition.balancePosition = balancePosition;
   accountVaultPosition.latestUpdate = newAccountVaultPositionUpdate.id;
   accountVaultPosition.save();
   return newAccountVaultPositionUpdate;
 }
 
 export function transfer(
+  vaultContract: VaultContract,
   fromAccount: Account,
   toAccount: Account,
   vault: Vault,
@@ -140,7 +167,7 @@ export function transfer(
     fromAccount.id,
     toAccount.id,
   ]);
-
+  let token = Token.load(vault.token) as Token;
   let fromId = buildId(fromAccount, vault);
   let fromAccountVaultPosition = AccountVaultPosition.load(fromId);
   // The account vault position should exist.
@@ -152,6 +179,7 @@ export function transfer(
       vault,
       tokenAmount,
       shareAmount,
+      getBalancePosition(fromAccount, token, vaultContract),
       transaction
     );
   }
@@ -165,6 +193,7 @@ export function transfer(
       vault,
       tokenAmount,
       shareAmount,
+      getBalancePosition(toAccount, token, vaultContract),
       transaction
     );
   }

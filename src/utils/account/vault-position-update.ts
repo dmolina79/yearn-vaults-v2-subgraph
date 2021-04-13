@@ -45,7 +45,8 @@ export function createAccountVaultPositionUpdate(
   sharesSent: BigInt,
   sharesReceived: BigInt,
   tokensSent: BigInt,
-  tokensReceived: BigInt
+  tokensReceived: BigInt,
+  balancePosition: BigInt
 ): AccountVaultPositionUpdate {
   log.debug('[VaultPositionUpdate] Creating vault position update with id {}', [
     id,
@@ -64,6 +65,7 @@ export function createAccountVaultPositionUpdate(
   accountVaultPositionUpdate.sharesReceived = sharesReceived;
   accountVaultPositionUpdate.tokensSent = tokensSent;
   accountVaultPositionUpdate.tokensReceived = tokensReceived;
+  accountVaultPositionUpdate.balancePosition = balancePosition;
   accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultAndTransaction(
     vault,
     transaction
@@ -78,7 +80,8 @@ export function createFirst(
   vaultPositionId: string,
   transaction: Transaction,
   depositedTokens: BigInt,
-  receivedShares: BigInt
+  receivedShares: BigInt,
+  balancePosition: BigInt
 ): AccountVaultPositionUpdate {
   log.debug('[VaultPositionUpdate] Create first', []);
   let id = buildIdFromAccountAndTransaction(account, transaction);
@@ -98,7 +101,8 @@ export function createFirst(
       BIGINT_ZERO,
       BIGINT_ZERO,
       BIGINT_ZERO,
-      BIGINT_ZERO
+      BIGINT_ZERO,
+      balancePosition
     );
   }
 
@@ -112,7 +116,8 @@ export function deposit(
   latestUpdateId: string,
   transaction: Transaction,
   depositedTokens: BigInt,
-  receivedShares: BigInt
+  receivedShares: BigInt,
+  balancePosition: BigInt
 ): AccountVaultPositionUpdate {
   log.debug('[VaultPositionUpdate] Deposit', []);
 
@@ -137,7 +142,8 @@ export function deposit(
       previousVaultPositionUpdate.sharesSent,
       previousVaultPositionUpdate.sharesReceived,
       previousVaultPositionUpdate.tokensSent,
-      previousVaultPositionUpdate.tokensReceived
+      previousVaultPositionUpdate.tokensReceived,
+      balancePosition
     );
   }
 
@@ -151,6 +157,7 @@ export function transfer(
   vault: Vault,
   tokenAmount: BigInt,
   shareAmount: BigInt,
+  balancePosition: BigInt,
   transaction: Transaction
 ): void {
   log.debug('[AccountVaultPositionUpdate] Transfer', []);
@@ -180,7 +187,8 @@ export function transfer(
         : latestAccountVaultPositionUpdate.tokensSent.plus(tokenAmount),
       receivingTransfer
         ? latestAccountVaultPositionUpdate.tokensReceived.plus(tokenAmount)
-        : latestAccountVaultPositionUpdate.tokensReceived
+        : latestAccountVaultPositionUpdate.tokensReceived,
+      balancePosition
     );
     accountVaultPosition.latestUpdate = id;
     accountVaultPosition.save();

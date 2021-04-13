@@ -34,7 +34,10 @@ function _getOrCreateTransaction(
   action: string
 ): Transaction {
   log.debug('[Transaction] Get or create', []);
-  let id = ethTransaction.hash.toHexString();
+  let id = ethTransaction.hash
+    .toHexString()
+    .concat('-')
+    .concat(ethTransaction.index.toString());
   let transaction = Transaction.load(id);
   if (transaction == null) {
     transaction = new Transaction(id);

@@ -270,8 +270,10 @@ type AccountVaultPosition @entity {
 
   "Share balance"
   balanceShares: BigInt!
-  "Token balance"
+  "The current balance of tokens defined as: sum(deposits) - sum(withdrawals) + sum(received transfers) - sum(sent transfers)."
   balanceTokens: BigInt!
+  "The current balance position defined as: (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))."
+  balancePosition: BigInt!
 }
 
 type AccountVaultPositionUpdate @entity {
@@ -306,7 +308,8 @@ type AccountVaultPositionUpdate @entity {
   sharesSent: BigInt!
   # "Share tokens received"
   sharesReceived: BigInt!
-
+  "The balance position."
+  balancePosition: BigInt!
   "Vault Update"
   vaultUpdate: VaultUpdate!
 }

@@ -1,9 +1,16 @@
 import { log, ethereum, BigInt, Address, Bytes } from '@graphprotocol/graph-ts';
-import { Harvest, Strategy, StrategyReport } from '../../generated/schema';
-import { Strategy as StrategyTemplate } from '../../generated/templates';
-import { Strategy as StrategyContract } from '../../generated/templates/Vault/Strategy';
+import {
+  Harvest,
+  Strategy,
+  StrategyReport,
+  Transaction,
+} from '../../../generated/schema';
+import { Strategy as StrategyTemplate } from '../../../generated/templates';
+import { Strategy as StrategyContract } from '../../../generated/templates/Vault/Strategy';
 
-import { buildIdFromEvent, getTimestampInMillis } from './commons';
+import { getTimestampInMillis } from '../commons';
+
+import * as strategyReportLibrary from './strategy-report';
 
 export function create(
   transactionId: string,
@@ -37,7 +44,7 @@ export function create(
 }
 
 export function createReport(
-  transactionId: string,
+  transaction: Transaction,
   strategyId: string,
   gain: BigInt,
   loss: BigInt,
@@ -47,28 +54,27 @@ export function createReport(
   debtAdded: BigInt,
   debtLimit: BigInt,
   event: ethereum.Event
-): StrategyReport {
+): StrategyReport | null {
   log.debug('[Strategy] Create report', []);
   let strategy = Strategy.load(strategyId);
   if (strategy !== null) {
-    let strategyReportId = buildIdFromEvent(event);
-    let strategyReport = StrategyReport.load(strategyReportId);
-    if (strategyReport == null) {
-      strategyReport = new StrategyReport(strategyReportId);
-      strategyReport.strategy = strategyId;
-      strategyReport.blockNumber = event.block.number;
-      strategyReport.timestamp = getTimestampInMillis(event.block);
-      strategyReport.transaction = transactionId;
-      strategyReport.gain = gain;
-      strategyReport.loss = loss;
-      strategyReport.totalGain = totalGain;
-      strategyReport.totalLoss = totalLoss;
-      strategyReport.totalDebt = totalDebt;
-      strategyReport.debtAdded = debtAdded;
-      strategyReport.debtLimit = debtLimit;
-      strategyReport.save();
-    }
-    return strategyReport!;
+    let latestReport = StrategyReport.load(strategy.latestReport);
+    let strategyReport = strategyReportLibrary.getOrCreate(
+      transaction.id,
+      strategy as Strategy,
+      gain,
+      loss,
+      totalGain,
+      totalLoss,
+      totalDebt,
+      debtAdded,
+      debtLimit,
+      event
+    );
+    strategy.latestReport = strategyReport.id;
+    strategy.save();
+
+    return strategyReport;
   }
   return null;
 }
