@@ -140,18 +140,19 @@ export function tag(vault: Address, tag: string): Vault {
 }
 
 export function deposit(
+  vaultContract: VaultContract,
   transaction: Transaction,
   receiver: Address,
   to: Address,
   depositedAmount: BigInt,
-  sharesMinted: BigInt,
-  pricePerShare: BigInt
+  sharesMinted: BigInt
 ): void {
   log.debug('[Vault] Deposit', []);
   let account = accountLibrary.getOrCreate(receiver);
   let vault = getOrCreate(to, transaction.id);
 
-  let vaultPositionResponse = accountVaultPositionLibrary.deposit(
+  accountVaultPositionLibrary.deposit(
+    vaultContract,
     account,
     vault,
     transaction,
@@ -159,7 +160,7 @@ export function deposit(
     sharesMinted
   );
 
-  let deposit = depositLibrary.getOrCreate(
+  depositLibrary.getOrCreate(
     account,
     vault,
     transaction,
@@ -168,6 +169,7 @@ export function deposit(
   );
 
   let vaultUpdate: VaultUpdate;
+  let pricePerShare = vaultContract.pricePerShare();
   if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
@@ -195,6 +197,7 @@ export function deposit(
 }
 
 export function withdraw(
+  vaultContract: VaultContract,
   from: Address,
   to: Address,
   withdrawnAmount: BigInt,
@@ -227,6 +230,7 @@ export function withdraw(
     // The scenario where latestAccountVaultPositionUpdate === null shouldn't happen. One account vault position update should have created when user deposited the tokens.
     if (latestAccountVaultPositionUpdate !== null) {
       accountVaultPositionLibrary.withdraw(
+        vaultContract,
         accountVaultPosition as AccountVaultPosition,
         latestAccountVaultPositionUpdate as AccountVaultPositionUpdate,
         withdrawnAmount,
@@ -252,6 +256,7 @@ export function withdraw(
 }
 
 export function transfer(
+  vaultContract: VaultContract,
   from: Address,
   to: Address,
   amount: BigInt,
@@ -277,6 +282,7 @@ export function transfer(
   );
 
   accountVaultPositionLibrary.transfer(
+    vaultContract,
     fromAccount,
     toAccount,
     vault,

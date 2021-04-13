@@ -12,7 +12,7 @@ import {
   Withdraw2Call,
 } from '../../generated/Registry/Vault';
 import { BIGINT_ZERO, MAX_UINT, ZERO_ADDRESS } from '../utils/constants';
-import * as strategyLibrary from '../utils/strategy';
+import * as strategyLibrary from '../utils/strategy/strategy';
 import {
   getOrCreateTransactionFromCall,
   getOrCreateTransactionFromEvent,
@@ -42,7 +42,7 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
     'StrategyReportedEvent'
   );
   strategyLibrary.createReport(
-    ethTransaction.id,
+    ethTransaction,
     event.params.strategy.toHexString(),
     event.params.gain,
     event.params.loss,
@@ -74,12 +74,12 @@ export function handleDeposit(call: DepositCall): void {
   let transaction = getOrCreateTransactionFromCall(call, 'vault.deposit()');
   let vaultContract = VaultContract.bind(call.to);
   vaultLibrary.deposit(
+    vaultContract,
     transaction,
     call.from,
     call.to,
     MAX_UINT,
-    call.outputs.value0,
-    vaultContract.pricePerShare()
+    call.outputs.value0
   );
 }
 
@@ -88,12 +88,12 @@ export function handleDepositWithAmount(call: Deposit1Call): void {
   let transaction = getOrCreateTransactionFromCall(call, 'vault.deposit(uint)');
   let vaultContract = VaultContract.bind(call.to);
   vaultLibrary.deposit(
+    vaultContract,
     transaction,
     call.from,
     call.to,
     call.inputs._amount,
-    call.outputs.value0,
-    vaultContract.pricePerShare()
+    call.outputs.value0
   );
 }
 
@@ -105,12 +105,12 @@ export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
   );
   let vaultContract = VaultContract.bind(call.to);
   vaultLibrary.deposit(
+    vaultContract,
     transaction,
     call.inputs._recipient,
     call.to,
     call.inputs._amount,
-    call.outputs.value0,
-    vaultContract.pricePerShare()
+    call.outputs.value0
   );
 }
 
@@ -132,6 +132,7 @@ export function handleWithdraw(call: WithdrawCall): void {
     : withdrawnAmount.times(totalSupply).div(totalAssets);
 
   vaultLibrary.withdraw(
+    vaultContract,
     call.from,
     call.to,
     withdrawnAmount,
@@ -155,6 +156,7 @@ export function handleWithdrawWithShares(call: Withdraw1Call): void {
   let vaultContract = VaultContract.bind(call.to);
 
   vaultLibrary.withdraw(
+    vaultContract,
     call.from,
     call.to,
     call.outputs.value0,
@@ -182,6 +184,7 @@ export function handleWithdrawWithSharesAndRecipient(
   let vaultContract = VaultContract.bind(call.to);
 
   vaultLibrary.withdraw(
+    vaultContract,
     call.inputs._recipient,
     call.to,
     call.outputs.value0,
@@ -221,6 +224,7 @@ export function handleTransfer(event: TransferEvent): void {
     // share  = (amount * totalSupply) / totalAssets
     // amount = (shares * totalAssets) / totalSupply
     vaultLibrary.transfer(
+      vaultContract,
       event.params.sender,
       event.params.receiver,
       amount,
