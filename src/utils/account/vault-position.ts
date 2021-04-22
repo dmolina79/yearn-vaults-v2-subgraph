@@ -24,9 +24,9 @@ export function getBalancePosition(
   let accountAddress = Address.fromString(account.id);
   let accountBalance = vaultContract.balanceOf(accountAddress);
   // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
-  return accountBalance.times(
-    pricePerShare.div(BigInt.fromI32(10).pow(decimals as u8))
-  );
+  let u8Decimals = u8(decimals.toI32());
+  let divisor = BigInt.fromI32(10).pow(u8Decimals);
+  return accountBalance.times(pricePerShare.div(divisor));
 }
 
 export class VaultPositionResponse {
@@ -182,6 +182,10 @@ export function transfer(
       getBalancePosition(fromAccount, token, vaultContract),
       transaction
     );
+    fromAccountVaultPosition.balanceShares = fromAccountVaultPosition.balanceShares.minus(
+      shareAmount
+    );
+    fromAccountVaultPosition.save();
   }
   let toId = buildId(toAccount, vault);
   let toAccountVaultPosition = AccountVaultPosition.load(toId);
@@ -196,5 +200,9 @@ export function transfer(
       getBalancePosition(toAccount, token, vaultContract),
       transaction
     );
+    toAccountVaultPosition.balanceShares = toAccountVaultPosition.balanceShares.plus(
+      shareAmount
+    );
+    toAccountVaultPosition.save();
   }
 }
