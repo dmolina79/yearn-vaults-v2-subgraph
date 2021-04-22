@@ -194,6 +194,7 @@ export function transfer(
     toAccountVaultPosition.balanceShares = toAccountVaultPosition.balanceShares.plus(
       shareAmount
     );
+    toAccountVaultPosition.save();
   } else {
     toAccountVaultPosition = makeAccountVaultPosition(
       vaultContract,
@@ -203,8 +204,8 @@ export function transfer(
       shareAmount,
       transaction
     );
+    toAccountVaultPosition.save();
   }
-  toAccountVaultPosition.save();
 }
 
 function makeAccountVaultPosition(
