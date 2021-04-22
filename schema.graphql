@@ -2,7 +2,7 @@
 ## Naming Conventions
 # Certain prefixes may be used to indicate a particular type of value.
 #   * total - indicates this is a cumulative value (e.g. totalSharesMinted, totalGrossReturns)
-#   * balance - indicates this is a spot balance (e.g. balanceTokensInvested, balanceTokensIdle)
+#   * balance - indicates this is a spot balance (e.g. balanceTokensInvested)
 #   * delta - indicates this value is the difference between the prior state and the current state (e.g. deltaPricePerShare)
 # Use plurals when referring to Tokens or Shares (e.g. totalShares, balanceTokens)
 
@@ -107,8 +107,10 @@ type Vault @entity {
   tags: [String!]!
   "Balance of Tokens in the Vault and its Strategies"
   balanceTokens: BigInt!
-  "Current idle Token balance"
-  balanceTokensIdle: BigInt! # Tokens in the Vault contract
+  "All time total number of tokens that have been deposited into the vault"
+  balanceTotalTokensDeposited: BigInt!
+  "All time total number of tokens that have been withdrawn from the vault"
+  balanceTotalTokensWithdrawn: BigInt!
   "Balance of Tokens invested into Strategies"
   balanceTokensInvested: BigInt!
   "Deposit limit for Tokens in the Vault"

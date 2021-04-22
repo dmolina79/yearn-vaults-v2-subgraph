@@ -40,7 +40,8 @@ const createNewVaultFromAddress = (
   // empty at creation
   vaultEntity.tags = [];
   vaultEntity.balanceTokens = BIGINT_ZERO;
-  vaultEntity.balanceTokensIdle = BIGINT_ZERO;
+  vaultEntity.balanceTotalTokensDeposited = BIGINT_ZERO;
+  vaultEntity.balanceTotalTokensWithdrawn = BIGINT_ZERO;
   vaultEntity.balanceTokensInvested = BIGINT_ZERO;
 
   vaultEntity.tokensDepositLimit = BIGINT_ZERO;
@@ -190,7 +191,9 @@ export function deposit(
 
   vault.latestUpdate = vaultUpdate.id;
   vault.balanceTokens = vault.balanceTokens.plus(depositedAmount);
-  vault.balanceTokensIdle = vault.balanceTokensIdle.plus(depositedAmount);
+  vault.balanceTotalTokensDeposited = vault.balanceTotalTokensDeposited.plus(
+    depositedAmount
+  );
   vault.sharesSupply = vault.sharesSupply.plus(sharesMinted);
 
   vault.save();

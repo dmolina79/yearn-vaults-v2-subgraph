@@ -346,13 +346,22 @@ export class Vault extends Entity {
     this.set("balanceTokens", Value.fromBigInt(value));
   }
 
-  get balanceTokensIdle(): BigInt {
-    let value = this.get("balanceTokensIdle");
+  get balanceTotalTokensDeposited(): BigInt {
+    let value = this.get("balanceTotalTokensDeposited");
     return value.toBigInt();
   }
 
-  set balanceTokensIdle(value: BigInt) {
-    this.set("balanceTokensIdle", Value.fromBigInt(value));
+  set balanceTotalTokensDeposited(value: BigInt) {
+    this.set("balanceTotalTokensDeposited", Value.fromBigInt(value));
+  }
+
+  get balanceTotalTokensWithdrawn(): BigInt {
+    let value = this.get("balanceTotalTokensWithdrawn");
+    return value.toBigInt();
+  }
+
+  set balanceTotalTokensWithdrawn(value: BigInt) {
+    this.set("balanceTotalTokensWithdrawn", Value.fromBigInt(value));
   }
 
   get balanceTokensInvested(): BigInt {
@@ -1540,112 +1549,6 @@ export class StrategyReport extends Entity {
 
   set debtLimit(value: BigInt) {
     this.set("debtLimit", Value.fromBigInt(value));
-  }
-}
-
-export class StrategyReportResult extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id !== null,
-      "Cannot save StrategyReportResult entity without an ID"
-    );
-    assert(
-      id.kind == ValueKind.STRING,
-      "Cannot save StrategyReportResult entity with non-string ID. " +
-        'Considering using .toHex() to convert the "id" to a string.'
-    );
-    store.set("StrategyReportResult", id.toString(), this);
-  }
-
-  static load(id: string): StrategyReportResult | null {
-    return store.get("StrategyReportResult", id) as StrategyReportResult | null;
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-
-  get blockNumber(): BigInt {
-    let value = this.get("blockNumber");
-    return value.toBigInt();
-  }
-
-  set blockNumber(value: BigInt) {
-    this.set("blockNumber", Value.fromBigInt(value));
-  }
-
-  get report(): string {
-    let value = this.get("report");
-    return value.toString();
-  }
-
-  set report(value: string) {
-    this.set("report", Value.fromString(value));
-  }
-
-  get startTimestamp(): BigInt {
-    let value = this.get("startTimestamp");
-    return value.toBigInt();
-  }
-
-  set startTimestamp(value: BigInt) {
-    this.set("startTimestamp", Value.fromBigInt(value));
-  }
-
-  get endTimestamp(): BigInt {
-    let value = this.get("endTimestamp");
-    return value.toBigInt();
-  }
-
-  set endTimestamp(value: BigInt) {
-    this.set("endTimestamp", Value.fromBigInt(value));
-  }
-
-  get duration(): BigDecimal {
-    let value = this.get("duration");
-    return value.toBigDecimal();
-  }
-
-  set duration(value: BigDecimal) {
-    this.set("duration", Value.fromBigDecimal(value));
-  }
-
-  get durationPr(): BigDecimal {
-    let value = this.get("durationPr");
-    return value.toBigDecimal();
-  }
-
-  set durationPr(value: BigDecimal) {
-    this.set("durationPr", Value.fromBigDecimal(value));
-  }
-
-  get apr(): BigDecimal {
-    let value = this.get("apr");
-    return value.toBigDecimal();
-  }
-
-  set apr(value: BigDecimal) {
-    this.set("apr", Value.fromBigDecimal(value));
   }
 }
 

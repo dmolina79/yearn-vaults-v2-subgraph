@@ -146,6 +146,9 @@ export function withdraw(
   );
   vault.sharesSupply = vault.sharesSupply.minus(sharesBurnt);
   vault.balanceTokens = vault.balanceTokens.minus(withdrawnAmount);
+  vault.balanceTotalTokensWithdrawn = vault.balanceTotalTokensWithdrawn.plus(
+    withdrawnAmount
+  );
   vault.latestUpdate = newVaultUpdate.id;
   vault.save();
   return newVaultUpdate;
