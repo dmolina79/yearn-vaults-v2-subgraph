@@ -65,13 +65,22 @@ export function deposit(
   let token = Token.load(vault.token) as Token;
   let balancePosition = getBalancePosition(account, token, vaultContract);
   if (accountVaultPosition == null) {
-    accountVaultPosition = makeAccountVaultPosition(
-      vaultContract,
+    accountVaultPosition = new AccountVaultPosition(vaultPositionId);
+    accountVaultPosition.vault = vault.id;
+    accountVaultPosition.account = account.id;
+    accountVaultPosition.token = vault.token;
+    accountVaultPosition.shareToken = vault.shareToken;
+    accountVaultPosition.transaction = transaction.id;
+    accountVaultPosition.balanceTokens = depositedTokens;
+    accountVaultPosition.balanceShares = receivedShares;
+    accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
       account,
       vault,
+      vaultPositionId,
+      transaction,
       depositedTokens,
       receivedShares,
-      transaction
+      balancePosition
     );
   } else {
     accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(
@@ -196,50 +205,27 @@ export function transfer(
     );
     toAccountVaultPosition.save();
   } else {
-    toAccountVaultPosition = makeAccountVaultPosition(
-      vaultContract,
+    let accountVaultPosition = new AccountVaultPosition(toId);
+    let balancePosition = getBalancePosition(toAccount, token, vaultContract);
+    accountVaultPosition.vault = vault.id;
+    accountVaultPosition.account = toAccount.id;
+    accountVaultPosition.token = vault.token;
+    accountVaultPosition.shareToken = vault.shareToken;
+    accountVaultPosition.transaction = transaction.id;
+    accountVaultPosition.balanceTokens = tokenAmount;
+    accountVaultPosition.balanceShares = shareAmount;
+    let accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
       toAccount,
       vault,
+      toId,
+      transaction,
       tokenAmount,
       shareAmount,
-      transaction
+      balancePosition
     );
-    toAccountVaultPosition.save();
+
+    accountVaultPosition.balancePosition = balancePosition;
+    accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id;
+    accountVaultPosition.save();
   }
-}
-
-function makeAccountVaultPosition(
-  vaultContract: VaultContract,
-  account: Account,
-  vault: Vault,
-  tokenAmount: BigInt,
-  shareAmount: BigInt,
-  transaction: Transaction
-): AccountVaultPosition {
-  let token = Token.load(vault.token) as Token;
-  let vaultPositionId = buildId(account, vault);
-  let toId = buildId(account, vault);
-  let accountVaultPosition = new AccountVaultPosition(toId);
-  let accountVaultPositionUpdate: AccountVaultPositionUpdate;
-  let balancePosition = getBalancePosition(account, token, vaultContract);
-  accountVaultPosition.vault = vault.id;
-  accountVaultPosition.account = account.id;
-  accountVaultPosition.token = vault.token;
-  accountVaultPosition.shareToken = vault.shareToken;
-  accountVaultPosition.transaction = transaction.id;
-  accountVaultPosition.balanceTokens = tokenAmount;
-  accountVaultPosition.balanceShares = shareAmount;
-  accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
-    account,
-    vault,
-    vaultPositionId,
-    transaction,
-    tokenAmount,
-    shareAmount,
-    balancePosition
-  );
-
-  accountVaultPosition.balancePosition = balancePosition;
-  accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id;
-  return accountVaultPosition;
 }
