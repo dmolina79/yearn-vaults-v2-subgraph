@@ -232,12 +232,17 @@ export function withdraw(
       accountVaultPositionLibrary.withdraw(
         vaultContract,
         accountVaultPosition as AccountVaultPosition,
-        latestAccountVaultPositionUpdate as AccountVaultPositionUpdate,
         withdrawnAmount,
         sharesBurnt,
         transaction
       );
     }
+  } else {
+    log.info('Account vault position NOT found. TX Hash: {} from {} to {}', [
+      transaction.hash.toHexString(),
+      from.toHexString(),
+      to.toHexString(),
+    ]);
   }
 
   // Updating Vault Update

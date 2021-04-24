@@ -25,11 +25,7 @@ export function buildIdFromAccountAndTransaction(
   account: Account,
   transaction: Transaction
 ): string {
-  return buildIdFromAccountHashAndIndex(
-    account,
-    transaction.id,
-    transaction.index.toString()
-  );
+  return account.id.concat('-'.concat(transaction.id));
 }
 
 export function createAccountVaultPositionUpdate(
@@ -48,9 +44,10 @@ export function createAccountVaultPositionUpdate(
   tokensReceived: BigInt,
   balancePosition: BigInt
 ): AccountVaultPositionUpdate {
-  log.debug('[VaultPositionUpdate] Creating vault position update with id {}', [
-    id,
-  ]);
+  log.info(
+    '[VaultPositionUpdate] Creating account {} vault position update with id {}',
+    [account.id, id]
+  );
   let accountVaultPositionUpdate = new AccountVaultPositionUpdate(id);
   accountVaultPositionUpdate.account = account.id;
   accountVaultPositionUpdate.accountVaultPosition = accountVaultPositionId;
@@ -120,11 +117,6 @@ export function deposit(
   balancePosition: BigInt
 ): AccountVaultPositionUpdate {
   log.debug('[VaultPositionUpdate] Deposit', []);
-
-  let previousVaultPositionUpdate = AccountVaultPositionUpdate.load(
-    latestUpdateId
-  );
-
   let id = buildIdFromAccountAndTransaction(account, transaction);
   let accountVaultPositionUpdate = AccountVaultPositionUpdate.load(id);
 
@@ -135,14 +127,14 @@ export function deposit(
       vault,
       vaultPositionId,
       transaction,
-      previousVaultPositionUpdate.deposits.plus(depositedTokens),
-      previousVaultPositionUpdate.withdrawals,
-      previousVaultPositionUpdate.sharesMinted.plus(receivedShares),
-      previousVaultPositionUpdate.sharesBurnt,
-      previousVaultPositionUpdate.sharesSent,
-      previousVaultPositionUpdate.sharesReceived,
-      previousVaultPositionUpdate.tokensSent,
-      previousVaultPositionUpdate.tokensReceived,
+      depositedTokens,
+      BIGINT_ZERO,
+      receivedShares,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
       balancePosition
     );
   }
@@ -151,6 +143,8 @@ export function deposit(
 }
 
 export function transfer(
+  accountVaultPositionUpdateId: string,
+  createFirstAccountVaultPositionUpdate: boolean,
   accountVaultPosition: AccountVaultPosition,
   account: Account,
   receivingTransfer: boolean,
@@ -160,37 +154,61 @@ export function transfer(
   balancePosition: BigInt,
   transaction: Transaction
 ): void {
-  log.debug('[AccountVaultPositionUpdate] Transfer', []);
-  let latestAccountVaultPositionUpdate = AccountVaultPositionUpdate.load(
-    accountVaultPosition.latestUpdate
+  log.info(
+    '[AccountVaultPositionUpdate] Transfer. Processing account {} for vault position {} in TX {}',
+    [account.id, accountVaultPosition.id, transaction.hash.toHexString()]
   );
-  if (latestAccountVaultPositionUpdate !== null) {
-    let id = buildIdFromAccountAndTransaction(account, transaction);
+  if (createFirstAccountVaultPositionUpdate) {
+    log.info(
+      '[AccountVaultPositionUpdate] Transfer. Account vault position (first time - latestUpdate is null -). Account vault position id {}',
+      [accountVaultPosition.id]
+    );
     createAccountVaultPositionUpdate(
-      id,
+      accountVaultPositionUpdateId,
       account,
       vault,
       accountVaultPosition.id,
       transaction,
-      latestAccountVaultPositionUpdate.deposits,
-      latestAccountVaultPositionUpdate.withdrawals,
-      latestAccountVaultPositionUpdate.sharesMinted,
-      latestAccountVaultPositionUpdate.sharesBurnt,
-      receivingTransfer
-        ? latestAccountVaultPositionUpdate.sharesSent
-        : latestAccountVaultPositionUpdate.sharesSent.plus(shareAmount),
-      receivingTransfer
-        ? latestAccountVaultPositionUpdate.sharesReceived.plus(shareAmount)
-        : latestAccountVaultPositionUpdate.sharesReceived,
-      receivingTransfer
-        ? latestAccountVaultPositionUpdate.tokensSent
-        : latestAccountVaultPositionUpdate.tokensSent.plus(tokenAmount),
-      receivingTransfer
-        ? latestAccountVaultPositionUpdate.tokensReceived.plus(tokenAmount)
-        : latestAccountVaultPositionUpdate.tokensReceived,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      receivingTransfer ? BIGINT_ZERO : shareAmount,
+      receivingTransfer ? shareAmount : BIGINT_ZERO,
+      receivingTransfer ? BIGINT_ZERO : tokenAmount,
+      receivingTransfer ? tokenAmount : BIGINT_ZERO,
       balancePosition
     );
-    accountVaultPosition.latestUpdate = id;
-    accountVaultPosition.save();
+  } else {
+    log.info(
+      '[AccountVaultPositionUpdate] Transfer. Account vault position {}. Latest update is {}.',
+      [accountVaultPosition.id, accountVaultPosition.latestUpdate]
+    );
+    let latestAccountVaultPositionUpdate = AccountVaultPositionUpdate.load(
+      accountVaultPosition.latestUpdate
+    );
+    if (latestAccountVaultPositionUpdate !== null) {
+      let id = buildIdFromAccountAndTransaction(account, transaction);
+      log.info(
+        '[AccountVaultPositionUpdate] Transfer. Creating account vault position update (id {}) for position id {}',
+        [id, accountVaultPosition.id]
+      );
+      createAccountVaultPositionUpdate(
+        id,
+        account,
+        vault,
+        accountVaultPosition.id,
+        transaction,
+        BIGINT_ZERO, // deposits
+        BIGINT_ZERO, // withdrawals
+        BIGINT_ZERO, // sharesMinted
+        BIGINT_ZERO, // sharesBurnt
+        receivingTransfer ? BIGINT_ZERO : shareAmount,
+        receivingTransfer ? shareAmount : BIGINT_ZERO,
+        receivingTransfer ? BIGINT_ZERO : tokenAmount,
+        receivingTransfer ? tokenAmount : BIGINT_ZERO,
+        balancePosition
+      );
+    }
   }
 }

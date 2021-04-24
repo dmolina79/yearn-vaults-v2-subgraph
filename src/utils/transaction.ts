@@ -6,7 +6,10 @@ export function getOrCreateTransactionFromEvent(
   event: ethereum.Event,
   action: string
 ): Transaction {
-  log.debug('[Transaction] Get or create transaction from event', []);
+  log.debug('[Transaction] Get or create transaction hash {} from event {}', [
+    event.transaction.hash.toHexString(),
+    action,
+  ]);
   let transaction = _getOrCreateTransaction(
     event.transaction,
     event.block,
@@ -19,7 +22,10 @@ export function getOrCreateTransactionFromCall(
   call: ethereum.Call,
   action: string
 ): Transaction {
-  log.debug('[Transaction] Get or create transaction from call', []);
+  log.debug(
+    '[Transaction] Get or create transaction hash {} from call action {}',
+    [call.transaction.hash.toHexString(), action]
+  );
   let transaction = _getOrCreateTransaction(
     call.transaction,
     call.block,

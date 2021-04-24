@@ -13,6 +13,7 @@
     "thegraph:deploy:mainnet": "yarn build:mainnet && graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ salazarguille/yearn-vaults-v2-subgraph-mainnet",
     "create-local": "graph create --node http://127.0.0.1:8020/ yearn-vaults-v2/subgraph",
     "remove-local": "graph remove --node http://127.0.0.1:8020/ yearn-vaults-v2/subgraph",
+    "deploy-local": "yarn build:mainnet && graph deploy --node http://127.0.0.1:8020/ --ipfs http://localhost:5001 yearn-vaults-v2/subgraph",
     "prepare:kovan": "mustache config/kovan.json subgraph.template.yaml > subgraph.yaml",
     "prepare:rinkeby": "mustache config/rinkeby.json subgraph.template.yaml > subgraph.yaml",
     "prepare:mainnet": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml",

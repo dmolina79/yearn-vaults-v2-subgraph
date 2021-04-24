@@ -274,6 +274,8 @@ type AccountVaultPosition @entity {
   balanceTokens: BigInt!
   "The current balance position defined as: (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))."
   balancePosition: BigInt!
+  "The accumulated profit balance for the account/vault. It is only calculated when the user withdraws all the shares."
+  balanceProfit: BigInt!
 }
 
 type AccountVaultPositionUpdate @entity {

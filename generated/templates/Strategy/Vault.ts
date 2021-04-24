@@ -600,6 +600,41 @@ export class Vault extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  withdraw3(maxShares: BigInt, recipient: Address, maxLoss: BigInt): BigInt {
+    let result = super.call(
+      "withdraw",
+      "withdraw(uint256,address,uint256):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(maxShares),
+        ethereum.Value.fromAddress(recipient),
+        ethereum.Value.fromUnsignedBigInt(maxLoss)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_withdraw3(
+    maxShares: BigInt,
+    recipient: Address,
+    maxLoss: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "withdraw",
+      "withdraw(uint256,address,uint256):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(maxShares),
+        ethereum.Value.fromAddress(recipient),
+        ethereum.Value.fromUnsignedBigInt(maxLoss)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   pricePerShare(): BigInt {
     let result = super.call("pricePerShare", "pricePerShare():(uint256)", []);
 
@@ -2117,6 +2152,48 @@ export class Withdraw2Call__Outputs {
   _call: Withdraw2Call;
 
   constructor(call: Withdraw2Call) {
+    this._call = call;
+  }
+
+  get value0(): BigInt {
+    return this._call.outputValues[0].value.toBigInt();
+  }
+}
+
+export class Withdraw3Call extends ethereum.Call {
+  get inputs(): Withdraw3Call__Inputs {
+    return new Withdraw3Call__Inputs(this);
+  }
+
+  get outputs(): Withdraw3Call__Outputs {
+    return new Withdraw3Call__Outputs(this);
+  }
+}
+
+export class Withdraw3Call__Inputs {
+  _call: Withdraw3Call;
+
+  constructor(call: Withdraw3Call) {
+    this._call = call;
+  }
+
+  get maxShares(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get recipient(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get maxLoss(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class Withdraw3Call__Outputs {
+  _call: Withdraw3Call;
+
+  constructor(call: Withdraw3Call) {
     this._call = call;
   }
 

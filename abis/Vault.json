@@ -645,6 +645,17 @@
       "type": "function"
     },
     {
+      "name": "withdraw",
+      "outputs": [{ "type": "uint256", "name": "" }],
+      "inputs": [
+        { "type": "uint256", "name": "maxShares" },
+        { "type": "address", "name": "recipient" },
+        { "type": "uint256", "name": "maxLoss" }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "gas": 12472,
       "inputs": [],
       "name": "pricePerShare",

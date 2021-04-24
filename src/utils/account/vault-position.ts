@@ -9,6 +9,7 @@ import {
 } from '../../../generated/schema';
 import { Vault as VaultContract } from '../../../generated/Registry/Vault';
 import * as vaultPositionUpdateLibrary from './vault-position-update';
+import { BIGINT_ZERO } from '../constants';
 
 export function buildId(account: Account, vault: Vault): string {
   return account.id.concat('-').concat(vault.id);
@@ -19,14 +20,15 @@ export function getBalancePosition(
   token: Token,
   vaultContract: VaultContract
 ): BigInt {
+  log.info('GetBalancePosition account  {} ', [account.id]);
   let pricePerShare = vaultContract.pricePerShare();
   let decimals = vaultContract.decimals();
   let accountAddress = Address.fromString(account.id);
   let accountBalance = vaultContract.balanceOf(accountAddress);
   // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
-  return accountBalance.times(
-    pricePerShare.div(BigInt.fromI32(10).pow(decimals as u8))
-  );
+  let u8Decimals = u8(decimals.toI32());
+  let divisor = BigInt.fromI32(10).pow(u8Decimals);
+  return accountBalance.times(pricePerShare).div(divisor);
 }
 
 export class VaultPositionResponse {
@@ -48,6 +50,30 @@ export class VaultPositionResponse {
       accountVaultPositionUpdate
     );
   }
+}
+
+function getBalanceTokens(current: BigInt, withdraw: BigInt): BigInt {
+  return withdraw.gt(current) ? BIGINT_ZERO : current.minus(withdraw);
+}
+
+function getBalanceProfit(
+  currentSharesBalance: BigInt,
+  currentProfit: BigInt,
+  currentAmount: BigInt,
+  withdrawAmount: BigInt
+): BigInt {
+  if (currentSharesBalance.isZero()) {
+    // User withdrawn all the shares, so we can calculate the profit or losses.
+    if (withdrawAmount.gt(currentAmount)) {
+      // User has profits.
+      return currentProfit.plus(withdrawAmount.minus(currentAmount));
+    } else {
+      // User has losses.
+      return currentProfit.minus(currentAmount.minus(withdrawAmount));
+    }
+  }
+  // User still have shares, so we returns the current profit.
+  return currentProfit;
 }
 
 export function deposit(
@@ -73,6 +99,7 @@ export function deposit(
     accountVaultPosition.transaction = transaction.id;
     accountVaultPosition.balanceTokens = depositedTokens;
     accountVaultPosition.balanceShares = receivedShares;
+    accountVaultPosition.balanceProfit = BIGINT_ZERO;
     accountVaultPositionUpdate = vaultPositionUpdateLibrary.createFirst(
       account,
       vault,
@@ -113,7 +140,6 @@ export function deposit(
 export function withdraw(
   vaultContract: VaultContract,
   accountVaultPosition: AccountVaultPosition,
-  latestAccountVaultPositionUpdate: AccountVaultPositionUpdate,
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
   transaction: Transaction
@@ -131,20 +157,27 @@ export function withdraw(
     vault,
     accountVaultPosition.id,
     transaction,
-    latestAccountVaultPositionUpdate.deposits,
-    latestAccountVaultPositionUpdate.withdrawals.plus(withdrawnAmount),
-    latestAccountVaultPositionUpdate.sharesMinted,
-    latestAccountVaultPositionUpdate.sharesBurnt.plus(sharesBurnt),
-    latestAccountVaultPositionUpdate.sharesSent,
-    latestAccountVaultPositionUpdate.sharesReceived,
-    latestAccountVaultPositionUpdate.tokensSent,
-    latestAccountVaultPositionUpdate.tokensReceived,
+    BIGINT_ZERO, // deposits
+    withdrawnAmount,
+    BIGINT_ZERO, // sharesMinted
+    sharesBurnt,
+    BIGINT_ZERO, // sharesSent
+    BIGINT_ZERO, // sharesReceived
+    BIGINT_ZERO, // tokensSent
+    BIGINT_ZERO, // tokensReceived
     balancePosition
   );
   accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.minus(
     sharesBurnt
   );
-  accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.minus(
+  accountVaultPosition.balanceTokens = getBalanceTokens(
+    accountVaultPosition.balanceTokens,
+    withdrawnAmount
+  );
+  accountVaultPosition.balanceProfit = getBalanceProfit(
+    accountVaultPosition.balanceShares,
+    accountVaultPosition.balanceProfit,
+    accountVaultPosition.balanceTokens,
     withdrawnAmount
   );
   accountVaultPosition.balancePosition = balancePosition;
@@ -162,7 +195,7 @@ export function transfer(
   shareAmount: BigInt,
   transaction: Transaction
 ): void {
-  log.debug('[AccountVaultPosition] Transfer {} from {} to {} ', [
+  log.info('[AccountVaultPosition] Transfer {} from {} to {} ', [
     tokenAmount.toString(),
     fromAccount.id,
     toAccount.id,
@@ -170,31 +203,132 @@ export function transfer(
   let token = Token.load(vault.token) as Token;
   let fromId = buildId(fromAccount, vault);
   let fromAccountVaultPosition = AccountVaultPosition.load(fromId);
-  // The account vault position should exist.
-  if (fromAccountVaultPosition !== null) {
-    vaultPositionUpdateLibrary.transfer(
-      fromAccountVaultPosition as AccountVaultPosition,
-      fromAccount,
-      false, // Receiving transfer? False, it is the 'from' account.
-      vault,
-      tokenAmount,
-      shareAmount,
-      getBalancePosition(fromAccount, token, vaultContract),
-      transaction
+  let fromBalancePosition = getBalancePosition(
+    fromAccount,
+    token,
+    vaultContract
+  );
+  let fromLatestUpdateId = vaultPositionUpdateLibrary.buildIdFromAccountAndTransaction(
+    fromAccount,
+    transaction
+  );
+  let fromCreateFirstAccountVaultPositionUpdate = false;
+  if (fromAccountVaultPosition == null) {
+    // It supports accounts that didn't deposit into a vault, but they received transfers (share tokens).
+    log.info(
+      '[VaultPosition] Transfer - FromAccountVaultPosition does NOT exist {}.',
+      [fromId]
     );
+    fromCreateFirstAccountVaultPositionUpdate = true;
+    fromAccountVaultPosition = new AccountVaultPosition(fromId);
+    fromAccountVaultPosition.vault = vault.id;
+    fromAccountVaultPosition.account = fromAccount.id;
+    fromAccountVaultPosition.token = vault.token;
+    fromAccountVaultPosition.shareToken = vault.shareToken;
+    fromAccountVaultPosition.transaction = transaction.id;
+    fromAccountVaultPosition.balanceTokens = BIGINT_ZERO;
+    fromAccountVaultPosition.balanceShares = BIGINT_ZERO;
+    fromAccountVaultPosition.balancePosition = fromBalancePosition;
+    fromAccountVaultPosition.balanceProfit = BIGINT_ZERO;
+    fromAccountVaultPosition.latestUpdate = fromLatestUpdateId;
+    fromAccountVaultPosition.save();
+  } else {
+    log.info(
+      '[VaultPosition] Transfer - FromAccountVaultPosition does exist {}.',
+      [fromAccountVaultPosition.id]
+    );
+    fromAccountVaultPosition.balanceTokens = getBalanceTokens(
+      fromAccountVaultPosition.balanceTokens,
+      tokenAmount
+    );
+    fromAccountVaultPosition.balanceShares = fromAccountVaultPosition.balanceShares.minus(
+      shareAmount
+    );
+    fromAccountVaultPosition.balancePosition = fromBalancePosition;
+    fromAccountVaultPosition.balanceProfit = getBalanceProfit(
+      fromAccountVaultPosition.balanceShares,
+      fromAccountVaultPosition.balanceProfit,
+      fromAccountVaultPosition.balanceTokens,
+      tokenAmount
+    );
+    fromAccountVaultPosition.save();
   }
+  vaultPositionUpdateLibrary.transfer(
+    fromLatestUpdateId,
+    fromCreateFirstAccountVaultPositionUpdate,
+    fromAccountVaultPosition as AccountVaultPosition,
+    fromAccount,
+    false, // Receiving transfer? False, it is the 'from' account.
+    vault,
+    tokenAmount,
+    shareAmount,
+    fromBalancePosition,
+    transaction
+  );
+  log.info('Processing TO account {} (transfer). Hash {}', [
+    toAccount.id,
+    transaction.hash.toHexString(),
+  ]);
+
   let toId = buildId(toAccount, vault);
   let toAccountVaultPosition = AccountVaultPosition.load(toId);
-  if (toAccountVaultPosition !== null) {
-    vaultPositionUpdateLibrary.transfer(
-      toAccountVaultPosition as AccountVaultPosition,
-      toAccount,
-      true, // Receiving transfer? True, it is the 'to' account.
-      vault,
-      tokenAmount,
-      shareAmount,
-      getBalancePosition(toAccount, token, vaultContract),
-      transaction
+  let toBalancePosition = getBalancePosition(toAccount, token, vaultContract);
+  let toLatestUpdateId = vaultPositionUpdateLibrary.buildIdFromAccountAndTransaction(
+    toAccount,
+    transaction
+  );
+  let toCreateFirstAccountVaultPositionUpdate = false;
+  if (toAccountVaultPosition == null) {
+    // It supports accounts that didn't deposit into a vault, but only received transfers (share tokens).
+    log.info(
+      '[VaultPosition] Transfer - ToAccountVaultPosition does NOT exist {}.',
+      [toId]
     );
+    toCreateFirstAccountVaultPositionUpdate = true;
+    toAccountVaultPosition = new AccountVaultPosition(toId);
+    toAccountVaultPosition.vault = vault.id;
+    toAccountVaultPosition.account = toAccount.id;
+    toAccountVaultPosition.token = vault.token;
+    toAccountVaultPosition.shareToken = vault.shareToken;
+    toAccountVaultPosition.transaction = transaction.id;
+    toAccountVaultPosition.balanceTokens = tokenAmount;
+    toAccountVaultPosition.balanceShares = shareAmount;
+    toAccountVaultPosition.balancePosition = toBalancePosition;
+    toAccountVaultPosition.balanceProfit = BIGINT_ZERO;
+    toAccountVaultPosition.latestUpdate = toLatestUpdateId;
+    toAccountVaultPosition.save();
+  } else {
+    log.info(
+      '[VaultPosition] Transfer - ToAccountVaultPosition does exist {}.',
+      [toAccountVaultPosition.id]
+    );
+    toAccountVaultPosition.balanceTokens = getBalanceTokens(
+      toAccountVaultPosition.balanceTokens,
+      tokenAmount
+    );
+    toAccountVaultPosition.balanceShares = toAccountVaultPosition.balanceShares.plus(
+      shareAmount
+    );
+    toAccountVaultPosition.balancePosition = toBalancePosition;
+    toAccountVaultPosition.balanceProfit = getBalanceProfit(
+      toAccountVaultPosition.balanceShares,
+      toAccountVaultPosition.balanceProfit,
+      toAccountVaultPosition.balanceTokens,
+      tokenAmount
+    );
+    toAccountVaultPosition.save();
   }
+
+  vaultPositionUpdateLibrary.transfer(
+    toLatestUpdateId,
+    toCreateFirstAccountVaultPositionUpdate,
+    toAccountVaultPosition as AccountVaultPosition,
+    toAccount,
+    true, // Receiving transfer? True, it is the 'to' account.
+    vault,
+    tokenAmount,
+    shareAmount,
+    toBalancePosition,
+    transaction
+  );
 }
