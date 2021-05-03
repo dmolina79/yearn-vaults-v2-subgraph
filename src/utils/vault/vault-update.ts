@@ -32,10 +32,10 @@ function createVaultUpdate(
   sharesMinted: BigInt,
   sharesBurnt: BigInt,
   pricePerShare: BigInt,
-  returnsGenerated: BigInt,
   totalFees: BigInt,
   managementFees: BigInt,
-  performanceFees: BigInt
+  performanceFees: BigInt,
+  balancePosition: BigInt
 ): VaultUpdate {
   log.debug('[VaultUpdate] Creating vault update with id {}', [vault.id]);
   let vaultUpdate = new VaultUpdate(id);
@@ -50,10 +50,17 @@ function createVaultUpdate(
   vaultUpdate.sharesBurnt = sharesBurnt;
   // Performance
   vaultUpdate.pricePerShare = pricePerShare;
-  vaultUpdate.returnsGenerated = returnsGenerated;
   vaultUpdate.totalFees = totalFees;
   vaultUpdate.managementFees = managementFees;
   vaultUpdate.performanceFees = performanceFees;
+
+  var tokenBalance = tokensDeposited.minus(tokensWithdrawn);
+  if (tokenBalance.gt(balancePosition)) {
+    vaultUpdate.returnsGenerated = BIGINT_ZERO;
+  } else {
+    vaultUpdate.returnsGenerated = balancePosition.minus(tokenBalance);
+  }
+
   vaultUpdate.save();
   return vaultUpdate;
 }
@@ -63,7 +70,8 @@ export function firstDeposit(
   transaction: Transaction,
   depositedAmount: BigInt,
   sharesMinted: BigInt,
-  pricePerShare: BigInt
+  pricePerShare: BigInt,
+  balancePosition: BigInt
 ): VaultUpdate {
   log.debug('[VaultUpdate] First deposit', []);
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
@@ -82,7 +90,7 @@ export function firstDeposit(
       BIGINT_ZERO,
       BIGINT_ZERO,
       BIGINT_ZERO,
-      BIGINT_ZERO
+      balancePosition
     );
   }
 
@@ -94,7 +102,8 @@ export function deposit(
   transaction: Transaction,
   depositedAmount: BigInt,
   sharesMinted: BigInt,
-  pricePerShare: BigInt
+  pricePerShare: BigInt,
+  balancePosition: BigInt
 ): VaultUpdate {
   log.debug('[VaultUpdate] Deposit', []);
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
@@ -111,10 +120,10 @@ export function deposit(
       latestVaultUpdate.sharesMinted.plus(sharesMinted),
       latestVaultUpdate.sharesBurnt,
       pricePerShare,
-      latestVaultUpdate.returnsGenerated,
       latestVaultUpdate.totalFees,
       latestVaultUpdate.managementFees,
-      latestVaultUpdate.performanceFees
+      latestVaultUpdate.performanceFees,
+      balancePosition
     );
   }
 
@@ -127,7 +136,8 @@ export function withdraw(
   pricePerShare: BigInt,
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
-  transaction: Transaction
+  transaction: Transaction,
+  balancePosition: BigInt
 ): VaultUpdate {
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
   let newVaultUpdate = createVaultUpdate(
@@ -139,10 +149,10 @@ export function withdraw(
     latestVaultUpdate.sharesMinted,
     latestVaultUpdate.sharesBurnt.plus(sharesBurnt),
     pricePerShare,
-    latestVaultUpdate.returnsGenerated,
     latestVaultUpdate.totalFees,
     latestVaultUpdate.managementFees,
-    latestVaultUpdate.performanceFees
+    latestVaultUpdate.performanceFees,
+    balancePosition
   );
   vault.sharesSupply = vault.sharesSupply.minus(sharesBurnt);
   vault.balanceTokens = vault.balanceTokens.minus(withdrawnAmount);
@@ -155,7 +165,8 @@ export function strategyReported(
   vault: Vault,
   latestVaultUpdate: VaultUpdate,
   transaction: Transaction,
-  pricePerShare: BigInt
+  pricePerShare: BigInt,
+  balancePosition: BigInt
 ): VaultUpdate {
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
   let newVaultUpdate = createVaultUpdate(
@@ -167,10 +178,10 @@ export function strategyReported(
     latestVaultUpdate.sharesMinted,
     latestVaultUpdate.sharesBurnt,
     pricePerShare,
-    latestVaultUpdate.returnsGenerated,
     latestVaultUpdate.totalFees,
     latestVaultUpdate.managementFees,
-    latestVaultUpdate.performanceFees
+    latestVaultUpdate.performanceFees,
+    balancePosition
   );
   vault.latestUpdate = newVaultUpdate.id;
   vault.save();

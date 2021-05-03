@@ -1,4 +1,4 @@
-import { Address, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, log } from '@graphprotocol/graph-ts';
 import {
   StrategyAdded as StrategyAddedEvent,
   StrategyReported as StrategyReportedEvent,
@@ -63,6 +63,7 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
   let vaultContract = VaultContract.bind(vaultContractAddress);
   vaultLibrary.strategyReported(
     ethTransaction,
+    vaultContract,
     vaultContractAddress,
     vaultContract.pricePerShare()
   );

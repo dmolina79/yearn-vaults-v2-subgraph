@@ -150,6 +150,8 @@ type VaultUpdate @entity {
   sharesMinted: BigInt!
   "Sum of Shares burnt over all time"
   sharesBurnt: BigInt!
+  "The current balance position defined as: (vault.totalAssets() * (vault.pricePerShare() / 10**vault.decimals()))."
+  balancePosition: BigInt!
 
   ### PERFORMANCE
 

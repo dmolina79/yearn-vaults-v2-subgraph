@@ -150,6 +150,12 @@ export function deposit(
   log.debug('[Vault] Deposit', []);
   let account = accountLibrary.getOrCreate(receiver);
   let vault = getOrCreate(to, transaction.id);
+  let totalAssets = vaultContract.totalAssets();
+  let decimals = u8(vaultContract.decimals().toI32());
+  let pricePerShare = vaultContract.pricePerShare();
+  let balancePosition = totalAssets
+    .times(pricePerShare)
+    .div(BigInt.fromI32(10).pow(decimals));
 
   accountVaultPositionLibrary.deposit(
     vaultContract,
@@ -169,14 +175,14 @@ export function deposit(
   );
 
   let vaultUpdate: VaultUpdate;
-  let pricePerShare = vaultContract.pricePerShare();
   if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
       transaction,
       depositedAmount,
       sharesMinted,
-      pricePerShare
+      pricePerShare,
+      balancePosition
     );
   } else {
     vaultUpdate = vaultUpdateLibrary.deposit(
@@ -184,7 +190,8 @@ export function deposit(
       transaction,
       depositedAmount,
       sharesMinted,
-      pricePerShare
+      pricePerShare,
+      balancePosition
     );
   }
 
@@ -207,6 +214,11 @@ export function withdraw(
 ): void {
   let account = accountLibrary.getOrCreate(from);
   let vault = getOrCreate(to, transaction.hash.toHexString());
+  let totalAssets = vaultContract.totalAssets();
+  let decimals = u8(vaultContract.decimals().toI32());
+  let balancePosition = totalAssets
+    .times(pricePerShare)
+    .div(BigInt.fromI32(10).pow(decimals));
 
   withdrawalLibrary.getOrCreate(
     account,
@@ -255,7 +267,8 @@ export function withdraw(
       pricePerShare,
       withdrawnAmount,
       sharesBurnt,
-      transaction
+      transaction,
+      balancePosition
     );
   }
 }
@@ -299,18 +312,25 @@ export function transfer(
 
 export function strategyReported(
   transaction: Transaction,
+  vaultContract: VaultContract,
   vaultAddress: Address,
   pricePerShare: BigInt
 ): void {
   let vault = getOrCreate(vaultAddress, transaction.hash.toHexString());
   let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
+  let totalAssets = vaultContract.totalAssets();
+  let decimals = u8(vaultContract.decimals().toI32());
+  let balancePosition = totalAssets
+    .times(pricePerShare)
+    .div(BigInt.fromI32(10).pow(decimals));
   // The latest vault update should exist
   if (latestVaultUpdate !== null) {
     vaultUpdateLibrary.strategyReported(
       vault,
       latestVaultUpdate as VaultUpdate,
       transaction,
-      pricePerShare
+      pricePerShare,
+      balancePosition
     );
   }
 }

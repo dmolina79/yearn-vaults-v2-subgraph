@@ -521,6 +521,15 @@ export class VaultUpdate extends Entity {
     this.set("sharesBurnt", Value.fromBigInt(value));
   }
 
+  get balancePosition(): BigInt {
+    let value = this.get("balancePosition");
+    return value.toBigInt();
+  }
+
+  set balancePosition(value: BigInt) {
+    this.set("balancePosition", Value.fromBigInt(value));
+  }
+
   get pricePerShare(): BigInt {
     let value = this.get("pricePerShare");
     return value.toBigInt();
