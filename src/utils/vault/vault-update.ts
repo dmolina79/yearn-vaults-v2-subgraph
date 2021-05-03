@@ -53,12 +53,12 @@ function createVaultUpdate(
   vaultUpdate.totalFees = totalFees;
   vaultUpdate.managementFees = managementFees;
   vaultUpdate.performanceFees = performanceFees;
+  vaultUpdate.balancePosition = balancePosition;
 
-  var tokenBalance = tokensDeposited.minus(tokensWithdrawn);
-  if (tokenBalance.gt(balancePosition)) {
-    vaultUpdate.returnsGenerated = BIGINT_ZERO;
+  if (vault.balanceTokens.gt(balancePosition)) {
+    vaultUpdate.returnsGenerated = balancePosition;
   } else {
-    vaultUpdate.returnsGenerated = balancePosition.minus(tokenBalance);
+    vaultUpdate.returnsGenerated = balancePosition.minus(vault.balanceTokens);
   }
 
   vaultUpdate.save();
