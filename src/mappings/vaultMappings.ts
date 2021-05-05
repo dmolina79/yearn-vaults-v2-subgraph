@@ -1,4 +1,4 @@
-import { Address, BigInt, log } from '@graphprotocol/graph-ts';
+import { log } from '@graphprotocol/graph-ts';
 import {
   StrategyAdded as StrategyAddedEvent,
   StrategyReported as StrategyReportedEvent,
@@ -12,6 +12,7 @@ import {
   Withdraw2Call,
   Withdraw3Call,
 } from '../../generated/Registry/Vault';
+import { printCallInfo } from '../utils/commons';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../utils/constants';
 import * as strategyLibrary from '../utils/strategy/strategy';
 import {
@@ -73,6 +74,18 @@ export function handleStrategyReported(event: StrategyReportedEvent): void {
 
 export function handleDeposit(call: DepositCall): void {
   log.debug('[Vault mappings] Handle deposit', []);
+
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'Deposit () - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing deposit tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+      ]
+    );
+    return;
+  }
   let transaction = getOrCreateTransactionFromCall(call, 'vault.deposit()');
   let vaultContract = VaultContract.bind(call.to);
   let totalAssets = vaultContract.totalAssets();
@@ -90,10 +103,9 @@ export function handleDeposit(call: DepositCall): void {
     amount.toString(),
   ]);
   vaultLibrary.deposit(
-    vaultContract,
+    call.to,
     transaction,
     call.from,
-    call.to,
     amount,
     call.outputs.value0
   );
@@ -101,13 +113,22 @@ export function handleDeposit(call: DepositCall): void {
 
 export function handleDepositWithAmount(call: Deposit1Call): void {
   log.debug('[Vault mappings] Handle deposit with amount', []);
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'Deposit (amount) - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing deposit tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+      ]
+    );
+    return;
+  }
   let transaction = getOrCreateTransactionFromCall(call, 'vault.deposit(uint)');
-  let vaultContract = VaultContract.bind(call.to);
   vaultLibrary.deposit(
-    vaultContract,
+    call.to, // Vault Address
     transaction,
     call.from,
-    call.to,
     call.inputs._amount,
     call.outputs.value0
   );
@@ -115,16 +136,44 @@ export function handleDepositWithAmount(call: Deposit1Call): void {
 
 export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
   log.debug('[Vault mappings] Handle deposit with amount and recipient', []);
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'Deposit (amount,recipient) - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing deposit tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+      ]
+    );
+    return;
+  }
   let transaction = getOrCreateTransactionFromCall(
     call,
     'vault.deposit(uint,address)'
   );
-  let vaultContract = VaultContract.bind(call.to);
+  log.info(
+    '[Vault mappings] Handle deposit(amount, recipient): TX: {} Vault address {} Amount: {} Recipient: {} From: {}',
+    [
+      call.transaction.hash.toHexString(),
+      call.to.toHexString(),
+      call.inputs._amount.toString(),
+      call.inputs._recipient.toHexString(),
+      call.from.toHexString(),
+    ]
+  );
+
+  let blockNumber = call.block.number.toString();
+  let txHash = call.transaction.hash.toHexString();
+  log.info('TXDeposit {} block {} call.input.recipient {}', [
+    txHash,
+    blockNumber,
+    call.inputs._recipient.toHexString(),
+  ]);
+  printCallInfo('TXDeposit', call);
   vaultLibrary.deposit(
-    vaultContract,
+    call.to, // Vault Address
     transaction,
-    call.inputs._recipient,
-    call.to,
+    call.inputs._recipient, // Recipient
     call.inputs._amount,
     call.outputs.value0
   );
@@ -134,10 +183,22 @@ export function handleWithdraw(call: WithdrawCall): void {
   log.info('[Vault mappings] Handle withdraw. TX hash: {}', [
     call.transaction.hash.toHexString(),
   ]);
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'Withdraw (shares) - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing withdraw tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+      ]
+    );
+    return;
+  }
   let transaction = getOrCreateTransactionFromCall(call, 'vault.withdraw()');
   log.info('[Vault mappings] Handle withdraw(): Vault address {}', [
     call.to.toHexString(),
   ]);
+
   let vaultContract = VaultContract.bind(call.to);
 
   let withdrawnAmount = call.outputs.value0;
@@ -148,12 +209,10 @@ export function handleWithdraw(call: WithdrawCall): void {
     : withdrawnAmount.times(totalSupply).div(totalAssets);
 
   vaultLibrary.withdraw(
-    vaultContract,
-    call.from,
     call.to,
+    call.from,
     withdrawnAmount,
     totalSharesBurnt,
-    vaultContract.pricePerShare(),
     transaction
   );
 }
@@ -162,6 +221,17 @@ export function handleWithdrawWithShares(call: Withdraw1Call): void {
   log.info('[Vault mappings] Handle withdraw with shares. TX hash: {}', [
     call.transaction.hash.toHexString(),
   ]);
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'Withdraw (shares) - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing withdraw tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+      ]
+    );
+    return;
+  }
   let transaction = getOrCreateTransactionFromCall(
     call,
     'vault.withdraw(uint256)'
@@ -169,15 +239,12 @@ export function handleWithdrawWithShares(call: Withdraw1Call): void {
   log.info('[Vault mappings] Handle withdraw(shares): Vault address {}', [
     call.to.toHexString(),
   ]);
-  let vaultContract = VaultContract.bind(call.to);
 
   vaultLibrary.withdraw(
-    vaultContract,
-    call.from,
     call.to,
+    call.from,
     call.outputs.value0,
     call.inputs._shares,
-    vaultContract.pricePerShare(),
     transaction
   );
 }
@@ -189,45 +256,48 @@ export function handleWithdrawWithSharesAndRecipient(
     '[Vault mappings] Handle withdraw with shares and recipient. TX hash: {}',
     [call.transaction.hash.toHexString()]
   );
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'Withdraw (shares,recipient) - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing withdraw tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+        call.inputs._recipient.toHexString(),
+      ]
+    );
+    return;
+  }
   let transaction = getOrCreateTransactionFromCall(
     call,
     'vault.withdraw(uint256,address)'
   );
   log.info(
-    '[Vault mappings] Handle withdraw(shares, recipient): Vault address {}',
-    [call.to.toHexString()]
-  );
-  log.info(
-    'vault.withdraw(uint256,address) WITHDRAW TEST TX Hash {} From {} To {} recipient {}',
+    '[Vault mappings] Handle withdraw(shares, recipient): TX: {} Vault address {} Shares: {} Recipient: {} From: {}',
     [
       call.transaction.hash.toHexString(),
-      call.from.toHexString(),
       call.to.toHexString(),
+      call.inputs._shares.toString(),
       call.inputs._recipient.toHexString(),
+      call.from.toHexString(),
     ]
   );
-  let vaultContract = VaultContract.bind(call.to);
-  if (call.transaction.from !== call.inputs._recipient) {
-    vaultLibrary.withdraw(
-      vaultContract,
-      call.transaction.to as Address, // Recipient
-      call.to,
-      call.outputs.value0,
-      call.inputs._shares,
-      vaultContract.pricePerShare(),
-      transaction
-    );
-  } else {
-    vaultLibrary.withdraw(
-      vaultContract,
-      call.inputs._recipient, // Recipient
-      call.to,
-      call.outputs.value0,
-      call.inputs._shares,
-      vaultContract.pricePerShare(),
-      transaction
-    );
-  }
+
+  let blockNumber = call.block.number.toString();
+  let txHash = call.transaction.hash.toHexString();
+  log.info('TXWithdraw {} block {} call.input.recipient {}', [
+    txHash,
+    blockNumber,
+    call.inputs._recipient.toHexString(),
+  ]);
+  printCallInfo('TXWithdraw', call);
+  vaultLibrary.withdraw(
+    call.to, // Vault Address
+    call.from, // From
+    call.outputs.value0,
+    call.inputs._shares,
+    transaction
+  );
 }
 
 export function handleWithdrawWithSharesAndRecipientAndMaxLoss(
@@ -237,6 +307,18 @@ export function handleWithdrawWithSharesAndRecipientAndMaxLoss(
     '[Vault mappings] Handle withdraw with shares, recipient and max loss. TX hash: {}',
     [call.transaction.hash.toHexString()]
   );
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'Withdraw (shares,recipient,maxLoss) - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing withdraw tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+        call.inputs.recipient.toHexString(),
+      ]
+    );
+    return;
+  }
   let transaction = getOrCreateTransactionFromCall(
     call,
     'vault.withdraw(uint256,address,uint256)'
@@ -254,28 +336,14 @@ export function handleWithdrawWithSharesAndRecipientAndMaxLoss(
       call.inputs.recipient.toHexString(),
     ]
   );
-  let vaultContract = VaultContract.bind(call.to);
-  if (call.transaction.from !== call.inputs.recipient) {
-    vaultLibrary.withdraw(
-      vaultContract,
-      call.transaction.to as Address, // Recipient
-      call.to,
-      call.outputs.value0,
-      call.inputs.maxShares,
-      vaultContract.pricePerShare(),
-      transaction
-    );
-  } else {
-    vaultLibrary.withdraw(
-      vaultContract,
-      call.inputs.recipient, // Recipient
-      call.to,
-      call.outputs.value0,
-      call.inputs.maxShares,
-      vaultContract.pricePerShare(),
-      transaction
-    );
-  }
+
+  vaultLibrary.withdraw(
+    call.to,
+    call.from, // From
+    call.outputs.value0,
+    call.inputs.maxShares,
+    transaction
+  );
 }
 
 export function handleTransfer(event: TransferEvent): void {

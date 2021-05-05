@@ -42,6 +42,15 @@ export class Transaction extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
+  }
+
   get event(): string {
     let value = this.get("event");
     return value.toString();
@@ -200,6 +209,81 @@ export class Token extends Entity {
   }
 }
 
+export class Registry extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save Registry entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save Registry entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("Registry", id.toString(), this);
+  }
+
+  static load(id: string): Registry | null {
+    return store.get("Registry", id) as Registry | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get transaction(): string {
+    let value = this.get("transaction");
+    return value.toString();
+  }
+
+  set transaction(value: string) {
+    this.set("transaction", Value.fromString(value));
+  }
+
+  get vaults(): Array<string> | null {
+    let value = this.get("vaults");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set vaults(value: Array<string> | null) {
+    if (value === null) {
+      this.unset("vaults");
+    } else {
+      this.set("vaults", Value.fromStringArray(value as Array<string>));
+    }
+  }
+}
+
 export class Vault extends Entity {
   constructor(id: string) {
     super();
@@ -237,6 +321,15 @@ export class Vault extends Entity {
 
   set transaction(value: string) {
     this.set("transaction", Value.fromString(value));
+  }
+
+  get registry(): string {
+    let value = this.get("registry");
+    return value.toString();
+  }
+
+  set registry(value: string) {
+    this.set("registry", Value.fromString(value));
   }
 
   get token(): string {
@@ -1148,6 +1241,15 @@ export class AccountVaultPositionUpdate extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get order(): BigInt {
+    let value = this.get("order");
+    return value.toBigInt();
+  }
+
+  set order(value: BigInt) {
+    this.set("order", Value.fromBigInt(value));
+  }
+
   get timestamp(): BigInt {
     let value = this.get("timestamp");
     return value.toBigInt();
@@ -1558,6 +1660,130 @@ export class StrategyReport extends Entity {
 
   set debtLimit(value: BigInt) {
     this.set("debtLimit", Value.fromBigInt(value));
+  }
+
+  get results(): Array<string> {
+    let value = this.get("results");
+    return value.toStringArray();
+  }
+
+  set results(value: Array<string>) {
+    this.set("results", Value.fromStringArray(value));
+  }
+}
+
+export class StrategyReportResult extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id !== null,
+      "Cannot save StrategyReportResult entity without an ID"
+    );
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save StrategyReportResult entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("StrategyReportResult", id.toString(), this);
+  }
+
+  static load(id: string): StrategyReportResult | null {
+    return store.get("StrategyReportResult", id) as StrategyReportResult | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get report(): string {
+    let value = this.get("report");
+    return value.toString();
+  }
+
+  set report(value: string) {
+    this.set("report", Value.fromString(value));
+  }
+
+  get startTimestamp(): BigInt {
+    let value = this.get("startTimestamp");
+    return value.toBigInt();
+  }
+
+  set startTimestamp(value: BigInt) {
+    this.set("startTimestamp", Value.fromBigInt(value));
+  }
+
+  get endTimestamp(): BigInt {
+    let value = this.get("endTimestamp");
+    return value.toBigInt();
+  }
+
+  set endTimestamp(value: BigInt) {
+    this.set("endTimestamp", Value.fromBigInt(value));
+  }
+
+  get duration(): BigDecimal {
+    let value = this.get("duration");
+    return value.toBigDecimal();
+  }
+
+  set duration(value: BigDecimal) {
+    this.set("duration", Value.fromBigDecimal(value));
+  }
+
+  get durationPr(): BigDecimal {
+    let value = this.get("durationPr");
+    return value.toBigDecimal();
+  }
+
+  set durationPr(value: BigDecimal) {
+    this.set("durationPr", Value.fromBigDecimal(value));
+  }
+
+  get apr(): BigDecimal {
+    let value = this.get("apr");
+    return value.toBigDecimal();
+  }
+
+  set apr(value: BigDecimal) {
+    this.set("apr", Value.fromBigDecimal(value));
+  }
+
+  get transaction(): string {
+    let value = this.get("transaction");
+    return value.toString();
+  }
+
+  set transaction(value: string) {
+    this.set("transaction", Value.fromString(value));
   }
 }
 

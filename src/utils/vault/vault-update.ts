@@ -115,10 +115,10 @@ export function deposit(
       vaultUpdateId,
       vault,
       transaction,
-      latestVaultUpdate.tokensDeposited.plus(depositedAmount),
-      latestVaultUpdate.tokensWithdrawn,
-      latestVaultUpdate.sharesMinted.plus(sharesMinted),
-      latestVaultUpdate.sharesBurnt,
+      depositedAmount,
+      BIGINT_ZERO, // TokensWithdrawn
+      sharesMinted,
+      BIGINT_ZERO, // SharesBurnt,
       pricePerShare,
       latestVaultUpdate.totalFees,
       latestVaultUpdate.managementFees,
@@ -144,10 +144,10 @@ export function withdraw(
     vaultUpdateId,
     vault,
     transaction,
-    latestVaultUpdate.tokensDeposited,
-    latestVaultUpdate.tokensWithdrawn.plus(withdrawnAmount),
-    latestVaultUpdate.sharesMinted,
-    latestVaultUpdate.sharesBurnt.plus(sharesBurnt),
+    BIGINT_ZERO, // TokensDeposited
+    withdrawnAmount,
+    BIGINT_ZERO, // SharesMinted
+    sharesBurnt,
     pricePerShare,
     latestVaultUpdate.totalFees,
     latestVaultUpdate.managementFees,
@@ -156,6 +156,8 @@ export function withdraw(
   );
   vault.sharesSupply = vault.sharesSupply.minus(sharesBurnt);
   vault.balanceTokens = vault.balanceTokens.minus(withdrawnAmount);
+  vault.balanceTokensIdle = vault.balanceTokensIdle.minus(withdrawnAmount);
+
   vault.latestUpdate = newVaultUpdate.id;
   vault.save();
   return newVaultUpdate;
@@ -173,10 +175,10 @@ export function strategyReported(
     vaultUpdateId,
     vault,
     transaction,
-    latestVaultUpdate.tokensDeposited,
-    latestVaultUpdate.tokensWithdrawn,
-    latestVaultUpdate.sharesMinted,
-    latestVaultUpdate.sharesBurnt,
+    BIGINT_ZERO, // TokensDeposited
+    BIGINT_ZERO, // TokensWithdrawn
+    BIGINT_ZERO, // SharesMinted
+    BIGINT_ZERO, // SharesBurnt
     pricePerShare,
     latestVaultUpdate.totalFees,
     latestVaultUpdate.managementFees,

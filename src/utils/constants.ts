@@ -7,3 +7,8 @@ export let BIGINT_ZERO = BigInt.fromI32(0);
 export let BIGINT_ONE = BigInt.fromI32(1);
 export let BIGDECIMAL_ZERO = new BigDecimal(BIGINT_ZERO);
 export let MAX_UINT = BigInt.fromI32(2).times(BigInt.fromI32(255));
+export let DAYS_PER_YEAR = new BigDecimal(BigInt.fromI32(365));
+export let MS_PER_DAY = new BigDecimal(BigInt.fromI32(24 * 60 * 60 * 1000));
+export let MS_PER_YEAR = DAYS_PER_YEAR.times(
+  new BigDecimal(BigInt.fromI32(24 * 60 * 60 * 1000))
+);

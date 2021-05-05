@@ -39,7 +39,7 @@ dataSources:
     name: RegistryV2
     network: {{network}}
     source:
-      startBlock: {{startBlock}}
+      startBlock: {{startBlockRegistryV2}}
       address: '{{RegistryV2}}'
       abi: Registry
     mapping:

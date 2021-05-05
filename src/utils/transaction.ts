@@ -1,4 +1,4 @@
-import { log, ethereum, Bytes } from '@graphprotocol/graph-ts';
+import { log, BigInt, ethereum, Bytes } from '@graphprotocol/graph-ts';
 import { Transaction } from '../../generated/schema';
 import { getTimestampInMillis } from './commons';
 
@@ -12,6 +12,7 @@ export function getOrCreateTransactionFromEvent(
   ]);
   let transaction = _getOrCreateTransaction(
     event.transaction,
+    event.logIndex,
     event.block,
     action
   );
@@ -28,6 +29,7 @@ export function getOrCreateTransactionFromCall(
   );
   let transaction = _getOrCreateTransaction(
     call.transaction,
+    call.transaction.index, // As the call hasnt the event log inde, we use the transaction index value.
     call.block,
     action
   );
@@ -36,17 +38,27 @@ export function getOrCreateTransactionFromCall(
 
 function _getOrCreateTransaction(
   ethTransaction: ethereum.Transaction,
+  logIndex: BigInt,
   block: ethereum.Block,
   action: string
 ): Transaction {
-  log.debug('[Transaction] Get or create', []);
+  log.info(
+    '[Transaction] Get or create transaction for hash {}. Action: {} Log Index: {} Tx Index: {}',
+    [
+      ethTransaction.hash.toHexString(),
+      action,
+      logIndex.toString(),
+      ethTransaction.index.toString(),
+    ]
+  );
   let id = ethTransaction.hash
     .toHexString()
     .concat('-')
-    .concat(ethTransaction.index.toString());
+    .concat(logIndex.toString());
   let transaction = Transaction.load(id);
   if (transaction == null) {
     transaction = new Transaction(id);
+    transaction.logIndex = logIndex;
     transaction.from = ethTransaction.from;
     transaction.gasPrice = ethTransaction.gasPrice;
     transaction.gasSent = ethTransaction.gasUsed;

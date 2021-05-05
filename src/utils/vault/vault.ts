@@ -2,6 +2,7 @@ import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import {
   AccountVaultPosition,
   AccountVaultPositionUpdate,
+  Registry,
   Transaction,
   Vault,
   VaultUpdate,
@@ -19,9 +20,13 @@ import * as vaultUpdateLibrary from './vault-update';
 import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
 
+const buildId = (vaultAddress: Address): string => {
+  return vaultAddress.toHexString();
+};
+
 const createNewVaultFromAddress = (
   vaultAddress: Address,
-  transactionHash: string
+  transaction: Transaction
 ): Vault => {
   let id = vaultAddress.toHexString();
   let vaultEntity = new Vault(id);
@@ -30,7 +35,7 @@ const createNewVaultFromAddress = (
   let token = getOrCreateToken(vaultContract.token());
   let shareToken = getOrCreateToken(vaultAddress);
 
-  vaultEntity.transaction = transactionHash;
+  vaultEntity.transaction = transaction.id;
   vaultEntity.token = token.id;
   vaultEntity.shareToken = shareToken.id;
 
@@ -62,14 +67,14 @@ const createNewVaultFromAddress = (
 
 export function getOrCreate(
   vaultAddress: Address,
-  transactionHash: string
+  transaction: Transaction
 ): Vault {
   log.debug('[Vault] Get or create', []);
   let id = vaultAddress.toHexString();
   let vault = Vault.load(id);
 
   if (vault == null) {
-    vault = createNewVaultFromAddress(vaultAddress, transactionHash);
+    vault = createNewVaultFromAddress(vaultAddress, transaction);
 
     VaultTemplate.create(vaultAddress);
   }
@@ -78,7 +83,8 @@ export function getOrCreate(
 }
 
 export function create(
-  transactionHash: string,
+  registry: Registry,
+  transaction: Transaction,
   vault: Address,
   classification: string,
   apiVersion: string,
@@ -89,8 +95,9 @@ export function create(
   let id = vault.toHexString();
   let vaultEntity = Vault.load(id);
   if (vaultEntity == null) {
-    vaultEntity = createNewVaultFromAddress(vault, transactionHash);
+    vaultEntity = createNewVaultFromAddress(vault, transaction);
     vaultEntity.classification = classification;
+    vaultEntity.registry = registry.id;
     // vaultEntity.deploymentId = deploymentId
     vaultEntity.apiVersion = apiVersion;
     VaultTemplate.create(vault);
@@ -140,22 +147,23 @@ export function tag(vault: Address, tag: string): Vault {
 }
 
 export function deposit(
-  vaultContract: VaultContract,
+  vaultAddress: Address,
   transaction: Transaction,
   receiver: Address,
-  to: Address,
   depositedAmount: BigInt,
   sharesMinted: BigInt
 ): void {
   log.debug('[Vault] Deposit', []);
+  let vaultContract = VaultContract.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
-  let vault = getOrCreate(to, transaction.id);
+
   let totalAssets = vaultContract.totalAssets();
   let decimals = u8(vaultContract.decimals().toI32());
   let pricePerShare = vaultContract.pricePerShare();
   let balancePosition = totalAssets
     .times(pricePerShare)
     .div(BigInt.fromI32(10).pow(decimals));
+  let vault = getOrCreate(vaultAddress, transaction);
 
   accountVaultPositionLibrary.deposit(
     vaultContract,
@@ -203,22 +211,29 @@ export function deposit(
   vault.save();
 }
 
+export function isVault(vaultAddress: Address): boolean {
+  let id = buildId(vaultAddress);
+  let vault = Vault.load(id);
+  return vault !== null;
+}
+
 export function withdraw(
-  vaultContract: VaultContract,
+  vaultAddress: Address,
   from: Address,
-  to: Address,
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
-  pricePerShare: BigInt,
   transaction: Transaction
 ): void {
+  let vaultContract = VaultContract.bind(vaultAddress);
+  let pricePerShare = vaultContract.pricePerShare();
   let account = accountLibrary.getOrCreate(from);
-  let vault = getOrCreate(to, transaction.hash.toHexString());
+
   let totalAssets = vaultContract.totalAssets();
   let decimals = u8(vaultContract.decimals().toI32());
   let balancePosition = totalAssets
     .times(pricePerShare)
     .div(BigInt.fromI32(10).pow(decimals));
+  let vault = getOrCreate(vaultAddress, transaction);
 
   withdrawalLibrary.getOrCreate(
     account,
@@ -234,7 +249,7 @@ export function withdraw(
     vault
   );
   let accountVaultPosition = AccountVaultPosition.load(accountVaultPositionId);
-  // This scenario where accountVaultPosition === null shouldn't happen. Acount vault position should have been created when the account deposited the tokens.
+  // This scenario where accountVaultPosition === null shouldn't happen. Account vault position should have been created when the account deposited the tokens.
   if (accountVaultPosition !== null) {
     let latestAccountVaultPositionUpdate = AccountVaultPositionUpdate.load(
       accountVaultPosition.latestUpdate
@@ -248,13 +263,56 @@ export function withdraw(
         sharesBurnt,
         transaction
       );
+    } else {
+      log.warning(
+        'INVALID withdraw: Account vault position update NOT found. ID {} Vault {} TX {} from {}',
+        [
+          accountVaultPosition.latestUpdate,
+          vaultAddress.toHexString(),
+          transaction.hash.toHexString(),
+          from.toHexString(),
+        ]
+      );
     }
   } else {
-    log.info('Account vault position NOT found. TX Hash: {} from {} to {}', [
-      transaction.hash.toHexString(),
-      from.toHexString(),
-      to.toHexString(),
-    ]);
+    /*
+      This case should not exist because it means an user already has share tokens without having deposited before.
+      BUT due to some vaults were deployed, and registered in the registry after several blocks, there are cases were some users deposited tokens before the vault were registered (in the registry).
+      Example:
+        Account:  0x557cde75c38b2962be3ca94dced614da774c95b0
+        Vault:    0xbfa4d8aa6d8a379abfe7793399d3ddacc5bbecbb
+
+        Vault registered at tx (block 11579536): https://etherscan.io/tx/0x6b51f1f743ec7a42db6ba1995e4ade2ba0e5b8f1fec03d3dd599a90da66d6f69
+
+        Account transfers:
+        https://etherscan.io/token/0xbfa4d8aa6d8a379abfe7793399d3ddacc5bbecbb?a=0x557cde75c38b2962be3ca94dced614da774c95b0
+    
+        The first two deposits were at blocks 11557079 and 11553285. In both cases, some blocks after registering the vault.
+
+        As TheGraph doesn't support to process blocks before the vault was registered (using the template feature), these cases are treated as special cases (pending to fix).
+    */
+    if (withdrawnAmount.isZero()) {
+      log.warning(
+        'INVALID zero amount withdraw: Account vault position NOT found. ID {} Vault {} TX {} from {}',
+        [
+          accountVaultPositionId,
+          vaultAddress.toHexString(),
+          transaction.hash.toHexString(),
+          from.toHexString(),
+        ]
+      );
+      accountVaultPositionLibrary.withdrawZero(account, vault, transaction);
+    } else {
+      log.warning(
+        'INVALID withdraw: Account vault position NOT found. ID {} Vault {} TX {} from {}',
+        [
+          accountVaultPositionId,
+          vaultAddress.toHexString(),
+          transaction.hash.toHexString(),
+          from.toHexString(),
+        ]
+      );
+    }
   }
 
   // Updating Vault Update
@@ -287,7 +345,7 @@ export function transfer(
   let shareToken = tokenLibrary.getOrCreateToken(vaultAddress);
   let fromAccount = accountLibrary.getOrCreate(from);
   let toAccount = accountLibrary.getOrCreate(to);
-  let vault = getOrCreate(vaultAddress, transaction.hash.toHexString());
+  let vault = getOrCreate(vaultAddress, transaction);
   transferLibrary.getOrCreate(
     fromAccount,
     toAccount,
@@ -316,7 +374,11 @@ export function strategyReported(
   vaultAddress: Address,
   pricePerShare: BigInt
 ): void {
-  let vault = getOrCreate(vaultAddress, transaction.hash.toHexString());
+  log.info('[Vault] Strategy reported for vault {} at TX ', [
+    vaultAddress.toHexString(),
+    transaction.hash.toHexString(),
+  ]);
+  let vault = getOrCreate(vaultAddress, transaction);
   let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
   let totalAssets = vaultContract.totalAssets();
   let decimals = u8(vaultContract.decimals().toI32());

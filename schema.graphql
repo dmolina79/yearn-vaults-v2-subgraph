@@ -7,8 +7,10 @@
 # Use plurals when referring to Tokens or Shares (e.g. totalShares, balanceTokens)
 
 type Transaction @entity {
-  "Transaction hash"
+  "Transaction hash + Log Index"
   id: ID!
+  "Log index related to the event. A Transaction might contain multiple events."
+  logIndex: BigInt!
   "The event name / call stacktrace"
   event: String!
   "The transaction sender"
@@ -73,6 +75,19 @@ enum VaultClassification {
 #   transaction: Transaction!
 # }
 
+type Registry @entity {
+  "Registry address"
+  id: ID!
+  "Transaction timestamp"
+  timestamp: BigInt!
+  "Transaction/Block Block number"
+  blockNumber: BigInt!
+  "Ethereum Transaction"
+  transaction: Transaction!
+  "Vaults registered in the registry."
+  vaults: [Vault!]! @derivedFrom(field: "registry")
+}
+
 # TODO:
 # emergency shutdown
 # withdrawal queue
@@ -81,6 +96,8 @@ type Vault @entity {
   id: ID!
   "Ethereum Transaction"
   transaction: Transaction!
+  "The registry address"
+  registry: Registry!
   "Token this Vault will accrue"
   token: Token!
   "Token representing Shares in the Vault"
@@ -281,8 +298,10 @@ type AccountVaultPosition @entity {
 }
 
 type AccountVaultPositionUpdate @entity {
-  "Account-Transaction-Log"
+  "Account-Vault-Order"
   id: ID!
+  "Incremental value for the same account/vault."
+  order: BigInt!
   "Timestamp"
   timestamp: BigInt!
   "Block number"
@@ -379,12 +398,35 @@ type StrategyReport @entity {
   debtLimit: BigInt!
   # "Vault state"
   # vaultUpdate: VaultUpdate!
+  "The results created by this report. They are generated comparing the previous report and the current one."
+  results: [StrategyReportResult!]! @derivedFrom(field: "report")
 
   #### TODO Awaiting updated Vault Yield-Oracles https://github.com/iearn-finance/yearn-vaults/pull/69
   # "12-day EMA of Vault APY as reported by built-in Yield Oracle"
   # apy12dEMA: Int!
   # "50-day EMA of Vault APY as reported by built-in Yield Oracle"
   # apy50dEMA: Int!
+}
+
+type StrategyReportResult @entity {
+  "The Strategy Report Result ID."
+  id: ID!
+  "Timestamp the strategy report was most recently updated."
+  timestamp: BigInt!
+  "Blocknumber the strategy report was most recently updated."
+  blockNumber: BigInt!
+  "The Strategy reference."
+  report: StrategyReport!
+  startTimestamp: BigInt!
+  endTimestamp: BigInt!
+  "The duration (in days) from the previous report."
+  duration: BigDecimal!
+  "Duration percentage rate."
+  durationPr: BigDecimal!
+  "Annual Percentage Rate."
+  apr: BigDecimal!
+  "Ethereum Transaction"
+  transaction: Transaction!
 }
 
 type Harvest @entity {

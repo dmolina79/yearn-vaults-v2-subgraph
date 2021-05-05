@@ -8,9 +8,10 @@ import {
 import { Strategy as StrategyTemplate } from '../../../generated/templates';
 import { Strategy as StrategyContract } from '../../../generated/templates/Vault/Strategy';
 
-import { getTimestampInMillis } from '../commons';
+import { buildIdFromEvent, getTimestampInMillis } from '../commons';
 
 import * as strategyReportLibrary from './strategy-report';
+import * as strategyReportResultLibrary from './strategy-report-result';
 
 export function create(
   transactionId: string,
@@ -55,7 +56,7 @@ export function createReport(
   debtLimit: BigInt,
   event: ethereum.Event
 ): StrategyReport | null {
-  log.debug('[Strategy] Create report', []);
+  log.info('[Strategy] Create report for strategy {}', [strategyId]);
   let strategy = Strategy.load(strategyId);
   if (strategy !== null) {
     let latestReport = StrategyReport.load(strategy.latestReport);
@@ -74,6 +75,17 @@ export function createReport(
     strategy.latestReport = strategyReport.id;
     strategy.save();
 
+    if (latestReport !== null) {
+      log.info(
+        '[Strategy] Create report result (latest {} vs current {}) for strategy {}',
+        [latestReport.id, strategyReport.id, strategyId]
+      );
+      strategyReportResultLibrary.create(
+        transaction,
+        latestReport as StrategyReport,
+        strategyReport
+      );
+    }
     return strategyReport;
   }
   return null;
