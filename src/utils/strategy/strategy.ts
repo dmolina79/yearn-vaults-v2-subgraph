@@ -8,7 +8,11 @@ import {
 import { Strategy as StrategyTemplate } from '../../../generated/templates';
 import { Strategy as StrategyContract } from '../../../generated/templates/Vault/Strategy';
 
-import { buildIdFromEvent, getTimestampInMillis } from '../commons';
+import {
+  buildIdFromEvent,
+  getTimeInMillis,
+  getTimestampInMillis,
+} from '../commons';
 
 import * as strategyReportLibrary from './strategy-report';
 import * as strategyReportResultLibrary from './strategy-report-result';
@@ -19,8 +23,10 @@ export function create(
   vault: Address,
   debtLimit: BigInt,
   rateLimit: BigInt,
+  minDebtPerHarvest: BigInt,
+  maxDebtPerHarvest: BigInt,
   performanceFee: BigInt,
-  event: ethereum.Event
+  transaction: Transaction
 ): Strategy {
   log.debug('[Strategy] Create', []);
   let strategyId = strategyAddress.toHexString();
@@ -28,8 +34,8 @@ export function create(
   if (strategy == null) {
     let strategyContract = StrategyContract.bind(strategyAddress);
     strategy = new Strategy(strategyId);
-    strategy.blockNumber = event.block.number;
-    strategy.timestamp = getTimestampInMillis(event.block);
+    strategy.blockNumber = transaction.blockNumber;
+    strategy.timestamp = getTimeInMillis(transaction.timestamp);
     strategy.transaction = transactionId;
     let tryName = strategyContract.try_name();
     strategy.name = tryName.reverted ? 'TBD' : tryName.value.toString();
@@ -37,7 +43,9 @@ export function create(
     strategy.vault = vault.toHexString();
     strategy.debtLimit = debtLimit;
     strategy.rateLimit = rateLimit;
-    strategy.performanceFeeBps = performanceFee.toI32();
+    strategy.minDebtPerHarvest = minDebtPerHarvest;
+    strategy.maxDebtPerHarvest = maxDebtPerHarvest;
+    strategy.performanceFeeBps = performanceFee;
     strategy.save();
     StrategyTemplate.create(strategyAddress);
   }

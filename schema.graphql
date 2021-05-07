@@ -357,12 +357,16 @@ type Strategy @entity {
   address: Bytes!
   "The Vault"
   vault: Vault!
-  "Defines the maximum borrow amount."
+  "Defines the maximum borrow amount. In strategies <v0.3.5 it is debtRatio."
   debtLimit: BigInt!
+  "Lower limit on the increase of debt since last harvest."
+  minDebtPerHarvest: BigInt!
+  "Upper limit on the increase of debt since last harvest."
+  maxDebtPerHarvest: BigInt!
   "It is the current rate limit. It increases/decreases per block."
   rateLimit: BigInt!
   "Defines the strategist's fee (basis points)."
-  performanceFeeBps: Int!
+  performanceFeeBps: BigInt!
   "The latest report for this Strategy"
   latestReport: StrategyReport
   "The reports created by this strategy."

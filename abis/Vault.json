@@ -81,6 +81,38 @@
         },
         {
           "indexed": false,
+          "name": "debtRatio",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "minDebtPerHarvest",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "maxDebtPerHarvest",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "performanceFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "StrategyAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "strategy",
+          "type": "address"
+        },
+        {
+          "indexed": false,
           "name": "gain",
           "type": "uint256"
         },
@@ -685,6 +717,35 @@
         },
         {
           "name": "_performanceFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "addStrategy",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "gas": 1445812,
+      "inputs": [
+        {
+          "name": "strategy",
+          "type": "address"
+        },
+        {
+          "name": "debtRatio",
+          "type": "uint256"
+        },
+        {
+          "name": "minDebtPerHarvest",
+          "type": "uint256"
+        },
+        {
+          "name": "maxDebtPerHarvest",
+          "type": "uint256"
+        },
+        {
+          "name": "performanceFee",
           "type": "uint256"
         }
       ],

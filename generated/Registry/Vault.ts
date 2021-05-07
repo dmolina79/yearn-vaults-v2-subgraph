@@ -92,6 +92,40 @@ export class StrategyAdded__Params {
   }
 }
 
+export class StrategyAdded1 extends ethereum.Event {
+  get params(): StrategyAdded1__Params {
+    return new StrategyAdded1__Params(this);
+  }
+}
+
+export class StrategyAdded1__Params {
+  _event: StrategyAdded1;
+
+  constructor(event: StrategyAdded1) {
+    this._event = event;
+  }
+
+  get strategy(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get debtRatio(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get minDebtPerHarvest(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get maxDebtPerHarvest(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get performanceFee(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+}
+
 export class StrategyReported extends ethereum.Event {
   get params(): StrategyReported__Params {
     return new StrategyReported__Params(this);
@@ -2240,6 +2274,52 @@ export class AddStrategyCall__Outputs {
   _call: AddStrategyCall;
 
   constructor(call: AddStrategyCall) {
+    this._call = call;
+  }
+}
+
+export class AddStrategy1Call extends ethereum.Call {
+  get inputs(): AddStrategy1Call__Inputs {
+    return new AddStrategy1Call__Inputs(this);
+  }
+
+  get outputs(): AddStrategy1Call__Outputs {
+    return new AddStrategy1Call__Outputs(this);
+  }
+}
+
+export class AddStrategy1Call__Inputs {
+  _call: AddStrategy1Call;
+
+  constructor(call: AddStrategy1Call) {
+    this._call = call;
+  }
+
+  get strategy(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get debtRatio(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get minDebtPerHarvest(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+
+  get maxDebtPerHarvest(): BigInt {
+    return this._call.inputValues[3].value.toBigInt();
+  }
+
+  get performanceFee(): BigInt {
+    return this._call.inputValues[4].value.toBigInt();
+  }
+}
+
+export class AddStrategy1Call__Outputs {
+  _call: AddStrategy1Call;
+
+  constructor(call: AddStrategy1Call) {
     this._call = call;
   }
 }

@@ -100,8 +100,6 @@ templates:
         - name: Strategy
           file: ./abis/StrategyAPI.json
       eventHandlers:
-        - event: StrategyAdded(indexed address,uint256,uint256,uint256)
-          handler: handleStrategyAdded
         - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleStrategyReported
         - event: Transfer(indexed address,indexed address,uint256)
@@ -119,6 +117,12 @@ templates:
           handler: handleWithdrawWithShares
         - function: withdraw(uint256,address)
           handler: handleWithdrawWithSharesAndRecipient
+        # V1: addStrategy(strategy,debtRatio,rateLimit,performanceFee)
+        - function: addStrategy(address,uint256,uint256,uint256)
+          handler: handleAddStrategy
+        # V2: addStrategy(strategy,debtRatio,minDebtPerHarvest,maxDebtPerHarvest,performanceFee)
+        - function: addStrategy(address,uint256,uint256,uint256,uint256)
+          handler: handleAddStrategyV2
 
   - name: Strategy
     kind: ethereum/contract
