@@ -266,21 +266,13 @@ export class Registry extends Entity {
     this.set("transaction", Value.fromString(value));
   }
 
-  get vaults(): Array<string> | null {
+  get vaults(): Array<string> {
     let value = this.get("vaults");
-    if (value === null || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toStringArray();
-    }
+    return value.toStringArray();
   }
 
-  set vaults(value: Array<string> | null) {
-    if (value === null) {
-      this.unset("vaults");
-    } else {
-      this.set("vaults", Value.fromStringArray(value as Array<string>));
-    }
+  set vaults(value: Array<string>) {
+    this.set("vaults", Value.fromStringArray(value));
   }
 }
 
@@ -1479,6 +1471,24 @@ export class Strategy extends Entity {
     this.set("debtLimit", Value.fromBigInt(value));
   }
 
+  get minDebtPerHarvest(): BigInt {
+    let value = this.get("minDebtPerHarvest");
+    return value.toBigInt();
+  }
+
+  set minDebtPerHarvest(value: BigInt) {
+    this.set("minDebtPerHarvest", Value.fromBigInt(value));
+  }
+
+  get maxDebtPerHarvest(): BigInt {
+    let value = this.get("maxDebtPerHarvest");
+    return value.toBigInt();
+  }
+
+  set maxDebtPerHarvest(value: BigInt) {
+    this.set("maxDebtPerHarvest", Value.fromBigInt(value));
+  }
+
   get rateLimit(): BigInt {
     let value = this.get("rateLimit");
     return value.toBigInt();
@@ -1488,13 +1498,13 @@ export class Strategy extends Entity {
     this.set("rateLimit", Value.fromBigInt(value));
   }
 
-  get performanceFeeBps(): i32 {
+  get performanceFeeBps(): BigInt {
     let value = this.get("performanceFeeBps");
-    return value.toI32();
+    return value.toBigInt();
   }
 
-  set performanceFeeBps(value: i32) {
-    this.set("performanceFeeBps", Value.fromI32(value));
+  set performanceFeeBps(value: BigInt) {
+    this.set("performanceFeeBps", Value.fromBigInt(value));
   }
 
   get latestReport(): string | null {

@@ -1,6 +1,5 @@
 import { log } from '@graphprotocol/graph-ts';
 import {
-  StrategyAdded as StrategyAddedEvent,
   StrategyReported as StrategyReportedEvent,
   Deposit1Call as DepositCall,
   Transfer as TransferEvent,
@@ -11,6 +10,8 @@ import {
   Withdraw1Call,
   Withdraw2Call,
   Withdraw3Call,
+  AddStrategyCall as AddStrategyV1Call,
+  AddStrategy1Call as AddStrategyV2Call,
 } from '../../generated/Registry/Vault';
 import { printCallInfo } from '../utils/commons';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../utils/constants';
@@ -21,19 +22,60 @@ import {
 } from '../utils/transaction';
 import * as vaultLibrary from '../utils/vault/vault';
 
-export function handleStrategyAdded(event: StrategyAddedEvent): void {
-  let ethTransaction = getOrCreateTransactionFromEvent(
-    event,
-    'StrategyAddedEvent'
+export function handleAddStrategyV2(call: AddStrategyV2Call): void {
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'AddStrategyV2(...) - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing addStrategy tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+      ]
+    );
+    return;
+  }
+  let ethTransaction = getOrCreateTransactionFromCall(
+    call,
+    'AddStrategyV2Call'
   );
+
   strategyLibrary.create(
     ethTransaction.id,
-    event.params.strategy,
-    event.address,
-    event.params.debtLimit,
-    event.params.rateLimit,
-    event.params.performanceFee,
-    event
+    call.inputs.strategy,
+    call.to,
+    call.inputs.debtRatio,
+    BIGINT_ZERO,
+    call.inputs.minDebtPerHarvest,
+    call.inputs.maxDebtPerHarvest,
+    call.inputs.performanceFee,
+    ethTransaction
+  );
+}
+
+export function handleAddStrategy(call: AddStrategyV1Call): void {
+  if (vaultLibrary.isVault(call.to) && vaultLibrary.isVault(call.from)) {
+    log.warning(
+      'AddStrategy(...) - TX {} - Call to {} and call from {} are vaults (minimal proxy). Not processing addStrategy tx.',
+      [
+        call.transaction.hash.toHexString(),
+        call.to.toHexString(),
+        call.from.toHexString(),
+      ]
+    );
+    return;
+  }
+  let ethTransaction = getOrCreateTransactionFromCall(call, 'AddStrategyCall');
+
+  strategyLibrary.create(
+    ethTransaction.id,
+    call.inputs._strategy,
+    call.to,
+    call.inputs._debtLimit,
+    call.inputs._rateLimit,
+    BIGINT_ZERO,
+    BIGINT_ZERO,
+    call.inputs._performanceFee,
+    ethTransaction
   );
 }
 
