@@ -1,7 +1,9 @@
 {
   "startBlock": "11390000",
   "startBlockRegistryV2": "12045550",
+  "startBlockCurveSETHVault": "11870013",
   "network": "mainnet",
   "Registry": "0xe15461b18ee31b7379019dc523231c57d1cbc18c",
-  "RegistryV2": "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804"
+  "RegistryV2": "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
+  "CurveSETHVault": "0x986b4AFF588a109c09B50A03f42E4110E29D353F"
 }

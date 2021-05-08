@@ -66,7 +66,37 @@ dataSources:
         - event: VaultTagged(address,string)
           handler: handleVaultTagged
       file: ./src/mappings/registryMappings.ts
- 
+  # 3 Custom CurveSETHVault From: 11870013 to 11881933
+  - kind: ethereum/contract
+    name: CurveSETHVault
+    network: {{network}}
+    source:
+      startBlock: {{startBlockCurveSETHVault}}
+      address: '{{CurveSETHVault}}'
+      abi: Vault
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Vault
+        - Transaction
+        - Strategy
+      abis:
+        - name: Registry
+          file: ./abis/Registry.json
+        - name: Vault
+          file: ./abis/Vault.json
+        - name: ERC20
+          file: ./abis/ERC20Detailed.json
+        - name: Strategy
+          file: ./abis/StrategyAPI.json
+      callHandlers:
+        # V2: addStrategy(strategy,debtRatio,minDebtPerHarvest,maxDebtPerHarvest,performanceFee)
+        - function: addStrategy(address,uint256,uint256,uint256,uint256)
+          handler: handleAddStrategyV2
+      file: ./src/mappings/curveSETHVaultMappings.ts
+
 templates:
   # 1 Vault (template)
   - name: Vault
