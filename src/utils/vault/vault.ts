@@ -19,6 +19,7 @@ import * as accountVaultPositionLibrary from '../account/vault-position';
 import * as vaultUpdateLibrary from './vault-update';
 import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
+import { updateVaultDayData } from './vaultDayData';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -151,7 +152,8 @@ export function deposit(
   transaction: Transaction,
   receiver: Address,
   depositedAmount: BigInt,
-  sharesMinted: BigInt
+  sharesMinted: BigInt,
+  timestamp: BigInt
 ): void {
   log.debug('[Vault] Deposit', []);
   let vaultContract = VaultContract.bind(vaultAddress);
@@ -203,6 +205,15 @@ export function deposit(
     );
   }
 
+  updateVaultDayData(
+    vault,
+    timestamp,
+    pricePerShare,
+    depositedAmount,
+    BIGINT_ZERO,
+    vaultUpdate.returnsGenerated
+  );
+
   vault.latestUpdate = vaultUpdate.id;
   vault.balanceTokens = vault.balanceTokens.plus(depositedAmount);
   vault.balanceTokensIdle = vault.balanceTokensIdle.plus(depositedAmount);
@@ -222,7 +233,8 @@ export function withdraw(
   from: Address,
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
-  transaction: Transaction
+  transaction: Transaction,
+  timestamp: BigInt
 ): void {
   let vaultContract = VaultContract.bind(vaultAddress);
   let pricePerShare = vaultContract.pricePerShare();
@@ -327,6 +339,15 @@ export function withdraw(
       sharesBurnt,
       transaction,
       balancePosition
+    );
+
+    updateVaultDayData(
+      vault,
+      timestamp,
+      pricePerShare,
+      BIGINT_ZERO,
+      withdrawnAmount,
+      latestVaultUpdate.returnsGenerated
     );
   }
 }

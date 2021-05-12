@@ -149,7 +149,8 @@ export function handleDeposit(call: DepositCall): void {
     transaction,
     call.from,
     amount,
-    call.outputs.value0
+    call.outputs.value0,
+    call.block.timestamp
   );
 }
 
@@ -172,7 +173,8 @@ export function handleDepositWithAmount(call: Deposit1Call): void {
     transaction,
     call.from,
     call.inputs._amount,
-    call.outputs.value0
+    call.outputs.value0,
+    call.block.timestamp
   );
 }
 
@@ -217,7 +219,8 @@ export function handleDepositWithAmountAndRecipient(call: Deposit2Call): void {
     transaction,
     call.inputs._recipient, // Recipient
     call.inputs._amount,
-    call.outputs.value0
+    call.outputs.value0,
+    call.block.timestamp
   );
 }
 
@@ -255,7 +258,8 @@ export function handleWithdraw(call: WithdrawCall): void {
     call.from,
     withdrawnAmount,
     totalSharesBurnt,
-    transaction
+    transaction,
+    call.block.timestamp
   );
 }
 
@@ -287,7 +291,8 @@ export function handleWithdrawWithShares(call: Withdraw1Call): void {
     call.from,
     call.outputs.value0,
     call.inputs._shares,
-    transaction
+    transaction,
+    call.block.timestamp
   );
 }
 
@@ -338,7 +343,8 @@ export function handleWithdrawWithSharesAndRecipient(
     call.from, // From
     call.outputs.value0,
     call.inputs._shares,
-    transaction
+    transaction,
+    call.block.timestamp
   );
 }
 
@@ -384,7 +390,8 @@ export function handleWithdrawWithSharesAndRecipientAndMaxLoss(
     call.from, // From
     call.outputs.value0,
     call.inputs.maxShares,
-    transaction
+    transaction,
+    call.block.timestamp
   );
 }
 

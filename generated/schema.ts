@@ -368,6 +368,15 @@ export class Vault extends Entity {
     }
   }
 
+  get vaultDayData(): Array<string> {
+    let value = this.get("vaultDayData");
+    return value.toStringArray();
+  }
+
+  set vaultDayData(value: Array<string>) {
+    this.set("vaultDayData", Value.fromStringArray(value));
+  }
+
   get historicalUpdates(): Array<string> {
     let value = this.get("historicalUpdates");
     return value.toStringArray();
@@ -1915,5 +1924,99 @@ export class Harvest extends Entity {
 
   set debtOutstanding(value: BigInt) {
     this.set("debtOutstanding", Value.fromBigInt(value));
+  }
+}
+
+export class VaultDayData extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save VaultDayData entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save VaultDayData entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("VaultDayData", id.toString(), this);
+  }
+
+  static load(id: string): VaultDayData | null {
+    return store.get("VaultDayData", id) as VaultDayData | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get date(): i32 {
+    let value = this.get("date");
+    return value.toI32();
+  }
+
+  set date(value: i32) {
+    this.set("date", Value.fromI32(value));
+  }
+
+  get vault(): string {
+    let value = this.get("vault");
+    return value.toString();
+  }
+
+  set vault(value: string) {
+    this.set("vault", Value.fromString(value));
+  }
+
+  get pricePerShare(): BigInt {
+    let value = this.get("pricePerShare");
+    return value.toBigInt();
+  }
+
+  set pricePerShare(value: BigInt) {
+    this.set("pricePerShare", Value.fromBigInt(value));
+  }
+
+  get deposited(): BigInt {
+    let value = this.get("deposited");
+    return value.toBigInt();
+  }
+
+  set deposited(value: BigInt) {
+    this.set("deposited", Value.fromBigInt(value));
+  }
+
+  get withdrawn(): BigInt {
+    let value = this.get("withdrawn");
+    return value.toBigInt();
+  }
+
+  set withdrawn(value: BigInt) {
+    this.set("withdrawn", Value.fromBigInt(value));
+  }
+
+  get totalReturnsGenerated(): BigInt {
+    let value = this.get("totalReturnsGenerated");
+    return value.toBigInt();
+  }
+
+  set totalReturnsGenerated(value: BigInt) {
+    this.set("totalReturnsGenerated", Value.fromBigInt(value));
+  }
+
+  get dayReturnsGenerated(): BigInt {
+    let value = this.get("dayReturnsGenerated");
+    return value.toBigInt();
+  }
+
+  set dayReturnsGenerated(value: BigInt) {
+    this.set("dayReturnsGenerated", Value.fromBigInt(value));
   }
 }

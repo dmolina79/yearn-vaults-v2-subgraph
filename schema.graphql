@@ -110,6 +110,7 @@ type Vault @entity {
   # release: VaultRelease!
   "Latest Vault Update"
   latestUpdate: VaultUpdate
+  vaultDayData: [VaultDayData!]! @derivedFrom(field: "vault")
   "All Vault Updates"
   historicalUpdates: [VaultUpdate!]! @derivedFrom(field: "vault")
   "Strategies for this Vault"
@@ -457,4 +458,15 @@ type Harvest @entity {
   debtPayment: BigInt!
   "The reported outstanding debt from strategy at the time of the harvest."
   debtOutstanding: BigInt!
+}
+
+type VaultDayData @entity {
+  id: ID!
+  date: Int!
+  vault: Vault!
+  pricePerShare: BigInt!
+  deposited: BigInt!
+  withdrawn: BigInt!
+  totalReturnsGenerated: BigInt!
+  dayReturnsGenerated: BigInt!
 }
