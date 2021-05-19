@@ -1368,6 +1368,15 @@ export class AccountVaultPositionUpdate extends Entity {
     this.set("sharesReceived", Value.fromBigInt(value));
   }
 
+  get balanceShares(): BigInt {
+    let value = this.get("balanceShares");
+    return value.toBigInt();
+  }
+
+  set balanceShares(value: BigInt) {
+    this.set("balanceShares", Value.fromBigInt(value));
+  }
+
   get balancePosition(): BigInt {
     let value = this.get("balancePosition");
     return value.toBigInt();

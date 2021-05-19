@@ -332,6 +332,8 @@ type AccountVaultPositionUpdate @entity {
   sharesSent: BigInt!
   # "Share tokens received"
   sharesReceived: BigInt!
+  # "The balance of shares"
+  balanceShares: BigInt!
   "The balance position."
   balancePosition: BigInt!
   "Vault Update"

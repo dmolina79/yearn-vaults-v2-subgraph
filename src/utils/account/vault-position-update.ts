@@ -38,6 +38,7 @@ export function createAccountVaultPositionUpdate(
   sharesReceived: BigInt,
   tokensSent: BigInt,
   tokensReceived: BigInt,
+  balanceShares: BigInt,
   balancePosition: BigInt
 ): AccountVaultPositionUpdate {
   log.info(
@@ -59,6 +60,7 @@ export function createAccountVaultPositionUpdate(
   accountVaultPositionUpdate.sharesReceived = sharesReceived;
   accountVaultPositionUpdate.tokensSent = tokensSent;
   accountVaultPositionUpdate.tokensReceived = tokensReceived;
+  accountVaultPositionUpdate.balanceShares = balanceShares;
   accountVaultPositionUpdate.balancePosition = balancePosition;
   accountVaultPositionUpdate.vaultUpdate = vaultUpdateLibrary.buildIdFromVaultAndTransaction(
     vault,
@@ -76,6 +78,7 @@ export function createFirst(
   transaction: Transaction,
   depositedTokens: BigInt,
   receivedShares: BigInt,
+  balanceShares: BigInt,
   balancePosition: BigInt
 ): AccountVaultPositionUpdate {
   log.debug('[VaultPositionUpdate] Create first', []);
@@ -102,6 +105,7 @@ export function createFirst(
       BIGINT_ZERO,
       BIGINT_ZERO,
       BIGINT_ZERO,
+      balanceShares,
       balancePosition
     );
   } else {
@@ -148,6 +152,7 @@ export function deposit(
   transaction: Transaction,
   depositedTokens: BigInt,
   receivedShares: BigInt,
+  balanceShares: BigInt,
   balancePosition: BigInt
 ): AccountVaultPositionUpdate {
   log.debug(
@@ -181,6 +186,7 @@ export function deposit(
       BIGINT_ZERO,
       BIGINT_ZERO,
       BIGINT_ZERO,
+      balanceShares,
       balancePosition
     );
   } else {
@@ -203,6 +209,7 @@ export function transfer(
   vault: Vault,
   tokenAmount: BigInt,
   shareAmount: BigInt,
+  balanceShares: BigInt,
   balancePosition: BigInt,
   transaction: Transaction
 ): void {
@@ -235,6 +242,7 @@ export function transfer(
       receivingTransfer ? shareAmount : BIGINT_ZERO,
       receivingTransfer ? BIGINT_ZERO : tokenAmount,
       receivingTransfer ? tokenAmount : BIGINT_ZERO,
+      balanceShares,
       balancePosition
     );
   } else {
@@ -270,6 +278,7 @@ export function transfer(
         receivingTransfer ? shareAmount : BIGINT_ZERO,
         receivingTransfer ? BIGINT_ZERO : tokenAmount,
         receivingTransfer ? tokenAmount : BIGINT_ZERO,
+        balanceShares,
         balancePosition
       );
     } else {
