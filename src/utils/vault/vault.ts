@@ -3,6 +3,7 @@ import {
   AccountVaultPosition,
   AccountVaultPositionUpdate,
   Registry,
+  Strategy,
   Transaction,
   Vault,
   VaultUpdate,
@@ -415,5 +416,35 @@ export function strategyReported(
       pricePerShare,
       balancePosition
     );
+  }
+}
+
+export function strategyAddedToQueue(
+  strategyAddress: Address,
+  ethTransaction: Transaction,
+  event: ethereum.Event
+): void {
+  let id = strategyAddress.toHexString();
+  let txHash = ethTransaction.hash.toHexString();
+  log.info('Strategy {} added to queue at tx {}', [id, txHash]);
+  let strategy = Strategy.load(id);
+  if (strategy !== null) {
+    strategy.inQueue = true;
+    strategy.save();
+  }
+}
+
+export function strategyRemovedFromQueue(
+  strategyAddress: Address,
+  ethTransaction: Transaction,
+  event: ethereum.Event
+): void {
+  let id = strategyAddress.toHexString();
+  let txHash = ethTransaction.hash.toHexString();
+  let strategy = Strategy.load(id);
+  log.info('Strategy {} removed to queue at tx {}', [id, txHash]);
+  if (strategy !== null) {
+    strategy.inQueue = false;
+    strategy.save();
   }
 }

@@ -134,6 +134,10 @@ templates:
           handler: handleStrategyReported
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+        - event: StrategyAddedToQueue(indexed address)
+          handler: handleStrategyAddedToQueue
+        - event: StrategyRemovedFromQueue(indexed address)
+          handler: handleStrategyRemovedFromQueue
       callHandlers:
         - function: deposit()
           handler: handleDeposit

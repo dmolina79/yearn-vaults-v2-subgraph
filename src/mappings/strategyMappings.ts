@@ -5,7 +5,7 @@ import { getOrCreateTransactionFromEvent } from '../utils/transaction';
 
 export function handleHarvested(event: HarvestedEvent): void {
   log.debug('[Strategy Mapping] Handle harvested', []);
-  getOrCreateTransactionFromEvent(event, 'Harvested');
+  let ethTransaction = getOrCreateTransactionFromEvent(event, 'Harvested');
   strategyLibrary.harvest(
     event.transaction.from,
     event.address,
@@ -16,6 +16,7 @@ export function handleHarvested(event: HarvestedEvent): void {
     event.params.profit,
     event.params.loss,
     event.params.debtPayment,
-    event.params.debtOutstanding
+    event.params.debtOutstanding,
+    ethTransaction
   );
 }

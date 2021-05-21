@@ -12,6 +12,8 @@ import {
   Withdraw3Call,
   AddStrategyCall as AddStrategyV1Call,
   AddStrategy1Call as AddStrategyV2Call,
+  StrategyAddedToQueue as StrategyAddedToQueueEvent,
+  StrategyRemovedFromQueue as StrategyRemovedFromQueueEvent,
 } from '../../generated/Registry/Vault';
 import { printCallInfo } from '../utils/commons';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../utils/constants';
@@ -444,4 +446,30 @@ export function handleTransfer(event: TransferEvent): void {
       ]
     );
   }
+}
+
+export function handleStrategyAddedToQueue(
+  event: StrategyAddedToQueueEvent
+): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'StrategyAddedToQueue'
+  );
+
+  let strategyAddress = event.params.strategy;
+  vaultLibrary.strategyAddedToQueue(strategyAddress, ethTransaction, event);
+}
+
+export function handleStrategyRemovedFromQueue(
+  event: StrategyRemovedFromQueueEvent
+): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'StrategyRemovedFromQueue'
+  );
+  vaultLibrary.strategyRemovedFromQueue(
+    event.params.strategy,
+    ethTransaction,
+    event
+  );
 }
