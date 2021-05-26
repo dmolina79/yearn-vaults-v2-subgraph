@@ -60,14 +60,13 @@ export function getOrCreate(
 
 export function getBalancePosition(
   account: Account,
-  token: Token,
-  balanceShares: BigInt,
   vaultContract: VaultContract
 ): BigInt {
   log.info('GetBalancePosition account  {} ', [account.id]);
   let pricePerShare = vaultContract.pricePerShare();
   let decimals = vaultContract.decimals();
   // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
+  let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
   let u8Decimals = u8(decimals.toI32());
   let divisor = BigInt.fromI32(10).pow(u8Decimals);
   return balanceShares.times(pricePerShare).div(divisor);
@@ -135,12 +134,7 @@ export function deposit(
   // TODO Use tokenLibrary.getOrCreate
   let token = Token.load(vault.token) as Token;
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(
-    account,
-    token,
-    balanceShares,
-    vaultContract
-  );
+  let balancePosition = getBalancePosition(account, vaultContract);
   if (accountVaultPosition == null) {
     log.info('Tx: {} Account vault position {} not found. Creating it.', [
       txHash,
@@ -210,12 +204,7 @@ export function withdraw(
   let vault = Vault.load(accountVaultPosition.vault) as Vault;
   let token = Token.load(vault.token) as Token;
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(
-    account,
-    token,
-    balanceShares,
-    vaultContract
-  );
+  let balancePosition = getBalancePosition(account, vaultContract);
   let newAccountVaultPositionOrder = vaultPositionUpdateLibrary.getNewOrder(
     accountVaultPosition.latestUpdate,
     transaction.hash.toHexString()
@@ -319,12 +308,7 @@ export function transferForAccount(
   let accountVaultPositionId = buildId(account, vault);
   let accountVaultPosition = AccountVaultPosition.load(accountVaultPositionId);
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(
-    account,
-    token,
-    balanceShares,
-    vaultContract
-  );
+  let balancePosition = getBalancePosition(account, vaultContract);
   let latestUpdateId: string;
   let newAccountVaultPositionOrder: BigInt;
   if (accountVaultPosition == null) {
