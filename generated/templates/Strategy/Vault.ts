@@ -208,6 +208,42 @@ export class UpdateManagementFee__Params {
   }
 }
 
+export class StrategyRemovedFromQueue extends ethereum.Event {
+  get params(): StrategyRemovedFromQueue__Params {
+    return new StrategyRemovedFromQueue__Params(this);
+  }
+}
+
+export class StrategyRemovedFromQueue__Params {
+  _event: StrategyRemovedFromQueue;
+
+  constructor(event: StrategyRemovedFromQueue) {
+    this._event = event;
+  }
+
+  get strategy(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
+export class StrategyAddedToQueue extends ethereum.Event {
+  get params(): StrategyAddedToQueue__Params {
+    return new StrategyAddedToQueue__Params(this);
+  }
+}
+
+export class StrategyAddedToQueue__Params {
+  _event: StrategyAddedToQueue;
+
+  constructor(event: StrategyAddedToQueue) {
+    this._event = event;
+  }
+
+  get strategy(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
 export class Vault__strategiesResult {
   value0: BigInt;
   value1: BigInt;

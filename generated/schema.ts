@@ -1462,6 +1462,15 @@ export class Strategy extends Entity {
     this.set("address", Value.fromBytes(value));
   }
 
+  get inQueue(): boolean {
+    let value = this.get("inQueue");
+    return value.toBoolean();
+  }
+
+  set inQueue(value: boolean) {
+    this.set("inQueue", Value.fromBoolean(value));
+  }
+
   get vault(): string {
     let value = this.get("vault");
     return value.toString();

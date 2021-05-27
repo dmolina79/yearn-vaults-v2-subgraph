@@ -138,6 +138,10 @@ templates:
           handler: handleUpdatePerformanceFee
         - event: UpdateManagementFee(uint256)
           handler: handleUpdateManagementFee
+        - event: StrategyAddedToQueue(indexed address)
+          handler: handleStrategyAddedToQueue
+        - event: StrategyRemovedFromQueue(indexed address)
+          handler: handleStrategyRemovedFromQueue
       callHandlers:
         - function: deposit()
           handler: handleDeposit

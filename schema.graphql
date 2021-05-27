@@ -356,6 +356,8 @@ type Strategy @entity {
   transaction: Transaction!
   "The Strategy address."
   address: Bytes!
+  "Defines whether this strategy is within the vault queue."
+  inQueue: Boolean!
   "The Vault"
   vault: Vault!
   "Defines the maximum borrow amount. In strategies <v0.3.5 it is debtRatio."

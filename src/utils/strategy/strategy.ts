@@ -8,12 +8,7 @@ import {
 import { Strategy as StrategyTemplate } from '../../../generated/templates';
 import { Strategy as StrategyContract } from '../../../generated/templates/Vault/Strategy';
 
-import {
-  buildIdFromEvent,
-  getTimeInMillis,
-  getTimestampInMillis,
-} from '../commons';
-
+import { getTimeInMillis } from '../commons';
 import * as strategyReportLibrary from './strategy-report';
 import * as strategyReportResultLibrary from './strategy-report-result';
 
@@ -34,6 +29,7 @@ export function create(
   if (strategy == null) {
     let strategyContract = StrategyContract.bind(strategyAddress);
     strategy = new Strategy(strategyId);
+    strategy.inQueue = true;
     strategy.blockNumber = transaction.blockNumber;
     strategy.timestamp = getTimeInMillis(transaction.timestamp);
     strategy.transaction = transactionId;
@@ -109,7 +105,8 @@ export function harvest(
   profit: BigInt,
   loss: BigInt,
   debtPayment: BigInt,
-  debtOutstanding: BigInt
+  debtOutstanding: BigInt,
+  transaction: Transaction
 ): Harvest {
   log.debug('[Strategy] Harvest', []);
   let harvestId = strategyAddress
@@ -133,6 +130,7 @@ export function harvest(
     harvest.loss = loss;
     harvest.debtPayment = debtPayment;
     harvest.debtOutstanding = debtOutstanding;
+    harvest.transaction = transaction.id;
     harvest.save();
   }
 

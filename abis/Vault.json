@@ -152,6 +152,8 @@
     },
     { "name": "UpdatePerformanceFee", "inputs": [{ "type": "uint256", "name": "performanceFee", "indexed": false }], "anonymous": false, "type": "event" },
     { "name": "UpdateManagementFee", "inputs": [{ "type": "uint256", "name": "managementFee", "indexed": false }], "anonymous": false, "type": "event" },
+    { "name": "StrategyRemovedFromQueue", "inputs": [{ "type": "address", "name": "strategy", "indexed": true }], "anonymous": false, "type": "event" },
+    { "name": "StrategyAddedToQueue", "inputs": [{ "type": "address", "name": "strategy", "indexed": true }], "anonymous": false, "type": "event" },
     {
       "inputs": [
         {

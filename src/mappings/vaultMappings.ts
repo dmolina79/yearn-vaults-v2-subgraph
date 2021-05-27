@@ -14,6 +14,8 @@ import {
   AddStrategy1Call as AddStrategyV2Call,
   UpdatePerformanceFee as UpdatePerformanceFeeEvent,
   UpdateManagementFee as UpdateManagementFeeEvent,
+  StrategyAddedToQueue as StrategyAddedToQueueEvent,
+  StrategyRemovedFromQueue as StrategyRemovedFromQueueEvent,
 } from '../../generated/Registry/Vault';
 import { printCallInfo } from '../utils/commons';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../utils/constants';
@@ -461,4 +463,33 @@ export function handleUpdateManagementFee(
   event: UpdateManagementFeeEvent
 ): void {
   vaultLibrary.managementFeeUpdated(event.address, event.params.managementFee);
+}
+
+export function handleStrategyAddedToQueue(
+  event: StrategyAddedToQueueEvent
+): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'StrategyAddedToQueue'
+  );
+
+  vaultLibrary.strategyAddedToQueue(
+    event.params.strategy,
+    ethTransaction,
+    event
+  );
+}
+
+export function handleStrategyRemovedFromQueue(
+  event: StrategyRemovedFromQueueEvent
+): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'StrategyRemovedFromQueue'
+  );
+  vaultLibrary.strategyRemovedFromQueue(
+    event.params.strategy,
+    ethTransaction,
+    event
+  );
 }
