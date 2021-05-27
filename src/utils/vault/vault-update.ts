@@ -208,7 +208,7 @@ export function performanceFeeUpdated(
     BIGINT_ZERO, // SharesBurnt
     latestVaultUpdate.pricePerShare,
     latestVaultUpdate.totalFees,
-    latestVaultUpdate.managementFees,
+    BIGINT_ZERO,
     performanceFee,
     balancePosition
   );
@@ -234,7 +234,7 @@ export function managementFeeUpdated(
     latestVaultUpdate.pricePerShare,
     latestVaultUpdate.totalFees,
     managementFee,
-    latestVaultUpdate.performanceFees,
+    BIGINT_ZERO,
     balancePosition
   );
   vault.latestUpdate = newVaultUpdate.id;

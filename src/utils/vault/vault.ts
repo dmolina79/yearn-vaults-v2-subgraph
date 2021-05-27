@@ -457,13 +457,14 @@ export function managementFeeUpdated(
     let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
 
     if (latestVaultUpdate !== null) {
-      vaultUpdateLibrary.managementFeeUpdated(
+      let vaultUpdate = vaultUpdateLibrary.managementFeeUpdated(
         vault as Vault,
         ethTransaction,
         latestVaultUpdate as VaultUpdate,
         getBalancePosition(vaultContract),
         managementFee
-      );
+      ) as VaultUpdate;
+      vault.latestUpdate = vaultUpdate.id;
     }
 
     vault.managementFeeBps = managementFee.toI32();
