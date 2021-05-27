@@ -424,13 +424,18 @@ export function performanceFeeUpdated(
   performanceFee: BigInt
 ): void {
   let vault = Vault.load(vaultAddress.toHexString());
-  log.info('Vault performance fee updated. Address: {}, To: {}', [
-    vaultAddress.toHexString(),
-    performanceFee.toString(),
-  ]);
   if (vault !== null) {
+    log.info('Vault performance fee updated. Address: {}, To: {}', [
+      vaultAddress.toHexString(),
+      performanceFee.toString(),
+    ]);
     vault.performanceFeeBps = performanceFee.toI32();
     vault.save();
+  } else {
+    log.info(
+      'Failed to update performance fee of vault {} to {}. Address: {}, To: {}',
+      [vaultAddress.toHexString(), performanceFee.toString()]
+    );
   }
 }
 
@@ -439,13 +444,18 @@ export function managementFeeUpdated(
   managementFee: BigInt
 ): void {
   let vault = Vault.load(vaultAddress.toHexString());
-  log.info('Vault management fee updated. Address: {}, To: {}', [
-    vaultAddress.toHexString(),
-    managementFee.toString(),
-  ]);
   if (vault !== null) {
+    log.info('Vault management fee updated. Address: {}, To: {}', [
+      vaultAddress.toHexString(),
+      managementFee.toString(),
+    ]);
     vault.managementFeeBps = managementFee.toI32();
     vault.save();
+  } else {
+    log.info(
+      'Failed to update management fee of vault {} to {}. Address: {}, To: {}',
+      [vaultAddress.toHexString(), managementFee.toString()]
+    );
   }
 }
 
