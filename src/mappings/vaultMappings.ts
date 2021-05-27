@@ -456,8 +456,11 @@ export function handleStrategyAddedToQueue(
     'StrategyAddedToQueue'
   );
 
-  let strategyAddress = event.params.strategy;
-  vaultLibrary.strategyAddedToQueue(strategyAddress, ethTransaction, event);
+  vaultLibrary.strategyAddedToQueue(
+    event.params.strategy,
+    ethTransaction,
+    event
+  );
 }
 
 export function handleStrategyRemovedFromQueue(
