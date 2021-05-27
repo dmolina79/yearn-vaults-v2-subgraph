@@ -237,7 +237,5 @@ export function managementFeeUpdated(
     BIGINT_ZERO,
     balancePosition
   );
-  vault.latestUpdate = newVaultUpdate.id;
-  vault.save();
   return newVaultUpdate;
 }
