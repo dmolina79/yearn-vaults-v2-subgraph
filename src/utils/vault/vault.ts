@@ -421,6 +421,8 @@ export function strategyReported(
 
 export function performanceFeeUpdated(
   vaultAddress: Address,
+  ethTransaction: Transaction,
+  vaultContract: VaultContract,
   performanceFee: BigInt
 ): void {
   let vault = Vault.load(vaultAddress.toHexString());
@@ -429,18 +431,41 @@ export function performanceFeeUpdated(
       vaultAddress.toHexString(),
       performanceFee.toString(),
     ]);
+
+    let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
+
+    if (latestVaultUpdate !== null) {
+      let totalAssets = vaultContract.totalAssets();
+      let pricePerShare = vaultContract.pricePerShare();
+      let decimals = u8(vaultContract.decimals().toI32());
+      let balancePosition = totalAssets
+        .times(pricePerShare)
+        .div(BigInt.fromI32(10).pow(decimals));
+
+      vaultUpdateLibrary.performanceFeeUpdated(
+        vault as Vault,
+        ethTransaction,
+        latestVaultUpdate as VaultUpdate,
+        pricePerShare,
+        balancePosition,
+        performanceFee
+      );
+    }
+
     vault.performanceFeeBps = performanceFee.toI32();
     vault.save();
   } else {
-    log.info(
-      'Failed to update performance fee of vault {} to {}. Address: {}, To: {}',
-      [vaultAddress.toHexString(), performanceFee.toString()]
-    );
+    log.info('Failed to update performance fee of vault {} to {}', [
+      vaultAddress.toHexString(),
+      performanceFee.toString(),
+    ]);
   }
 }
 
 export function managementFeeUpdated(
   vaultAddress: Address,
+  ethTransaction: Transaction,
+  vaultContract: VaultContract,
   managementFee: BigInt
 ): void {
   let vault = Vault.load(vaultAddress.toHexString());
@@ -449,13 +474,34 @@ export function managementFeeUpdated(
       vaultAddress.toHexString(),
       managementFee.toString(),
     ]);
+
+    let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
+
+    if (latestVaultUpdate !== null) {
+      let totalAssets = vaultContract.totalAssets();
+      let pricePerShare = vaultContract.pricePerShare();
+      let decimals = u8(vaultContract.decimals().toI32());
+      let balancePosition = totalAssets
+        .times(pricePerShare)
+        .div(BigInt.fromI32(10).pow(decimals));
+
+      vaultUpdateLibrary.managementFeeUpdated(
+        vault as Vault,
+        ethTransaction,
+        latestVaultUpdate as VaultUpdate,
+        pricePerShare,
+        balancePosition,
+        managementFee
+      );
+    }
+
     vault.managementFeeBps = managementFee.toI32();
     vault.save();
   } else {
-    log.info(
-      'Failed to update management fee of vault {} to {}. Address: {}, To: {}',
-      [vaultAddress.toHexString(), managementFee.toString()]
-    );
+    log.info('Failed to update management fee of vault {} to {}', [
+      vaultAddress.toHexString(),
+      managementFee.toString(),
+    ]);
   }
 }
 

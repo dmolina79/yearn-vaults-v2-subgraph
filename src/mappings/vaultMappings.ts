@@ -453,8 +453,17 @@ export function handleTransfer(event: TransferEvent): void {
 export function handleUpdatePerformanceFee(
   event: UpdatePerformanceFeeEvent
 ): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdatePerformanceFee'
+  );
+
+  let vaultContract = VaultContract.bind(event.address);
+
   vaultLibrary.performanceFeeUpdated(
     event.address,
+    ethTransaction,
+    vaultContract,
     event.params.performanceFee
   );
 }
@@ -462,7 +471,19 @@ export function handleUpdatePerformanceFee(
 export function handleUpdateManagementFee(
   event: UpdateManagementFeeEvent
 ): void {
-  vaultLibrary.managementFeeUpdated(event.address, event.params.managementFee);
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdateManagementFee'
+  );
+
+  let vaultContract = VaultContract.bind(event.address);
+
+  vaultLibrary.managementFeeUpdated(
+    event.address,
+    ethTransaction,
+    vaultContract,
+    event.params.managementFee
+  );
 }
 
 export function handleStrategyAddedToQueue(
