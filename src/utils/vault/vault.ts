@@ -159,13 +159,7 @@ export function deposit(
   log.debug('[Vault] Deposit', []);
   let vaultContract = VaultContract.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
-
-  let totalAssets = vaultContract.totalAssets();
-  let decimals = u8(vaultContract.decimals().toI32());
   let pricePerShare = vaultContract.pricePerShare();
-  let balancePosition = totalAssets
-    .times(pricePerShare)
-    .div(BigInt.fromI32(10).pow(decimals));
   let vault = getOrCreate(vaultAddress, transaction);
 
   accountVaultPositionLibrary.deposit(
@@ -186,6 +180,7 @@ export function deposit(
   );
 
   let vaultUpdate: VaultUpdate;
+  let balancePosition = getBalancePosition(vaultContract);
   if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
@@ -240,12 +235,7 @@ export function withdraw(
   let vaultContract = VaultContract.bind(vaultAddress);
   let pricePerShare = vaultContract.pricePerShare();
   let account = accountLibrary.getOrCreate(from);
-
-  let totalAssets = vaultContract.totalAssets();
-  let decimals = u8(vaultContract.decimals().toI32());
-  let balancePosition = totalAssets
-    .times(pricePerShare)
-    .div(BigInt.fromI32(10).pow(decimals));
+  let balancePosition = getBalancePosition(vaultContract);
   let vault = getOrCreate(vaultAddress, transaction);
 
   withdrawalLibrary.getOrCreate(
@@ -402,11 +392,7 @@ export function strategyReported(
   ]);
   let vault = getOrCreate(vaultAddress, transaction);
   let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
-  let totalAssets = vaultContract.totalAssets();
-  let decimals = u8(vaultContract.decimals().toI32());
-  let balancePosition = totalAssets
-    .times(pricePerShare)
-    .div(BigInt.fromI32(10).pow(decimals));
+  let balancePosition = getBalancePosition(vaultContract);
   // The latest vault update should exist
   if (latestVaultUpdate !== null) {
     vaultUpdateLibrary.strategyReported(
@@ -435,27 +421,20 @@ export function performanceFeeUpdated(
     let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
 
     if (latestVaultUpdate !== null) {
-      let totalAssets = vaultContract.totalAssets();
-      let pricePerShare = vaultContract.pricePerShare();
-      let decimals = u8(vaultContract.decimals().toI32());
-      let balancePosition = totalAssets
-        .times(pricePerShare)
-        .div(BigInt.fromI32(10).pow(decimals));
-
-      vaultUpdateLibrary.performanceFeeUpdated(
+      let vaultUpdate = vaultUpdateLibrary.performanceFeeUpdated(
         vault as Vault,
         ethTransaction,
         latestVaultUpdate as VaultUpdate,
-        pricePerShare,
-        balancePosition,
+        getBalancePosition(vaultContract),
         performanceFee
-      );
+      ) as VaultUpdate;
+      vault.latestUpdate = vaultUpdate.id;
     }
 
     vault.performanceFeeBps = performanceFee.toI32();
     vault.save();
   } else {
-    log.info('Failed to update performance fee of vault {} to {}', [
+    log.warning('Failed to update performance fee of vault {} to {}', [
       vaultAddress.toHexString(),
       performanceFee.toString(),
     ]);
@@ -478,19 +457,11 @@ export function managementFeeUpdated(
     let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
 
     if (latestVaultUpdate !== null) {
-      let totalAssets = vaultContract.totalAssets();
-      let pricePerShare = vaultContract.pricePerShare();
-      let decimals = u8(vaultContract.decimals().toI32());
-      let balancePosition = totalAssets
-        .times(pricePerShare)
-        .div(BigInt.fromI32(10).pow(decimals));
-
       vaultUpdateLibrary.managementFeeUpdated(
         vault as Vault,
         ethTransaction,
         latestVaultUpdate as VaultUpdate,
-        pricePerShare,
-        balancePosition,
+        getBalancePosition(vaultContract),
         managementFee
       );
     }
@@ -498,7 +469,7 @@ export function managementFeeUpdated(
     vault.managementFeeBps = managementFee.toI32();
     vault.save();
   } else {
-    log.info('Failed to update management fee of vault {} to {}', [
+    log.warning('Failed to update management fee of vault {} to {}', [
       vaultAddress.toHexString(),
       managementFee.toString(),
     ]);
@@ -533,4 +504,11 @@ export function strategyRemovedFromQueue(
     strategy.inQueue = false;
     strategy.save();
   }
+}
+
+function getBalancePosition(vaultContract: VaultContract): BigInt {
+  let totalAssets = vaultContract.totalAssets();
+  let pricePerShare = vaultContract.pricePerShare();
+  let decimals = u8(vaultContract.decimals().toI32());
+  return totalAssets.times(pricePerShare).div(BigInt.fromI32(10).pow(decimals));
 }

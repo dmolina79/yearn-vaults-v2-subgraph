@@ -194,7 +194,6 @@ export function performanceFeeUpdated(
   vault: Vault,
   transaction: Transaction,
   latestVaultUpdate: VaultUpdate,
-  pricePerShare: BigInt,
   balancePosition: BigInt,
   performanceFee: BigInt
 ): VaultUpdate {
@@ -207,14 +206,12 @@ export function performanceFeeUpdated(
     BIGINT_ZERO, // TokensWithdrawn
     BIGINT_ZERO, // SharesMinted
     BIGINT_ZERO, // SharesBurnt
-    pricePerShare,
+    latestVaultUpdate.pricePerShare,
     latestVaultUpdate.totalFees,
     latestVaultUpdate.managementFees,
     performanceFee,
     balancePosition
   );
-  vault.latestUpdate = newVaultUpdate.id;
-  vault.save();
   return newVaultUpdate;
 }
 
@@ -222,7 +219,6 @@ export function managementFeeUpdated(
   vault: Vault,
   transaction: Transaction,
   latestVaultUpdate: VaultUpdate,
-  pricePerShare: BigInt,
   balancePosition: BigInt,
   managementFee: BigInt
 ): VaultUpdate {
@@ -235,7 +231,7 @@ export function managementFeeUpdated(
     BIGINT_ZERO, // TokensWithdrawn
     BIGINT_ZERO, // SharesMinted
     BIGINT_ZERO, // SharesBurnt
-    pricePerShare,
+    latestVaultUpdate.pricePerShare,
     latestVaultUpdate.totalFees,
     managementFee,
     latestVaultUpdate.performanceFees,
