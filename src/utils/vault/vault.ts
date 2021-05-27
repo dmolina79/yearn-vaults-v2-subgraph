@@ -51,8 +51,8 @@ const createNewVaultFromAddress = (
 
   vaultEntity.tokensDepositLimit = BIGINT_ZERO;
   vaultEntity.sharesSupply = BIGINT_ZERO;
-  vaultEntity.managementFeeBps = 0;
-  vaultEntity.performanceFeeBps = 0;
+  vaultEntity.managementFeeBps = vaultContract.managementFee().toI32();
+  vaultEntity.performanceFeeBps = vaultContract.performanceFee().toI32();
 
   // vaultEntity.tokensDepositLimit = vaultContract.depositLimit()
   // vaultEntity.sharesSupply = vaultContract.totalSupply()
@@ -415,5 +415,35 @@ export function strategyReported(
       pricePerShare,
       balancePosition
     );
+  }
+}
+
+export function performanceFeeUpdated(
+  vaultAddress: Address,
+  performanceFee: BigInt
+): void {
+  let vault = Vault.load(vaultAddress.toHexString());
+  log.info('Vault performance fee updated. Address: {}, To: {}', [
+    vaultAddress.toHexString(),
+    performanceFee.toString(),
+  ]);
+  if (vault !== null) {
+    vault.performanceFeeBps = performanceFee.toI32();
+    vault.save();
+  }
+}
+
+export function managementFeeUpdated(
+  vaultAddress: Address,
+  managementFee: BigInt
+): void {
+  let vault = Vault.load(vaultAddress.toHexString());
+  log.info('Vault management fee updated. Address: {}, To: {}', [
+    vaultAddress.toHexString(),
+    managementFee.toString(),
+  ]);
+  if (vault !== null) {
+    vault.managementFeeBps = managementFee.toI32();
+    vault.save();
   }
 }

@@ -134,6 +134,10 @@ templates:
           handler: handleStrategyReported
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+        - event: UpdatePerformanceFee(uint256)
+          handler: handleUpdatePerformanceFee
+        - event: UpdateManagementFee(uint256)
+          handler: handleUpdateManagementFee
       callHandlers:
         - function: deposit()
           handler: handleDeposit

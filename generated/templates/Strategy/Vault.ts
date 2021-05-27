@@ -172,6 +172,42 @@ export class StrategyReported__Params {
   }
 }
 
+export class UpdatePerformanceFee extends ethereum.Event {
+  get params(): UpdatePerformanceFee__Params {
+    return new UpdatePerformanceFee__Params(this);
+  }
+}
+
+export class UpdatePerformanceFee__Params {
+  _event: UpdatePerformanceFee;
+
+  constructor(event: UpdatePerformanceFee) {
+    this._event = event;
+  }
+
+  get performanceFee(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+}
+
+export class UpdateManagementFee extends ethereum.Event {
+  get params(): UpdateManagementFee__Params {
+    return new UpdateManagementFee__Params(this);
+  }
+}
+
+export class UpdateManagementFee__Params {
+  _event: UpdateManagementFee;
+
+  constructor(event: UpdateManagementFee) {
+    this._event = event;
+  }
+
+  get managementFee(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+}
+
 export class Vault__strategiesResult {
   value0: BigInt;
   value1: BigInt;
