@@ -1,8 +1,16 @@
 import { BigInt, log } from '@graphprotocol/graph-ts';
-import { AddStrategy1Call as AddStrategyV2Call } from '../../generated/Registry/Vault';
+import {
+  AddStrategy1Call as AddStrategyV2Call,
+  Vault as VaultContract,
+  UpdatePerformanceFee as UpdatePerformanceFeeEvent,
+  UpdateManagementFee as UpdateManagementFeeEvent,
+} from '../../generated/Registry/Vault';
 import { BIGINT_ZERO } from '../utils/constants';
 import * as strategyLibrary from '../utils/strategy/strategy';
-import { getOrCreateTransactionFromCall } from '../utils/transaction';
+import {
+  getOrCreateTransactionFromCall,
+  getOrCreateTransactionFromEvent,
+} from '../utils/transaction';
 import * as vaultLibrary from '../utils/vault/vault';
 
 /**
@@ -55,5 +63,55 @@ export function handleAddStrategyV2(call: AddStrategyV2Call): void {
     call.inputs.maxDebtPerHarvest,
     call.inputs.performanceFee,
     ethTransaction
+  );
+}
+
+export function handleUpdatePerformanceFee(
+  event: UpdatePerformanceFeeEvent
+): void {
+  if (event.block.number.gt(BigInt.fromI32(11881933))) {
+    log.warning(
+      'CurveSETHVault_UpdatePerformanceFeeEvent - Not processing performance fee update on vault {} on block {}',
+      [event.address.toHexString(), event.block.number.toString()]
+    );
+    return;
+  }
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdatePerformanceFee'
+  );
+
+  let vaultContract = VaultContract.bind(event.address);
+
+  vaultLibrary.performanceFeeUpdated(
+    event.address,
+    ethTransaction,
+    vaultContract,
+    event.params.performanceFee
+  );
+}
+
+export function handleUpdateManagementFee(
+  event: UpdateManagementFeeEvent
+): void {
+  if (event.block.number.gt(BigInt.fromI32(11881933))) {
+    log.warning(
+      'CurveSETHVault_UpdateManagementFeeEvent - Not processing performance fee update on vault {} on block {}',
+      [event.address.toHexString(), event.block.number.toString()]
+    );
+    return;
+  }
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdateManagementFee'
+  );
+
+  let vaultContract = VaultContract.bind(event.address);
+
+  vaultLibrary.managementFeeUpdated(
+    event.address,
+    ethTransaction,
+    vaultContract,
+    event.params.managementFee
   );
 }
