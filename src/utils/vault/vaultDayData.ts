@@ -1,9 +1,11 @@
 import { Vault, VaultDayData } from '../../../generated/schema';
-import { BigInt } from '@graphprotocol/graph-ts';
+import { Address, BigInt } from '@graphprotocol/graph-ts';
 import { BIGINT_ZERO } from '../constants';
+import { usdcPrice } from '../oracle/usdcOracle';
 
 export function updateVaultDayData(
   vault: Vault,
+  tokenAddress: Address,
   timestamp: BigInt,
   pricePerShare: BigInt,
   deposited: BigInt,
@@ -27,13 +29,19 @@ export function updateVaultDayData(
     vaultDayData.deposited = BIGINT_ZERO;
     vaultDayData.withdrawn = BIGINT_ZERO;
     vaultDayData.totalReturnsGenerated = BIGINT_ZERO;
+    vaultDayData.totalReturnsGeneratedUSDC = BIGINT_ZERO;
     vaultDayData.dayReturnsGenerated = BIGINT_ZERO;
+    vaultDayData.dayReturnsGeneratedUSDC = BIGINT_ZERO;
   }
 
   vaultDayData.pricePerShare = pricePerShare;
   vaultDayData.deposited = vaultDayData.deposited.plus(deposited);
   vaultDayData.withdrawn = vaultDayData.withdrawn.plus(withdrawn);
   vaultDayData.dayReturnsGenerated = returnsGenerated;
+  vaultDayData.dayReturnsGeneratedUSDC = usdcPrice(
+    tokenAddress,
+    returnsGenerated
+  );
 
   let previousDayID = vault.id
     .toString()
@@ -46,6 +54,10 @@ export function updateVaultDayData(
   } else {
     vaultDayData.totalReturnsGenerated = previousVaultDayData.totalReturnsGenerated.plus(
       returnsGenerated
+    );
+    vaultDayData.totalReturnsGeneratedUSDC = usdcPrice(
+      tokenAddress,
+      vaultDayData.totalReturnsGenerated
     );
   }
 

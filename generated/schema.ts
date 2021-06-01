@@ -2073,6 +2073,15 @@ export class VaultDayData extends Entity {
     this.set("totalReturnsGenerated", Value.fromBigInt(value));
   }
 
+  get totalReturnsGeneratedUSDC(): BigInt {
+    let value = this.get("totalReturnsGeneratedUSDC");
+    return value.toBigInt();
+  }
+
+  set totalReturnsGeneratedUSDC(value: BigInt) {
+    this.set("totalReturnsGeneratedUSDC", Value.fromBigInt(value));
+  }
+
   get dayReturnsGenerated(): BigInt {
     let value = this.get("dayReturnsGenerated");
     return value.toBigInt();
@@ -2080,5 +2089,14 @@ export class VaultDayData extends Entity {
 
   set dayReturnsGenerated(value: BigInt) {
     this.set("dayReturnsGenerated", Value.fromBigInt(value));
+  }
+
+  get dayReturnsGeneratedUSDC(): BigInt {
+    let value = this.get("dayReturnsGeneratedUSDC");
+    return value.toBigInt();
+  }
+
+  set dayReturnsGeneratedUSDC(value: BigInt) {
+    this.set("dayReturnsGeneratedUSDC", Value.fromBigInt(value));
   }
 }

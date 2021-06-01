@@ -483,6 +483,10 @@ type VaultDayData @entity {
   withdrawn: BigInt!
   "The total earnings generated for this vault up to and including this day"
   totalReturnsGenerated: BigInt!
+  "The total earnings generated in USDC for this vault up to and including this day"
+  totalReturnsGeneratedUSDC: BigInt!
   "The earnings genereated for this vault this day"
   dayReturnsGenerated: BigInt!
+  "The earnings genereated in USDC for this vault this day"
+  dayReturnsGeneratedUSDC: BigInt!
 }

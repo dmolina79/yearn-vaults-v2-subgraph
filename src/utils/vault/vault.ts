@@ -204,6 +204,7 @@ export function deposit(
 
   updateVaultDayData(
     vault,
+    vaultContract.token(),
     timestamp,
     pricePerShare,
     depositedAmount,
@@ -335,6 +336,7 @@ export function withdraw(
 
     updateVaultDayData(
       vault,
+      vaultContract.token(),
       timestamp,
       pricePerShare,
       BIGINT_ZERO,
