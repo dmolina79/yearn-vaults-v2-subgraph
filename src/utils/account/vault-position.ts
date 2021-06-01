@@ -299,7 +299,6 @@ export function transferForAccount(
   vaultContract: VaultContract,
   account: Account,
   vault: Vault,
-  token: Token,
   receivingTransfer: boolean,
   tokenAmount: BigInt,
   shareAmount: BigInt,
@@ -386,9 +385,9 @@ export function transferForAccount(
       accountVaultPosition.balanceTokens,
       tokenAmount
     );
-    accountVaultPosition.balanceShares = accountVaultPosition.balanceShares.minus(
-      shareAmount
-    );
+    accountVaultPosition.balanceShares = receivingTransfer
+      ? accountVaultPosition.balanceShares.plus(shareAmount)
+      : accountVaultPosition.balanceShares.minus(shareAmount);
     accountVaultPosition.balancePosition = balancePosition;
     accountVaultPosition.balanceProfit = getBalanceProfit(
       accountVaultPosition.balanceShares,
@@ -421,7 +420,6 @@ export function transfer(
     vaultContract,
     fromAccount,
     vault,
-    token,
     false,
     tokenAmount,
     shareAmount,
@@ -432,7 +430,6 @@ export function transfer(
     vaultContract,
     toAccount,
     vault,
-    token,
     true,
     tokenAmount,
     shareAmount,
