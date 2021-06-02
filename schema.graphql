@@ -413,6 +413,8 @@ type StrategyReport @entity {
   debtAdded: BigInt!
   "The reported debt limit amount for the strategy."
   debtLimit: BigInt!
+  "The reported debt paid for the strategy. This field is 0 for v0.3.0 or v0.3.1."
+  debtPaid: BigInt!
   # "Vault state"
   # vaultUpdate: VaultUpdate!
   "The results created by this report. They are generated comparing the previous report and the current one."
@@ -485,8 +487,8 @@ type VaultDayData @entity {
   totalReturnsGenerated: BigInt!
   "The total earnings generated in USDC for this vault up to and including this day"
   totalReturnsGeneratedUSDC: BigInt!
-  "The earnings genereated for this vault this day"
+  "The earnings generated for this vault this day"
   dayReturnsGenerated: BigInt!
-  "The earnings genereated in USDC for this vault this day"
+  "The earnings generated in USDC for this vault this day"
   dayReturnsGeneratedUSDC: BigInt!
 }

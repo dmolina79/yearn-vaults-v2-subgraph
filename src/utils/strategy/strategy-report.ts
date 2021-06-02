@@ -13,9 +13,10 @@ export function getOrCreate(
   totalDebt: BigInt,
   debtAdded: BigInt,
   debtLimit: BigInt,
+  debtPaid: BigInt,
   event: ethereum.Event
 ): StrategyReport {
-  log.debug('[StrategyReport] Get or create strategy report', []);
+  log.info('[StrategyReport] Get or create strategy report', []);
 
   let strategyReportId = buildIdFromEvent(event);
   let strategyReport = StrategyReport.load(strategyReportId);
@@ -32,6 +33,7 @@ export function getOrCreate(
     strategyReport.totalDebt = totalDebt;
     strategyReport.debtAdded = debtAdded;
     strategyReport.debtLimit = debtLimit;
+    strategyReport.debtPaid = debtPaid;
     strategyReport.save();
   }
   return strategyReport!;

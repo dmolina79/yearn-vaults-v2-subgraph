@@ -1743,6 +1743,15 @@ export class StrategyReport extends Entity {
     this.set("debtLimit", Value.fromBigInt(value));
   }
 
+  get debtPaid(): BigInt {
+    let value = this.get("debtPaid");
+    return value.toBigInt();
+  }
+
+  set debtPaid(value: BigInt) {
+    this.set("debtPaid", Value.fromBigInt(value));
+  }
+
   get results(): Array<string> {
     let value = this.get("results");
     return value.toStringArray();

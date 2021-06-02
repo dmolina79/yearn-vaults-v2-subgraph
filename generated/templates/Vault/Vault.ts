@@ -172,6 +172,56 @@ export class StrategyReported__Params {
   }
 }
 
+export class StrategyReported1 extends ethereum.Event {
+  get params(): StrategyReported1__Params {
+    return new StrategyReported1__Params(this);
+  }
+}
+
+export class StrategyReported1__Params {
+  _event: StrategyReported1;
+
+  constructor(event: StrategyReported1) {
+    this._event = event;
+  }
+
+  get strategy(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get gain(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get loss(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get debtPaid(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get totalGain(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get totalLoss(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
+
+  get totalDebt(): BigInt {
+    return this._event.parameters[6].value.toBigInt();
+  }
+
+  get debtAdded(): BigInt {
+    return this._event.parameters[7].value.toBigInt();
+  }
+
+  get debtRatio(): BigInt {
+    return this._event.parameters[8].value.toBigInt();
+  }
+}
+
 export class UpdatePerformanceFee extends ethereum.Event {
   get params(): UpdatePerformanceFee__Params {
     return new UpdatePerformanceFee__Params(this);

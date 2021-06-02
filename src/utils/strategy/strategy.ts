@@ -58,12 +58,12 @@ export function createReport(
   totalDebt: BigInt,
   debtAdded: BigInt,
   debtLimit: BigInt,
+  debtPaid: BigInt,
   event: ethereum.Event
 ): StrategyReport | null {
   log.info('[Strategy] Create report for strategy {}', [strategyId]);
   let strategy = Strategy.load(strategyId);
   if (strategy !== null) {
-    let latestReport = StrategyReport.load(strategy.latestReport);
     let strategyReport = strategyReportLibrary.getOrCreate(
       transaction.id,
       strategy as Strategy,
@@ -74,11 +74,13 @@ export function createReport(
       totalDebt,
       debtAdded,
       debtLimit,
+      debtPaid,
       event
     );
     strategy.latestReport = strategyReport.id;
     strategy.save();
 
+    let latestReport = StrategyReport.load(strategy.latestReport);
     if (latestReport !== null) {
       log.info(
         '[Strategy] Create report result (latest {} vs current {}) for strategy {}',
@@ -108,7 +110,7 @@ export function harvest(
   debtOutstanding: BigInt,
   transaction: Transaction
 ): Harvest {
-  log.debug('[Strategy] Harvest', []);
+  log.info('[Strategy] Harvest strategy {}', [strategyAddress.toHexString()]);
   let harvestId = strategyAddress
     .toHexString()
     .concat('-')
@@ -132,6 +134,11 @@ export function harvest(
     harvest.debtOutstanding = debtOutstanding;
     harvest.transaction = transaction.id;
     harvest.save();
+  } else {
+    log.warning(
+      '[Strategy] Harvest id {} FOUND for strategy {} and tx hash {}.',
+      [harvestId, strategyAddress.toHexString(), transaction.hash.toHexString()]
+    );
   }
 
   return harvest!;
