@@ -492,3 +492,8 @@ type VaultDayData @entity {
   "The earnings generated in USDC for this vault this day"
   dayReturnsGeneratedUSDC: BigInt!
 }
+
+type Yearn @entity {
+  id: ID!
+  totalFeesUsdc: BigInt!
+}

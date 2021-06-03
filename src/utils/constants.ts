@@ -13,3 +13,4 @@ export let MS_PER_DAY = new BigDecimal(BigInt.fromI32(24 * 60 * 60 * 1000));
 export let MS_PER_YEAR = DAYS_PER_YEAR.times(
   new BigDecimal(BigInt.fromI32(24 * 60 * 60 * 1000))
 );
+export let YEARN_ENTITY_ID = '1';
