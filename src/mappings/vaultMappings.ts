@@ -85,6 +85,11 @@ export function handleAddStrategy(call: AddStrategyV1Call): void {
   );
 }
 
+/**
+ * We have two handlers to process the StrategyReported event due to incompatibility in both event structure.
+ * This is for vault versions 0.3.0 and 0.3.1.
+ * If you need 0.3.2 or superior, please see the 'handleStrategyReported' handler.
+ */
 export function handleStrategyReported_v0_3_0_v0_3_1(
   event: StrategyReported_v0_3_0_v0_3_1_Event
 ): void {
@@ -121,7 +126,16 @@ export function handleStrategyReported_v0_3_0_v0_3_1(
   );
 }
 
-export function handleStrategyReported_v0_3_2(
+/**
+ * We have two handlers to process the StrategyReported event due to incompatibility in both event structure.
+ * This is for vault versions 0.3.2 or superior.
+ *
+ * This version includes the new field `debtPaid` introduced in the Vault version 0.3.2.
+ *
+ * In case a new structure is implemented, please create a new handler.
+ * If you need 0.3.0 or 0.3.1, please see the 'handleStrategyReported_v0_3_0_v0_3_1' handler.
+ */
+export function handleStrategyReported(
   event: StrategyReported_v0_3_2_Event
 ): void {
   log.info('[Vault mappings v0_3_2] Handle strategy reported', []);
