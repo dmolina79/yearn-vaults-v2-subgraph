@@ -476,6 +476,7 @@ type Harvest @entity {
 
 type VaultDayData @entity {
   id: ID!
+  "time in UTC"
   timestamp: BigInt!
   vault: Vault!
   pricePerShare: BigInt!
