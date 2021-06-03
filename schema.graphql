@@ -476,7 +476,7 @@ type Harvest @entity {
 
 type VaultDayData @entity {
   id: ID!
-  date: Int!
+  timestamp: BigInt!
   vault: Vault!
   pricePerShare: BigInt!
   "The amount of tokens deposited to this vault this day"

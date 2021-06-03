@@ -7,7 +7,7 @@ import {
   Transfer,
   Vault,
 } from '../../generated/schema';
-import { usdcPrice } from './oracle/usdcOracle';
+import { usdcPrice } from './oracle/usdc-oracle';
 
 export function buildIdFromAccountToAccountAndTransaction(
   fromAccount: Account,
