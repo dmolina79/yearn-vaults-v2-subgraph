@@ -15,7 +15,6 @@ export function updateVaultDayData(
 ): void {
   let timestampNum = timestamp.toI32();
   let dayID = timestampNum / 86400;
-  let dayStartTimestamp = dayID * 86400;
   let vaultDayID = vault.id
     .toString()
     .concat('-')
