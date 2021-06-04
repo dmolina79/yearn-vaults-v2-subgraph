@@ -1,7 +1,8 @@
 import { Vault, VaultDayData } from '../../../generated/schema';
 import { Address, BigInt } from '@graphprotocol/graph-ts';
 import { BIGINT_ZERO } from '../constants';
-import { usdcPrice } from '../oracle/usdcOracle';
+import { usdcPrice } from '../oracle/usdc-oracle';
+import { getTimeInMillis } from '../commons';
 
 export function updateVaultDayData(
   vault: Vault,
@@ -14,7 +15,6 @@ export function updateVaultDayData(
 ): void {
   let timestampNum = timestamp.toI32();
   let dayID = timestampNum / 86400;
-  let dayStartTimestamp = dayID * 86400;
   let vaultDayID = vault.id
     .toString()
     .concat('-')
@@ -23,7 +23,7 @@ export function updateVaultDayData(
   let vaultDayData = VaultDayData.load(vaultDayID);
   if (vaultDayData === null) {
     vaultDayData = new VaultDayData(vaultDayID);
-    vaultDayData.date = dayStartTimestamp;
+    vaultDayData.timestamp = getTimeInMillis(timestamp);
     vaultDayData.vault = vault.id;
     vaultDayData.pricePerShare = pricePerShare;
     vaultDayData.deposited = BIGINT_ZERO;

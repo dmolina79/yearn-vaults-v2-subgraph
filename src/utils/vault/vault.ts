@@ -20,7 +20,7 @@ import * as accountVaultPositionLibrary from '../account/vault-position';
 import * as vaultUpdateLibrary from './vault-update';
 import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
-import { updateVaultDayData } from './vaultDayData';
+import { updateVaultDayData } from './vault-day-data';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
