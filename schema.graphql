@@ -495,5 +495,6 @@ type VaultDayData @entity {
 
 type Yearn @entity {
   id: ID!
+  "Not a true representation of all the fees paid to Yearn as it uses an oracle that was deployed at block 12242339. Only useful in recent relative terms e.g. how many fees were there yesterday" 
   totalFeesUsdc: BigInt!
 }

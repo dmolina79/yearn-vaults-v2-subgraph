@@ -106,6 +106,45 @@ export class Oracle extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getNormalizedValueUsdc1(
+    tokenAddress: Address,
+    amount: BigInt,
+    priceUsdc: BigInt
+  ): BigInt {
+    let result = super.call(
+      "getNormalizedValueUsdc",
+      "getNormalizedValueUsdc(address,uint256,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(tokenAddress),
+        ethereum.Value.fromUnsignedBigInt(amount),
+        ethereum.Value.fromUnsignedBigInt(priceUsdc)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getNormalizedValueUsdc1(
+    tokenAddress: Address,
+    amount: BigInt,
+    priceUsdc: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getNormalizedValueUsdc",
+      "getNormalizedValueUsdc(address,uint256,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(tokenAddress),
+        ethereum.Value.fromUnsignedBigInt(amount),
+        ethereum.Value.fromUnsignedBigInt(priceUsdc)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getPriceUsdcRecommended(tokenAddress: Address): BigInt {
     let result = super.call(
       "getPriceUsdcRecommended",
