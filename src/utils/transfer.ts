@@ -40,8 +40,7 @@ export function getOrCreate(
   let tokenAmountUsdc = usdcPrice(Address.fromString(token.id), amount);
 
   let toAddress = Address.fromString(toAccount.id);
-  let rewardsAddress = Address.fromHexString(vault.rewards.toHexString());
-  let isFeeToTreasury = toAddress.equals(rewardsAddress);
+  let isFeeToTreasury = toAddress.equals(vault.rewards);
   if (isFeeToTreasury) {
     yearn.addTreasuryFee(tokenAmountUsdc);
   }
