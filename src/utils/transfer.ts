@@ -7,7 +7,7 @@ import {
   Transfer,
   Vault,
 } from '../../generated/schema';
-import { usdcPrice } from './oracle/usdcOracle';
+import { usdcPrice } from './oracle/usdc-oracle';
 import * as yearn from './yearn';
 
 export function buildIdFromAccountToAccountAndTransaction(
@@ -37,22 +37,20 @@ export function getOrCreate(
     transaction
   );
 
-  let isProtocolFee = false;
-  if (toAccount.id === vault.rewards.toHexString()) {
-    isProtocolFee = true;
-  }
-
-  if (isProtocolFee === false) {
-    let stragey = Strategy.load(toAccount.id);
-    if (stragey !== null) {
-      isProtocolFee = true;
-    }
-  }
-
   let tokenAmountUsdc = usdcPrice(Address.fromString(token.id), amount);
 
-  if (isProtocolFee) {
-    yearn.addProtocolFee(tokenAmountUsdc);
+  let toAddress = Address.fromString(toAccount.id);
+  let rewardsAddress = Address.fromHexString(vault.rewards.toHexString());
+  let isFeeToTreasury = toAddress.equals(rewardsAddress);
+  if (isFeeToTreasury) {
+    yearn.addTreasuryFee(tokenAmountUsdc);
+  }
+
+  let isFeeToStrategy = false;
+  let stragey = Strategy.load(toAccount.id);
+  if (stragey !== null) {
+    isFeeToStrategy = true;
+    yearn.addStrategyFee(tokenAmountUsdc);
   }
 
   let transfer = Transfer.load(id);
@@ -69,7 +67,8 @@ export function getOrCreate(
     transfer.shareToken = shareToken.id;
     transfer.shareAmount = shareAmount;
     transfer.transaction = transaction.id;
-    transfer.isProtocolFee = isProtocolFee;
+    transfer.isFeeToTreasury = isFeeToTreasury;
+    transfer.isFeeToStrategy = isFeeToStrategy;
     transfer.save();
   }
 

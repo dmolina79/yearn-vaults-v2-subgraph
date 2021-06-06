@@ -1107,13 +1107,22 @@ export class Transfer extends Entity {
     this.set("transaction", Value.fromString(value));
   }
 
-  get isProtocolFee(): boolean {
-    let value = this.get("isProtocolFee");
+  get isFeeToTreasury(): boolean {
+    let value = this.get("isFeeToTreasury");
     return value.toBoolean();
   }
 
-  set isProtocolFee(value: boolean) {
-    this.set("isProtocolFee", Value.fromBoolean(value));
+  set isFeeToTreasury(value: boolean) {
+    this.set("isFeeToTreasury", Value.fromBoolean(value));
+  }
+
+  get isFeeToStrategy(): boolean {
+    let value = this.get("isFeeToStrategy");
+    return value.toBoolean();
+  }
+
+  set isFeeToStrategy(value: boolean) {
+    this.set("isFeeToStrategy", Value.fromBoolean(value));
   }
 }
 
@@ -2138,6 +2147,24 @@ export class Yearn extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get treasuryFeesUsdc(): BigInt {
+    let value = this.get("treasuryFeesUsdc");
+    return value.toBigInt();
+  }
+
+  set treasuryFeesUsdc(value: BigInt) {
+    this.set("treasuryFeesUsdc", Value.fromBigInt(value));
+  }
+
+  get strategyFeesUsdc(): BigInt {
+    let value = this.get("strategyFeesUsdc");
+    return value.toBigInt();
+  }
+
+  set strategyFeesUsdc(value: BigInt) {
+    this.set("strategyFeesUsdc", Value.fromBigInt(value));
   }
 
   get totalFeesUsdc(): BigInt {
