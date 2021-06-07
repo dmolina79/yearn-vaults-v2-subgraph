@@ -46,8 +46,8 @@ export function getOrCreate(
   }
 
   let isFeeToStrategy = false;
-  let stragey = Strategy.load(toAccount.id);
-  if (stragey !== null) {
+  let strategy = Strategy.load(toAccount.id);
+  if (strategy !== null) {
     isFeeToStrategy = true;
     yearn.addStrategyFee(tokenAmountUsdc);
   }

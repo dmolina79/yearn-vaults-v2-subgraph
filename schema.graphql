@@ -276,7 +276,7 @@ type Transfer @entity {
   transaction: Transaction!
   "Whether the transfer was used to pay a fee to the vault's rewards address"
   isFeeToTreasury: Boolean!
-  "Whether the transfer was used to pay a fee to a stragey"
+  "Whether the transfer was used to pay a fee to a strategy"
   isFeeToStrategy: Boolean!
 }
 
