@@ -1,7 +1,7 @@
 import { log } from '@graphprotocol/graph-ts';
 import {
   StrategyReported as StrategyReported_v0_3_0_v0_3_1_Event,
-  StrategyReported1 as StrategyReported_v0_3_2_Event,
+  StrategyReported1 as StrategyReportedEvent,
   Deposit1Call as DepositCall,
   Transfer as TransferEvent,
   Withdraw1Call as WithdrawCall,
@@ -135,10 +135,8 @@ export function handleStrategyReported_v0_3_0_v0_3_1(
  * In case a new structure is implemented, please create a new handler.
  * If you need 0.3.0 or 0.3.1, please see the 'handleStrategyReported_v0_3_0_v0_3_1' handler.
  */
-export function handleStrategyReported(
-  event: StrategyReported_v0_3_2_Event
-): void {
-  log.info('[Vault mappings v0_3_2] Handle strategy reported', []);
+export function handleStrategyReported(event: StrategyReportedEvent): void {
+  log.info('[Vault mappings] Handle strategy reported', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'StrategyReportedEvent'

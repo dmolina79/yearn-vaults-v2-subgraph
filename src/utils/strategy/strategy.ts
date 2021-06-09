@@ -61,9 +61,16 @@ export function createReport(
   debtPaid: BigInt,
   event: ethereum.Event
 ): StrategyReport | null {
+  let txHash = transaction.hash.toHexString();
   log.info('[Strategy] Create report for strategy {}', [strategyId]);
   let strategy = Strategy.load(strategyId);
   if (strategy !== null) {
+    log.info(
+      '[Strategy] Getting latest report {} for strategy {}. TxHash: {}',
+      [strategy.latestReport, strategy.id, txHash]
+    );
+    // Getting latest report to compare to the new one and create a new report result.
+    let latestReport = StrategyReport.load(strategy.latestReport);
     let strategyReport = strategyReportLibrary.getOrCreate(
       transaction.id,
       strategy as Strategy,
@@ -80,11 +87,10 @@ export function createReport(
     strategy.latestReport = strategyReport.id;
     strategy.save();
 
-    let latestReport = StrategyReport.load(strategy.latestReport);
     if (latestReport !== null) {
       log.info(
-        '[Strategy] Create report result (latest {} vs current {}) for strategy {}',
-        [latestReport.id, strategyReport.id, strategyId]
+        '[Strategy] Create report result (latest {} vs current {}) for strategy {}. TxHash: {}',
+        [latestReport.id, strategyReport.id, strategyId, txHash]
       );
       strategyReportResultLibrary.create(
         transaction,

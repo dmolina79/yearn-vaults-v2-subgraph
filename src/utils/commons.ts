@@ -37,7 +37,7 @@ export function buildIdFromEvent(event: ethereum.Event): string {
 }
 
 export function buildIdFromTransaction(transaction: Transaction): string {
-  return buildId(transaction.hash, transaction.index);
+  return buildId(transaction.hash, transaction.logIndex);
 }
 
 export function buildBlockId(block: ethereum.Block): string {
