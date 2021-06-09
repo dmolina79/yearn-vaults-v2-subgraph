@@ -67,6 +67,7 @@ export function getBalancePosition(
   let decimals = vaultContract.decimals();
   // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
+  // @ts-ignore
   let u8Decimals = u8(decimals.toI32());
   let divisor = BigInt.fromI32(10).pow(u8Decimals);
   return balanceShares.times(pricePerShare).div(divisor);

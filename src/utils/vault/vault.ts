@@ -209,7 +209,8 @@ export function deposit(
     pricePerShare,
     depositedAmount,
     BIGINT_ZERO,
-    vaultUpdate.returnsGenerated
+    vaultUpdate.returnsGenerated,
+    vaultContract.decimals()
   );
 
   vault.latestUpdate = vaultUpdate.id;
@@ -341,7 +342,8 @@ export function withdraw(
       pricePerShare,
       BIGINT_ZERO,
       withdrawnAmount,
-      latestVaultUpdate.returnsGenerated
+      latestVaultUpdate.returnsGenerated,
+      vaultContract.decimals()
     );
   }
 }
@@ -549,6 +551,7 @@ export function handleUpdateRewards(
 function getBalancePosition(vaultContract: VaultContract): BigInt {
   let totalAssets = vaultContract.totalAssets();
   let pricePerShare = vaultContract.pricePerShare();
+  // @ts-ignore
   let decimals = u8(vaultContract.decimals().toI32());
   return totalAssets.times(pricePerShare).div(BigInt.fromI32(10).pow(decimals));
 }

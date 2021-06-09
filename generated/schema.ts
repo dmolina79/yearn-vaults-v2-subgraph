@@ -2117,6 +2117,15 @@ export class VaultDayData extends Entity {
   set dayReturnsGeneratedUSDC(value: BigInt) {
     this.set("dayReturnsGeneratedUSDC", Value.fromBigInt(value));
   }
+
+  get tokenPriceUSDC(): BigInt {
+    let value = this.get("tokenPriceUSDC");
+    return value.toBigInt();
+  }
+
+  set tokenPriceUSDC(value: BigInt) {
+    this.set("tokenPriceUSDC", Value.fromBigInt(value));
+  }
 }
 
 export class Yearn extends Entity {

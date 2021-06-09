@@ -15,3 +15,17 @@ export function usdcPrice(tokenAddress: Address, tokenAmount: BigInt): BigInt {
 
   return tokenAmountUsdc;
 }
+
+export function usdcPricePerToken(tokenAddress: Address): BigInt {
+  let tokenAmountUsdc: BigInt = BIGINT_ZERO;
+
+  let oracle = OracleContract.bind(Address.fromString(USDC_ORACLE_ADDRESS));
+  if (oracle !== null) {
+    let result = oracle.try_getPriceUsdcRecommended(tokenAddress);
+    if (result.reverted === false) {
+      tokenAmountUsdc = result.value;
+    }
+  }
+
+  return tokenAmountUsdc;
+}
