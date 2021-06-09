@@ -145,6 +145,8 @@ templates:
           handler: handleStrategyReported_v0_3_0_v0_3_1
         - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleStrategyReported
+        - event: StrategyMigrated(indexed address,indexed address)
+          handler: handleStrategyMigrated
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: UpdatePerformanceFee(uint256)

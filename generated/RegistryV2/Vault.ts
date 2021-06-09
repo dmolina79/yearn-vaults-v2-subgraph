@@ -222,6 +222,28 @@ export class StrategyReported1__Params {
   }
 }
 
+export class StrategyMigrated extends ethereum.Event {
+  get params(): StrategyMigrated__Params {
+    return new StrategyMigrated__Params(this);
+  }
+}
+
+export class StrategyMigrated__Params {
+  _event: StrategyMigrated;
+
+  constructor(event: StrategyMigrated) {
+    this._event = event;
+  }
+
+  get oldVersion(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get newVersion(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
 export class UpdatePerformanceFee extends ethereum.Event {
   get params(): UpdatePerformanceFee__Params {
     return new UpdatePerformanceFee__Params(this);

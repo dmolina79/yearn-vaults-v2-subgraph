@@ -10,7 +10,7 @@
     "build:mainnet": "yarn prepare:mainnet && graph build",
     "thegraph:deploy:kovan": "yarn build:kovan && graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ salazarguille/yearn-vaults-v2-subgraph-kovan",
     "thegraph:deploy:rinkeby": "yarn build:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ salazarguille/yearn-vaults-v2-subgraph-rinkeby",
-    "thegraph:deploy:mainnet": "yarn build:mainnet && graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ salazarguille/yearn-vaults-v2-subgraph-mainnet",
+    "thegraph:deploy:mainnet": "yarn build:mainnet && graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ jstashh/yearn-crypto-fees",
     "create-local": "graph create --node http://127.0.0.1:8020/ yearn-vaults-v2/subgraph",
     "remove-local": "graph remove --node http://127.0.0.1:8020/ yearn-vaults-v2/subgraph",
     "deploy-local": "yarn build:mainnet && graph deploy --node http://127.0.0.1:8020/ --ipfs http://localhost:5001 yearn-vaults-v2/subgraph",
