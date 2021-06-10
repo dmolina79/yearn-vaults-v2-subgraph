@@ -53,7 +53,7 @@ export function handleAddStrategyV2(call: AddStrategyV2Call): void {
     'CurveSETHVault_AddStrategyV2Call'
   );
 
-  strategyLibrary.create(
+  strategyLibrary.createAndGet(
     ethTransaction.id,
     call.inputs.strategy,
     call.to,

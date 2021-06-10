@@ -47,7 +47,7 @@ export function handleAddStrategyV2(call: AddStrategyV2Call): void {
     'AddStrategyV2Call'
   );
 
-  strategyLibrary.create(
+  strategyLibrary.createAndGet(
     ethTransaction.id,
     call.inputs.strategy,
     call.to,
@@ -74,7 +74,7 @@ export function handleAddStrategy(call: AddStrategyV1Call): void {
   }
   let ethTransaction = getOrCreateTransactionFromCall(call, 'AddStrategyCall');
 
-  strategyLibrary.create(
+  strategyLibrary.createAndGet(
     ethTransaction.id,
     call.inputs._strategy,
     call.to,
@@ -191,17 +191,25 @@ export function handleStrategyMigrated(event: StrategyMigrated): void {
 
   if (oldStrategy !== null) {
     let newStrategyAddress = event.params.newVersion;
-    strategyLibrary.create(
-      ethTransaction.id,
-      newStrategyAddress,
-      event.address,
-      oldStrategy.debtLimit,
-      oldStrategy.rateLimit,
-      oldStrategy.minDebtPerHarvest,
-      oldStrategy.maxDebtPerHarvest,
-      oldStrategy.performanceFeeBps,
-      ethTransaction
-    );
+
+    if (Strategy.load(newStrategyAddress.toHexString()) !== null) {
+      log.warning(
+        '[Strategy Migrated] Migrating to strategy {} but it has already been created',
+        [newStrategyAddress.toHexString()]
+      );
+    } else {
+      strategyLibrary.createAndGet(
+        ethTransaction.id,
+        newStrategyAddress,
+        event.address,
+        oldStrategy.debtLimit,
+        oldStrategy.rateLimit,
+        oldStrategy.minDebtPerHarvest,
+        oldStrategy.maxDebtPerHarvest,
+        oldStrategy.performanceFeeBps,
+        ethTransaction
+      );
+    }
   }
 }
 

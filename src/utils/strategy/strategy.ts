@@ -12,7 +12,7 @@ import { getTimeInMillis } from '../commons';
 import * as strategyReportLibrary from './strategy-report';
 import * as strategyReportResultLibrary from './strategy-report-result';
 
-export function create(
+export function createAndGet(
   transactionId: string,
   strategyAddress: Address,
   vault: Address,
