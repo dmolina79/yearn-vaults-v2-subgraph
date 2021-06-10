@@ -1,8 +1,8 @@
-import { Address } from '@graphprotocol/graph-ts';
+import { Address, BigInt } from '@graphprotocol/graph-ts';
 import { Token } from '../../generated/schema';
 
 import { ERC20 } from '../../generated/Registry/ERC20';
-import { DEFAULT_DECIMALS } from '../utils/constants';
+import { BIGINT_ZERO, DEFAULT_DECIMALS } from '../utils/constants';
 
 export function getOrCreateToken(address: Address): Token {
   let id = address.toHexString();
@@ -19,7 +19,22 @@ export function getOrCreateToken(address: Address): Token {
     token.decimals = decimals.reverted ? DEFAULT_DECIMALS : decimals.value;
     token.name = name.reverted ? '' : name.value;
     token.symbol = symbol.reverted ? '' : symbol.value;
+    token.strategyFees = BIGINT_ZERO;
+    token.treasuryFees = BIGINT_ZERO;
+    token.totalFees = BIGINT_ZERO;
     token.save();
   }
   return token as Token;
+}
+
+export function addManagementFee(token: Token, amount: BigInt): void {
+  token.strategyFees = token.strategyFees.plus(amount);
+  token.totalFees = token.totalFees.plus(amount);
+  token.save();
+}
+
+export function addTreasuryFee(token: Token, amount: BigInt): void {
+  token.treasuryFees = token.treasuryFees.plus(amount);
+  token.totalFees = token.totalFees.plus(amount);
+  token.save();
 }

@@ -8,7 +8,7 @@ import {
   Vault,
 } from '../../generated/schema';
 import { usdcPrice } from './oracle/usdc-oracle';
-import * as yearn from './yearn';
+import * as tokenLibrary from './token';
 
 export function buildIdFromAccountToAccountAndTransaction(
   fromAccount: Account,
@@ -42,14 +42,14 @@ export function getOrCreate(
   let toAddress = Address.fromString(toAccount.id);
   let isFeeToTreasury = toAddress.equals(vault.rewards);
   if (isFeeToTreasury) {
-    yearn.addTreasuryFee(tokenAmountUsdc);
+    tokenLibrary.addTreasuryFee(token, amount);
   }
 
   let isFeeToStrategy = false;
   let strategy = Strategy.load(toAccount.id);
   if (strategy !== null) {
     isFeeToStrategy = true;
-    yearn.addStrategyFee(tokenAmountUsdc);
+    tokenLibrary.addManagementFee(token, amount);
   }
 
   let transfer = Transfer.load(id);

@@ -207,6 +207,33 @@ export class Token extends Entity {
   set symbol(value: string) {
     this.set("symbol", Value.fromString(value));
   }
+
+  get treasuryFees(): BigInt {
+    let value = this.get("treasuryFees");
+    return value.toBigInt();
+  }
+
+  set treasuryFees(value: BigInt) {
+    this.set("treasuryFees", Value.fromBigInt(value));
+  }
+
+  get strategyFees(): BigInt {
+    let value = this.get("strategyFees");
+    return value.toBigInt();
+  }
+
+  set strategyFees(value: BigInt) {
+    this.set("strategyFees", Value.fromBigInt(value));
+  }
+
+  get totalFees(): BigInt {
+    let value = this.get("totalFees");
+    return value.toBigInt();
+  }
+
+  set totalFees(value: BigInt) {
+    this.set("totalFees", Value.fromBigInt(value));
+  }
 }
 
 export class Registry extends Entity {

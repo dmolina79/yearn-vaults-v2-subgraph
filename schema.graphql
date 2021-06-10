@@ -44,6 +44,12 @@ type Token @entity {
   name: String!
   "Symbol of the Token"
   symbol: String!
+  "Fees paid using this token to the treasury"
+  treasuryFees: BigInt!
+  "Fees paid using this token to strategies"
+  strategyFees: BigInt!
+  "Fees paid using this token to strategies and the treasury"
+  totalFees: BigInt!
 }
 
 enum VaultClassification {
