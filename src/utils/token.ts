@@ -27,7 +27,7 @@ export function getOrCreateToken(address: Address): Token {
   return token as Token;
 }
 
-export function addManagementFee(token: Token, amount: BigInt): void {
+export function addStrategyFee(token: Token, amount: BigInt): void {
   token.strategyFees = token.strategyFees.plus(amount);
   token.totalFees = token.totalFees.plus(amount);
   token.save();

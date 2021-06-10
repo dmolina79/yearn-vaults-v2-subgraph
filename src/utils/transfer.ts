@@ -49,7 +49,7 @@ export function getOrCreate(
   let strategy = Strategy.load(toAccount.id);
   if (strategy !== null) {
     isFeeToStrategy = true;
-    tokenLibrary.addManagementFee(token, amount);
+    tokenLibrary.addStrategyFee(token, amount);
   }
 
   let transfer = Transfer.load(id);
