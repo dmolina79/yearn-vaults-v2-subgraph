@@ -1822,13 +1822,22 @@ export class StrategyReportResult extends Entity {
     this.set("blockNumber", Value.fromBigInt(value));
   }
 
-  get report(): string {
-    let value = this.get("report");
+  get currentReport(): string {
+    let value = this.get("currentReport");
     return value.toString();
   }
 
-  set report(value: string) {
-    this.set("report", Value.fromString(value));
+  set currentReport(value: string) {
+    this.set("currentReport", Value.fromString(value));
+  }
+
+  get previousReport(): string {
+    let value = this.get("previousReport");
+    return value.toString();
+  }
+
+  set previousReport(value: string) {
+    this.set("previousReport", Value.fromString(value));
   }
 
   get startTimestamp(): BigInt {
