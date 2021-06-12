@@ -426,7 +426,7 @@ type StrategyReport @entity {
   # "Vault state"
   # vaultUpdate: VaultUpdate!
   "The results created by this report. They are generated comparing the previous report and the current one."
-  results: [StrategyReportResult!]! @derivedFrom(field: "report")
+  results: [StrategyReportResult!]! @derivedFrom(field: "currentReport")
 
   #### TODO Awaiting updated Vault Yield-Oracles https://github.com/iearn-finance/yearn-vaults/pull/69
   # "12-day EMA of Vault APY as reported by built-in Yield Oracle"
@@ -442,8 +442,10 @@ type StrategyReportResult @entity {
   timestamp: BigInt!
   "Blocknumber the strategy report was most recently updated."
   blockNumber: BigInt!
-  "The Strategy reference."
-  report: StrategyReport!
+  "The current strategy report."
+  currentReport: StrategyReport!
+  "The previous strategy report."
+  previousReport: StrategyReport!
   startTimestamp: BigInt!
   endTimestamp: BigInt!
   "The duration (in days) from the previous report."
@@ -506,10 +508,10 @@ type VaultDayData @entity {
 
 type Yearn @entity {
   id: ID!
-  "Only valid after the orcale was deployed at 12242339" 
+  "Only valid after the oracle was deployed at 12242339" 
   treasuryFeesUsdc: BigInt!
-  "Only valid after the orcale was deployed at 12242339" 
+  "Only valid after the oracle was deployed at 12242339" 
   strategyFeesUsdc: BigInt!
-  "Only valid after the orcale was deployed at 12242339" 
+  "Only valid after the oracle was deployed at 12242339" 
   totalFeesUsdc: BigInt!
 }

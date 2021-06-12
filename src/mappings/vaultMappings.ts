@@ -1,7 +1,8 @@
 import { log } from '@graphprotocol/graph-ts';
 import {
   StrategyReported as StrategyReported_v0_3_0_v0_3_1_Event,
-  StrategyReported1 as StrategyReported_v0_3_2_Event,
+  StrategyMigrated,
+  StrategyReported1 as StrategyReportedEvent,
   Deposit1Call as DepositCall,
   Transfer as TransferEvent,
   Withdraw1Call as WithdrawCall,
@@ -19,6 +20,7 @@ import {
   StrategyRemovedFromQueue as StrategyRemovedFromQueueEvent,
   UpdateRewards as UpdateRewardsEvent,
 } from '../../generated/Registry/Vault';
+import { Strategy } from '../../generated/schema';
 import { printCallInfo } from '../utils/commons';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../utils/constants';
 import * as strategyLibrary from '../utils/strategy/strategy';
@@ -45,7 +47,7 @@ export function handleAddStrategyV2(call: AddStrategyV2Call): void {
     'AddStrategyV2Call'
   );
 
-  strategyLibrary.create(
+  strategyLibrary.createAndGet(
     ethTransaction.id,
     call.inputs.strategy,
     call.to,
@@ -72,7 +74,7 @@ export function handleAddStrategy(call: AddStrategyV1Call): void {
   }
   let ethTransaction = getOrCreateTransactionFromCall(call, 'AddStrategyCall');
 
-  strategyLibrary.create(
+  strategyLibrary.createAndGet(
     ethTransaction.id,
     call.inputs._strategy,
     call.to,
@@ -135,10 +137,8 @@ export function handleStrategyReported_v0_3_0_v0_3_1(
  * In case a new structure is implemented, please create a new handler.
  * If you need 0.3.0 or 0.3.1, please see the 'handleStrategyReported_v0_3_0_v0_3_1' handler.
  */
-export function handleStrategyReported(
-  event: StrategyReported_v0_3_2_Event
-): void {
-  log.info('[Vault mappings v0_3_2] Handle strategy reported', []);
+export function handleStrategyReported(event: StrategyReportedEvent): void {
+  log.info('[Vault mappings] Handle strategy reported', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'StrategyReportedEvent'
@@ -170,6 +170,45 @@ export function handleStrategyReported(
     vaultContractAddress,
     vaultContract.pricePerShare()
   );
+}
+
+export function handleStrategyMigrated(event: StrategyMigrated): void {
+  log.info(
+    '[Strategy Migrated] Handle strategy migrated event. Old strategy: {} New strategy: {}',
+    [
+      event.params.oldVersion.toHexString(),
+      event.params.newVersion.toHexString(),
+    ]
+  );
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'StrategyMigratedEvent'
+  );
+
+  let oldStrategy = Strategy.load(event.params.oldVersion.toHexString());
+
+  if (oldStrategy !== null) {
+    let newStrategyAddress = event.params.newVersion;
+
+    if (Strategy.load(newStrategyAddress.toHexString()) !== null) {
+      log.warning(
+        '[Strategy Migrated] Migrating to strategy {} but it has already been created',
+        [newStrategyAddress.toHexString()]
+      );
+    } else {
+      strategyLibrary.createAndGet(
+        ethTransaction.id,
+        newStrategyAddress,
+        event.address,
+        oldStrategy.debtLimit,
+        oldStrategy.rateLimit,
+        oldStrategy.minDebtPerHarvest,
+        oldStrategy.maxDebtPerHarvest,
+        oldStrategy.performanceFeeBps,
+        ethTransaction
+      );
+    }
+  }
 }
 
 //  VAULT BALANCE UPDATES

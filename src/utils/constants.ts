@@ -2,7 +2,7 @@ import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const GOVERNANCE_ADDRESS = '0xba37b002abafdd8e89a1995da52740bbc013d992';
-export const USDC_ORACLE_ADDRESS = '0xd3ca98D986Be88b72Ff95fc2eC976a5E6339150d';
+export const USDC_ORACLE_ADDRESS = '0x83d95e0d5f402511db06817aff3f9ea88224b030';
 export const DEFAULT_DECIMALS = 18;
 export let BIGINT_ZERO = BigInt.fromI32(0);
 export let BIGINT_ONE = BigInt.fromI32(1);
