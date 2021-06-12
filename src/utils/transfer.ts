@@ -9,6 +9,7 @@ import {
 } from '../../generated/schema';
 import { usdcPrice } from './oracle/usdc-oracle';
 import * as tokenLibrary from './token';
+import * as tokenFeeLibrary from './token-fees';
 
 export function buildIdFromAccountToAccountAndTransaction(
   fromAccount: Account,
@@ -42,14 +43,14 @@ export function getOrCreate(
   let toAddress = Address.fromString(toAccount.id);
   let isFeeToTreasury = toAddress.equals(vault.rewards);
   if (isFeeToTreasury) {
-    tokenLibrary.addTreasuryFee(token, amount);
+    tokenFeeLibrary.addTreasuryFee(token.id, amount);
   }
 
   let isFeeToStrategy = false;
   let strategy = Strategy.load(toAccount.id);
   if (strategy !== null) {
     isFeeToStrategy = true;
-    tokenLibrary.addStrategyFee(token, amount);
+    tokenFeeLibrary.addStrategyFee(token.id, amount);
   }
 
   let transfer = Transfer.load(id);

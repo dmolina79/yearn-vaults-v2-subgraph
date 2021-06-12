@@ -208,6 +208,46 @@ export class Token extends Entity {
     this.set("symbol", Value.fromString(value));
   }
 
+  get fees(): string {
+    let value = this.get("fees");
+    return value.toString();
+  }
+
+  set fees(value: string) {
+    this.set("fees", Value.fromString(value));
+  }
+}
+
+export class TokenFees extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save TokenFees entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save TokenFees entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("TokenFees", id.toString(), this);
+  }
+
+  static load(id: string): TokenFees | null {
+    return store.get("TokenFees", id) as TokenFees | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
   get treasuryFees(): BigInt {
     let value = this.get("treasuryFees");
     return value.toBigInt();
@@ -233,6 +273,15 @@ export class Token extends Entity {
 
   set totalFees(value: BigInt) {
     this.set("totalFees", Value.fromBigInt(value));
+  }
+
+  get token(): string {
+    let value = this.get("token");
+    return value.toString();
+  }
+
+  set token(value: string) {
+    this.set("token", Value.fromString(value));
   }
 }
 
