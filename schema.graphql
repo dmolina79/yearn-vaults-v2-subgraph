@@ -44,10 +44,9 @@ type Token @entity {
   name: String!
   "Symbol of the Token"
   symbol: String!
-  fees: TokenFees!
 }
 
-type TokenFees @entity {
+type TokenFee @entity {
   "Token address"
   id: ID!
   "Fees paid using this token to the treasury"
@@ -56,7 +55,7 @@ type TokenFees @entity {
   strategyFees: BigInt!
   "Fees paid using this token to strategies and the treasury"
   totalFees: BigInt!
-  token: Token! @derivedFrom(field: "fees")
+  token: Token!
 }
 
 enum VaultClassification {

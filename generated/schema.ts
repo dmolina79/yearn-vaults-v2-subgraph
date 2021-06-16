@@ -207,18 +207,9 @@ export class Token extends Entity {
   set symbol(value: string) {
     this.set("symbol", Value.fromString(value));
   }
-
-  get fees(): string {
-    let value = this.get("fees");
-    return value.toString();
-  }
-
-  set fees(value: string) {
-    this.set("fees", Value.fromString(value));
-  }
 }
 
-export class TokenFees extends Entity {
+export class TokenFee extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -226,17 +217,17 @@ export class TokenFees extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id !== null, "Cannot save TokenFees entity without an ID");
+    assert(id !== null, "Cannot save TokenFee entity without an ID");
     assert(
       id.kind == ValueKind.STRING,
-      "Cannot save TokenFees entity with non-string ID. " +
+      "Cannot save TokenFee entity with non-string ID. " +
         'Considering using .toHex() to convert the "id" to a string.'
     );
-    store.set("TokenFees", id.toString(), this);
+    store.set("TokenFee", id.toString(), this);
   }
 
-  static load(id: string): TokenFees | null {
-    return store.get("TokenFees", id) as TokenFees | null;
+  static load(id: string): TokenFee | null {
+    return store.get("TokenFee", id) as TokenFee | null;
   }
 
   get id(): string {
