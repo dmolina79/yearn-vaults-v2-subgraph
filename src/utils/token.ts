@@ -1,7 +1,7 @@
 import { Address } from '@graphprotocol/graph-ts';
 import { Token } from '../../generated/schema';
 import { ERC20 } from '../../generated/Registry/ERC20';
-import { BIGINT_ZERO, DEFAULT_DECIMALS } from '../utils/constants';
+import { DEFAULT_DECIMALS } from '../utils/constants';
 
 export function getOrCreateToken(address: Address): Token {
   let id = address.toHexString();
