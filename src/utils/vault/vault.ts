@@ -11,7 +11,7 @@ import {
 
 import { Vault as VaultContract } from '../../../generated/Registry/Vault';
 import { Vault as VaultTemplate } from '../../../generated/templates';
-import { BIGINT_ZERO } from '../constants';
+import { BIGINT_ZERO, DO_CREATE_VAULT_TEMPLATE } from '../constants';
 import { getOrCreateToken } from '../token';
 import * as depositLibrary from '../deposit';
 import * as withdrawalLibrary from '../withdrawal';
@@ -20,7 +20,9 @@ import * as accountVaultPositionLibrary from '../account/vault-position';
 import * as vaultUpdateLibrary from './vault-update';
 import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
+import * as registryLibrary from '../registry/registry';
 import { updateVaultDayData } from './vault-day-data';
+import { booleanToString } from '../commons';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -70,7 +72,8 @@ const createNewVaultFromAddress = (
 
 export function getOrCreate(
   vaultAddress: Address,
-  transaction: Transaction
+  transaction: Transaction,
+  createTemplate: boolean
 ): Vault {
   log.debug('[Vault] Get or create', []);
   let id = vaultAddress.toHexString();
@@ -78,8 +81,10 @@ export function getOrCreate(
 
   if (vault == null) {
     vault = createNewVaultFromAddress(vaultAddress, transaction);
-
-    VaultTemplate.create(vaultAddress);
+    // TODO Set the registry.
+    if (createTemplate) {
+      VaultTemplate.create(vaultAddress);
+    }
   }
 
   return vault!;
@@ -91,8 +96,7 @@ export function create(
   vault: Address,
   classification: string,
   apiVersion: string,
-  deploymentId: BigInt,
-  event: ethereum.Event
+  createTemplate: boolean
 ): Vault {
   log.info('[Vault] Create vault', []);
   let id = vault.toHexString();
@@ -101,17 +105,32 @@ export function create(
     vaultEntity = createNewVaultFromAddress(vault, transaction);
     vaultEntity.classification = classification;
     vaultEntity.registry = registry.id;
-    // vaultEntity.deploymentId = deploymentId
     vaultEntity.apiVersion = apiVersion;
-    VaultTemplate.create(vault);
+    vaultEntity.isTemplateListening = createTemplate;
+    if (createTemplate) {
+      VaultTemplate.create(vault);
+    }
+
+    log.info('NewVault {} - createTemplate? {} - IsTemplateListening? {}', [
+      vault.toHexString(),
+      booleanToString(createTemplate),
+      booleanToString(vaultEntity.isTemplateListening),
+    ]);
   } else {
     // NOTE: vault is experimental but being endorsed
     if (vaultEntity.classification !== classification) {
       vaultEntity.classification = classification;
     }
+    log.info('NewVault {} - createTemplate? {} - IsTemplateListening? {}', [
+      vault.toHexString(),
+      booleanToString(createTemplate),
+      booleanToString(vaultEntity.isTemplateListening),
+    ]);
+    if (!vaultEntity.isTemplateListening && createTemplate) {
+      vaultEntity.isTemplateListening = true;
+      VaultTemplate.create(vault);
+    }
   }
-  // vaultEntity.blockNumber = event.block.number
-  // vaultEntity.timestamp = getTimestampInMillis(event)
   vaultEntity.save();
   return vaultEntity!;
 }
@@ -161,7 +180,7 @@ export function deposit(
   let vaultContract = VaultContract.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
   let pricePerShare = vaultContract.pricePerShare();
-  let vault = getOrCreate(vaultAddress, transaction);
+  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
 
   accountVaultPositionLibrary.deposit(
     vaultContract,
@@ -239,7 +258,7 @@ export function withdraw(
   let pricePerShare = vaultContract.pricePerShare();
   let account = accountLibrary.getOrCreate(from);
   let balancePosition = getBalancePosition(vaultContract);
-  let vault = getOrCreate(vaultAddress, transaction);
+  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
 
   withdrawalLibrary.getOrCreate(
     account,
@@ -362,7 +381,7 @@ export function transfer(
   let shareToken = tokenLibrary.getOrCreateToken(vaultAddress);
   let fromAccount = accountLibrary.getOrCreate(from);
   let toAccount = accountLibrary.getOrCreate(to);
-  let vault = getOrCreate(vaultAddress, transaction);
+  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
   transferLibrary.getOrCreate(
     fromAccount,
     toAccount,
@@ -395,7 +414,7 @@ export function strategyReported(
     vaultAddress.toHexString(),
     transaction.hash.toHexString(),
   ]);
-  let vault = getOrCreate(vaultAddress, transaction);
+  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
   let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate);
   let balancePosition = getBalancePosition(vaultContract);
   // The latest vault update should exist
@@ -554,4 +573,24 @@ function getBalancePosition(vaultContract: VaultContract): BigInt {
   // @ts-ignore
   let decimals = u8(vaultContract.decimals().toI32());
   return totalAssets.times(pricePerShare).div(BigInt.fromI32(10).pow(decimals));
+}
+
+export function createCustomVaultIfNeeded(
+  vaultAddress: Address,
+  registryAddress: Address,
+  classification: string,
+  apiVersion: string,
+  transaction: Transaction,
+  createTemplate: boolean
+): Vault {
+  let registry = registryLibrary.getOrCreate(registryAddress, transaction);
+  // It is created only if it doesn't exist.
+  return create(
+    registry,
+    transaction,
+    vaultAddress,
+    classification,
+    apiVersion,
+    createTemplate
+  );
 }

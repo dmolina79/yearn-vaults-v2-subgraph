@@ -8,6 +8,7 @@ import {
 import { getOrCreateTransactionFromEvent } from '../utils/transaction';
 import * as vaultLibrary from '../utils/vault/vault';
 import * as registryLibrary from '../utils/registry/registry';
+import { DO_CREATE_VAULT_TEMPLATE } from '../utils/constants';
 
 export function handleNewRelease(event: NewReleaseEvent): void {
   let registryAddress = dataSource.address();
@@ -54,8 +55,7 @@ export function handleNewVault(event: NewVaultEvent): void {
     event.params.vault,
     'Endorsed',
     event.params.api_version,
-    event.params.deployment_id,
-    event
+    DO_CREATE_VAULT_TEMPLATE
   );
 }
 
@@ -84,8 +84,7 @@ export function handleNewExperimentalVault(
     event.params.vault,
     'Experimental',
     event.params.api_version,
-    BigInt.fromI32(-1),
-    event
+    DO_CREATE_VAULT_TEMPLATE
   );
 }
 

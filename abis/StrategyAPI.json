@@ -11,6 +11,7 @@
       "name": "EmergencyExitEnabled",
       "type": "event"
     },
+    { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "clone", "type": "address" }], "name": "Cloned", "type": "event" },
     {
       "anonymous": false,
       "inputs": [

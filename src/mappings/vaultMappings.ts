@@ -56,6 +56,7 @@ export function handleAddStrategyV2(call: AddStrategyV2Call): void {
     call.inputs.minDebtPerHarvest,
     call.inputs.maxDebtPerHarvest,
     call.inputs.performanceFee,
+    null,
     ethTransaction
   );
 }
@@ -83,6 +84,7 @@ export function handleAddStrategy(call: AddStrategyV1Call): void {
     BIGINT_ZERO,
     BIGINT_ZERO,
     call.inputs._performanceFee,
+    null,
     ethTransaction
   );
 }
@@ -205,6 +207,7 @@ export function handleStrategyMigrated(event: StrategyMigrated): void {
         oldStrategy.minDebtPerHarvest,
         oldStrategy.maxDebtPerHarvest,
         oldStrategy.performanceFeeBps,
+        null,
         ethTransaction
       );
     }

@@ -151,7 +151,8 @@ type Vault @entity {
   performanceFeeBps: Int!
   "The address where management fees are paid to"
   rewards: Bytes!
-
+  "This technical field defines whether this vault is a custom item (created by a custom handler) or not (created by the registry dynamically)."
+  isTemplateListening: Boolean!
   # TODO: refactor these fields out into vault release entity
   # release fields temporary for MVP
   "Creation timestamp"
@@ -384,6 +385,8 @@ type Strategy @entity {
   inQueue: Boolean!
   "The Vault"
   vault: Vault!
+  "Strategy reference used to clone this strategy."
+  clonedFrom: Strategy
   "Defines the maximum borrow amount. In strategies <v0.3.5 it is debtRatio."
   debtLimit: BigInt!
   "Lower limit on the increase of debt since last harvest."

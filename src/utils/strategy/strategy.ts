@@ -9,8 +9,13 @@ import { Strategy as StrategyTemplate } from '../../../generated/templates';
 import { Strategy as StrategyContract } from '../../../generated/templates/Vault/Strategy';
 
 import { getTimeInMillis } from '../commons';
+import { BIGINT_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';
 import * as strategyReportResultLibrary from './strategy-report-result';
+
+export function buildId(strategyAddress: Address): string {
+  return strategyAddress.toHexString();
+}
 
 export function createAndGet(
   transactionId: string,
@@ -21,10 +26,11 @@ export function createAndGet(
   minDebtPerHarvest: BigInt,
   maxDebtPerHarvest: BigInt,
   performanceFee: BigInt,
+  clonedFrom: Strategy | null,
   transaction: Transaction
 ): Strategy {
   log.debug('[Strategy] Create', []);
-  let strategyId = strategyAddress.toHexString();
+  let strategyId = buildId(strategyAddress);
   let strategy = Strategy.load(strategyId);
   if (strategy == null) {
     let strategyContract = StrategyContract.bind(strategyAddress);
@@ -42,6 +48,7 @@ export function createAndGet(
     strategy.minDebtPerHarvest = minDebtPerHarvest;
     strategy.maxDebtPerHarvest = maxDebtPerHarvest;
     strategy.performanceFeeBps = performanceFee;
+    strategy.clonedFrom = clonedFrom ? clonedFrom.id : null;
     strategy.save();
     StrategyTemplate.create(strategyAddress);
   }
@@ -148,4 +155,32 @@ export function harvest(
   }
 
   return harvest!;
+}
+
+export function strategyCloned(
+  clonedStrategyAddress: Address,
+  fromStrategyAddress: Address,
+  transaction: Transaction
+): void {
+  let txHash = transaction.hash.toHexString();
+  log.info('[Strategy Mapping] Handle new cloned strategy {} and TX hash {}', [
+    clonedStrategyAddress.toHexString(),
+    txHash,
+  ]);
+  let strategyId = buildId(fromStrategyAddress);
+  let strategyClonedFrom = Strategy.load(strategyId);
+  let strategyContract = StrategyContract.bind(clonedStrategyAddress);
+  let vaultAddress = strategyContract.vault();
+  createAndGet(
+    transaction.id,
+    clonedStrategyAddress,
+    vaultAddress,
+    BIGINT_ZERO,
+    BIGINT_ZERO,
+    BIGINT_ZERO,
+    BIGINT_ZERO,
+    BIGINT_ZERO,
+    strategyClonedFrom,
+    transaction
+  );
 }

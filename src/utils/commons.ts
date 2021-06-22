@@ -92,3 +92,28 @@ export function printCallInfo(label: string, call: ethereum.Call): void {
     dataSource.address().toHexString(),
   ]);
 }
+
+export function isEventBlockNumberLt(
+  label: string,
+  block: ethereum.Block,
+  maxBlock: BigInt
+): boolean {
+  log.info('{} - Checking max block. Current block {} <> Max block {}', [
+    label,
+    block.number.toString(),
+    maxBlock.toString(),
+  ]);
+  let isEventBlockNumberLt = block.number.lt(maxBlock);
+  if (!isEventBlockNumberLt) {
+    log.warning('{} - Not processing tx on block {}. Max block {}', [
+      label,
+      block.number.toString(),
+      maxBlock.toString(),
+    ]);
+  }
+  return isEventBlockNumberLt;
+}
+
+export function booleanToString(value: boolean): string {
+  return value ? 'true' : 'false';
+}

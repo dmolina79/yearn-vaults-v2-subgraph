@@ -106,6 +106,164 @@ dataSources:
           handler: handleAddStrategyV2
       file: ./src/mappings/curveSETHVaultMappings.ts
 
+# 4 Custom yvWBTCVault From: 12185982 to 12341475
+# Vault created at: #12185982 https://etherscan.io/tx/0x3ccba99bae2b5ab77dc6ab4f429b28e78a381030e0175b22213f1e230a62a0af
+# Vault added at (registry): #12341475 https://etherscan.io/tx/0xb48353d6eb05fee387dff781ce113d65a78603b521e9a76cb3458024afd99eb7
+# Strategy added at (vault): #12213272  https://etherscan.io/tx/0x547a2394114a777c704b0e663d74ab773dca7e60ca090ce36852ee0dc95ba3d5 
+  - kind: ethereum/contract
+    name: YvWBTCVault
+    network: {{network}}
+    source:
+      startBlock: {{startBlockYvWBTCVault}}
+      address: '{{yvWBTCVault}}'
+      abi: Vault
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Vault
+        - Strategy
+        - VaultUpdate
+        - Transfer
+        - Account
+        - Deposit
+        - VaultUpdate
+        - Transfer
+        - Transaction
+        - Token
+        - AccountVaultPosition
+        - AccountVaultPositionUpdate
+      abis:
+        - name: Vault
+          file: ./abis/Vault.json
+        - name: ERC20
+          file: ./abis/ERC20Detailed.json
+        - name: Strategy
+          file: ./abis/StrategyAPI.json
+        - name: Oracle
+          file: ./abis/Oracle.json
+      eventHandlers:
+        - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleStrategyReported_v0_3_0_v0_3_1
+        - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleStrategyReported
+        - event: StrategyMigrated(indexed address,indexed address)
+          handler: handleStrategyMigrated
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: UpdatePerformanceFee(uint256)
+          handler: handleUpdatePerformanceFee
+        - event: UpdateManagementFee(uint256)
+          handler: handleUpdateManagementFee
+        - event: StrategyAddedToQueue(indexed address)
+          handler: handleStrategyAddedToQueue
+        - event: StrategyRemovedFromQueue(indexed address)
+          handler: handleStrategyRemovedFromQueue
+        - event: UpdateRewards(address)
+          handler: handleUpdateRewards
+      callHandlers:
+        - function: deposit()
+          handler: handleDeposit
+        - function: deposit(uint256)
+          handler: handleDepositWithAmount
+        - function: deposit(uint256,address)
+          handler: handleDepositWithAmountAndRecipient
+        - function: withdraw()
+          handler: handleWithdraw
+        - function: withdraw(uint256)
+          handler: handleWithdrawWithShares
+        - function: withdraw(uint256,address)
+          handler: handleWithdrawWithSharesAndRecipient
+        # V1: addStrategy(strategy,debtRatio,rateLimit,performanceFee)
+        - function: addStrategy(address,uint256,uint256,uint256)
+          handler: handleAddStrategy
+        # V2: addStrategy(strategy,debtRatio,minDebtPerHarvest,maxDebtPerHarvest,performanceFee)
+        - function: addStrategy(address,uint256,uint256,uint256,uint256)
+          handler: handleAddStrategyV2
+      file: ./src/mappings/yvWBTCVaultMappings.ts
+
+# 5 Custom yvLinkVault From: 12542636 to 12586056
+# yvLINK Vault: https://etherscan.io/address/0x671a912c10bba0cfa74cfc2d6fba9ba1ed9530b2
+# Vault created at: #12542636 https://etherscan.io/tx/0x78b4dc710fe0b0672e2069a945d5c5c9f39c51fcb7e23b3c19e0d26004e5b4b7
+# Vault added at (registry): #12586056 https://etherscan.io/tx/0xc3ef41ed2c75f69415d9ae8217bf4e209c1b0affec9186f8bfd77e60cc54595e
+# Strategy 'AaveLenderLINKBorrowerSUSD' added at (vault): #
+#   #12565254 https://etherscan.io/tx/0x6539347e53d68460e7c6f73d2b9bcc1b9d32e7ae8fce473c532f6eec2fde3700#eventlog
+# Strategy 'Vesper LINK' added at (vault): #
+#   #12561578 https://etherscan.io/tx/0x3e08e0b0319f62886052fd905d7f6d0d35ae84c44a2a55835e25d9d3ed4af962
+  - kind: ethereum/contract
+    name: YvLinkVault
+    network: {{network}}
+    source:
+      startBlock: {{startBlockYvLinkVault}}
+      address: '{{yvLinkVault}}'
+      abi: Vault
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Vault
+        - Strategy
+        - VaultUpdate
+        - Transfer
+        - Account
+        - Deposit
+        - VaultUpdate
+        - Transfer
+        - Transaction
+        - Token
+        - AccountVaultPosition
+        - AccountVaultPositionUpdate
+      abis:
+        - name: Vault
+          file: ./abis/Vault.json
+        - name: ERC20
+          file: ./abis/ERC20Detailed.json
+        - name: Strategy
+          file: ./abis/StrategyAPI.json
+        - name: Oracle
+          file: ./abis/Oracle.json
+      eventHandlers:
+        - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleStrategyReported_v0_3_0_v0_3_1
+        - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleStrategyReported
+        - event: StrategyMigrated(indexed address,indexed address)
+          handler: handleStrategyMigrated
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: UpdatePerformanceFee(uint256)
+          handler: handleUpdatePerformanceFee
+        - event: UpdateManagementFee(uint256)
+          handler: handleUpdateManagementFee
+        - event: StrategyAddedToQueue(indexed address)
+          handler: handleStrategyAddedToQueue
+        - event: StrategyRemovedFromQueue(indexed address)
+          handler: handleStrategyRemovedFromQueue
+        - event: UpdateRewards(address)
+          handler: handleUpdateRewards
+      callHandlers:
+        - function: deposit()
+          handler: handleDeposit
+        - function: deposit(uint256)
+          handler: handleDepositWithAmount
+        - function: deposit(uint256,address)
+          handler: handleDepositWithAmountAndRecipient
+        - function: withdraw()
+          handler: handleWithdraw
+        - function: withdraw(uint256)
+          handler: handleWithdrawWithShares
+        - function: withdraw(uint256,address)
+          handler: handleWithdrawWithSharesAndRecipient
+        # V1: addStrategy(strategy,debtRatio,rateLimit,performanceFee)
+        - function: addStrategy(address,uint256,uint256,uint256)
+          handler: handleAddStrategy
+        # V2: addStrategy(strategy,debtRatio,minDebtPerHarvest,maxDebtPerHarvest,performanceFee)
+        - function: addStrategy(address,uint256,uint256,uint256,uint256)
+          handler: handleAddStrategyV2
+      file: ./src/mappings/yvLinkVaultMappings.ts
+
 templates:
   # 1 Vault (template)
   - name: Vault
@@ -208,3 +366,6 @@ templates:
       eventHandlers:
         - event: Harvested(uint256,uint256,uint256,uint256)
           handler: handleHarvested
+        - event: Cloned(indexed address)
+          handler: handleCloned
+

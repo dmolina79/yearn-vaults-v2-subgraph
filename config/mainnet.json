@@ -2,8 +2,12 @@
   "startBlock": "11390000",
   "startBlockRegistryV2": "12045550",
   "startBlockCurveSETHVault": "11870013",
+  "startBlockYvWBTCVault": "12185980",
+  "startBlockYvLinkVault": "12542630",
   "network": "mainnet",
   "Registry": "0xe15461b18ee31b7379019dc523231c57d1cbc18c",
   "RegistryV2": "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
-  "CurveSETHVault": "0x986b4AFF588a109c09B50A03f42E4110E29D353F"
+  "CurveSETHVault": "0x986b4AFF588a109c09B50A03f42E4110E29D353F",
+  "yvWBTCVault": "0xA696a63cc78DfFa1a63E9E50587C197387FF6C7E",
+  "yvLinkVault": "0x671a912c10bba0cfa74cfc2d6fba9ba1ed9530b2"
 }

@@ -1,11 +1,15 @@
-import { BigInt, log } from '@graphprotocol/graph-ts';
+import { log } from '@graphprotocol/graph-ts';
 import {
   AddStrategy1Call as AddStrategyV2Call,
   Vault as VaultContract,
   UpdatePerformanceFee as UpdatePerformanceFeeEvent,
   UpdateManagementFee as UpdateManagementFeeEvent,
 } from '../../generated/Registry/Vault';
-import { BIGINT_ZERO } from '../utils/constants';
+import { isEventBlockNumberLt } from '../utils/commons';
+import {
+  BIGINT_ZERO,
+  CURVE_SETH_VAULT_END_BLOCK_CUSTOM,
+} from '../utils/constants';
 import * as strategyLibrary from '../utils/strategy/strategy';
 import {
   getOrCreateTransactionFromCall,
@@ -35,83 +39,81 @@ export function handleAddStrategyV2(call: AddStrategyV2Call): void {
     );
     return;
   }
-
-  if (call.block.number.gt(BigInt.fromI32(11881933))) {
-    log.warning(
-      'CurveSETHVault_AddStrategyV2(...) - TX {} - Block number {}. Not processing addStrategy tx.',
-      [
-        call.transaction.hash.toHexString(),
-        call.block.number.toString(),
-        call.to.toHexString(),
-        call.from.toHexString(),
-      ]
+  if (
+    isEventBlockNumberLt(
+      'CurveSETHVault_AddStrategyV2',
+      call.block,
+      CURVE_SETH_VAULT_END_BLOCK_CUSTOM
+    )
+  ) {
+    let ethTransaction = getOrCreateTransactionFromCall(
+      call,
+      'CurveSETHVault_AddStrategyV2Call'
     );
-    return;
-  }
-  let ethTransaction = getOrCreateTransactionFromCall(
-    call,
-    'CurveSETHVault_AddStrategyV2Call'
-  );
 
-  strategyLibrary.createAndGet(
-    ethTransaction.id,
-    call.inputs.strategy,
-    call.to,
-    call.inputs.debtRatio,
-    BIGINT_ZERO,
-    call.inputs.minDebtPerHarvest,
-    call.inputs.maxDebtPerHarvest,
-    call.inputs.performanceFee,
-    ethTransaction
-  );
+    strategyLibrary.createAndGet(
+      ethTransaction.id,
+      call.inputs.strategy,
+      call.to,
+      call.inputs.debtRatio,
+      BIGINT_ZERO,
+      call.inputs.minDebtPerHarvest,
+      call.inputs.maxDebtPerHarvest,
+      call.inputs.performanceFee,
+      null,
+      ethTransaction
+    );
+  }
 }
 
 export function handleUpdatePerformanceFee(
   event: UpdatePerformanceFeeEvent
 ): void {
-  if (event.block.number.gt(BigInt.fromI32(11881933))) {
-    log.warning(
-      'CurveSETHVault_UpdatePerformanceFeeEvent - Not processing performance fee update on vault {} on block {}',
-      [event.address.toHexString(), event.block.number.toString()]
+  if (
+    isEventBlockNumberLt(
+      'CurveSETHVault_UpdatePerformanceFeeEvent',
+      event.block,
+      CURVE_SETH_VAULT_END_BLOCK_CUSTOM
+    )
+  ) {
+    let ethTransaction = getOrCreateTransactionFromEvent(
+      event,
+      'UpdatePerformanceFee'
     );
-    return;
+
+    let vaultContract = VaultContract.bind(event.address);
+
+    vaultLibrary.performanceFeeUpdated(
+      event.address,
+      ethTransaction,
+      vaultContract,
+      event.params.performanceFee
+    );
   }
-  let ethTransaction = getOrCreateTransactionFromEvent(
-    event,
-    'UpdatePerformanceFee'
-  );
-
-  let vaultContract = VaultContract.bind(event.address);
-
-  vaultLibrary.performanceFeeUpdated(
-    event.address,
-    ethTransaction,
-    vaultContract,
-    event.params.performanceFee
-  );
 }
 
 export function handleUpdateManagementFee(
   event: UpdateManagementFeeEvent
 ): void {
-  if (event.block.number.gt(BigInt.fromI32(11881933))) {
-    log.warning(
-      'CurveSETHVault_UpdateManagementFeeEvent - Not processing performance fee update on vault {} on block {}',
-      [event.address.toHexString(), event.block.number.toString()]
+  if (
+    isEventBlockNumberLt(
+      'CurveSETHVault_UpdateManagementFeeEvent',
+      event.block,
+      CURVE_SETH_VAULT_END_BLOCK_CUSTOM
+    )
+  ) {
+    let ethTransaction = getOrCreateTransactionFromEvent(
+      event,
+      'UpdateManagementFee'
     );
-    return;
+
+    let vaultContract = VaultContract.bind(event.address);
+
+    vaultLibrary.managementFeeUpdated(
+      event.address,
+      ethTransaction,
+      vaultContract,
+      event.params.managementFee
+    );
   }
-  let ethTransaction = getOrCreateTransactionFromEvent(
-    event,
-    'UpdateManagementFee'
-  );
-
-  let vaultContract = VaultContract.bind(event.address);
-
-  vaultLibrary.managementFeeUpdated(
-    event.address,
-    ethTransaction,
-    vaultContract,
-    event.params.managementFee
-  );
 }

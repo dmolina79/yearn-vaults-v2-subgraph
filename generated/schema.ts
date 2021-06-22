@@ -570,6 +570,15 @@ export class Vault extends Entity {
     this.set("rewards", Value.fromBytes(value));
   }
 
+  get isTemplateListening(): boolean {
+    let value = this.get("isTemplateListening");
+    return value.toBoolean();
+  }
+
+  set isTemplateListening(value: boolean) {
+    this.set("isTemplateListening", Value.fromBoolean(value));
+  }
+
   get activation(): BigInt {
     let value = this.get("activation");
     return value.toBigInt();
@@ -1607,6 +1616,23 @@ export class Strategy extends Entity {
 
   set vault(value: string) {
     this.set("vault", Value.fromString(value));
+  }
+
+  get clonedFrom(): string | null {
+    let value = this.get("clonedFrom");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set clonedFrom(value: string | null) {
+    if (value === null) {
+      this.unset("clonedFrom");
+    } else {
+      this.set("clonedFrom", Value.fromString(value as string));
+    }
   }
 
   get debtLimit(): BigInt {

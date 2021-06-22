@@ -24,6 +24,24 @@ export class EmergencyExitEnabled__Params {
   }
 }
 
+export class Cloned extends ethereum.Event {
+  get params(): Cloned__Params {
+    return new Cloned__Params(this);
+  }
+}
+
+export class Cloned__Params {
+  _event: Cloned;
+
+  constructor(event: Cloned) {
+    this._event = event;
+  }
+
+  get clone(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
 export class Harvested extends ethereum.Event {
   get params(): Harvested__Params {
     return new Harvested__Params(this);
