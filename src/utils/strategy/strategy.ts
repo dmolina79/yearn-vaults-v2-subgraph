@@ -8,7 +8,7 @@ import {
 import { Strategy as StrategyTemplate } from '../../../generated/templates';
 import { Strategy as StrategyContract } from '../../../generated/templates/Vault/Strategy';
 
-import { getTimeInMillis } from '../commons';
+import { booleanToString, getTimeInMillis } from '../commons';
 import { BIGINT_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';
 import * as strategyReportResultLibrary from './strategy-report-result';
@@ -49,6 +49,15 @@ export function createAndGet(
     strategy.maxDebtPerHarvest = maxDebtPerHarvest;
     strategy.performanceFeeBps = performanceFee;
     strategy.clonedFrom = clonedFrom ? clonedFrom.id : null;
+
+    let tryHealthCheck = strategyContract.try_healthCheck();
+    strategy.healthCheck = tryHealthCheck.reverted
+      ? null
+      : tryHealthCheck.value;
+    let tryDoHealthCheck = strategyContract.try_doHealthCheck();
+    strategy.doHealthCheck = tryDoHealthCheck.reverted
+      ? false
+      : tryDoHealthCheck.value;
     strategy.save();
     StrategyTemplate.create(strategyAddress);
   }
@@ -183,4 +192,52 @@ export function strategyCloned(
     strategyClonedFrom,
     transaction
   );
+}
+
+export function healthCheckSet(
+  strategyAddress: Address,
+  healthCheckAddress: Address,
+  transaction: Transaction
+): void {
+  let txHash = transaction.hash.toHexString();
+  log.info(
+    '[Strategy Mapping] Handle strategy {} new health check set {} and TxHash {}',
+    [strategyAddress.toHexString(), healthCheckAddress.toHexString(), txHash]
+  );
+  let strategyId = buildId(strategyAddress);
+  let strategy = Strategy.load(strategyId);
+  if (strategy !== null) {
+    strategy.healthCheck = healthCheckAddress;
+    strategy.save();
+  } else {
+    log.warning('SetHealthCheck {} Strategy {} not found in TxHash {}', [
+      healthCheckAddress.toHexString(),
+      strategyAddress.toHexString(),
+      txHash,
+    ]);
+  }
+}
+
+export function doHealthCheckSet(
+  strategyAddress: Address,
+  doHealthCheck: boolean,
+  transaction: Transaction
+): void {
+  let txHash = transaction.hash.toHexString();
+  log.info(
+    '[Strategy Mapping] Handle strategy {} new do health check set {} and TxHash {}',
+    [strategyAddress.toHexString(), booleanToString(doHealthCheck), txHash]
+  );
+  let strategyId = buildId(strategyAddress);
+  let strategy = Strategy.load(strategyId);
+  if (strategy !== null) {
+    strategy.doHealthCheck = doHealthCheck;
+    strategy.save();
+  } else {
+    log.warning('SetDoHealthCheck {} Strategy {} not found in TxHash {}', [
+      booleanToString(doHealthCheck),
+      strategyAddress.toHexString(),
+      txHash,
+    ]);
+  }
 }

@@ -1600,6 +1600,32 @@ export class Strategy extends Entity {
     this.set("address", Value.fromBytes(value));
   }
 
+  get healthCheck(): Bytes | null {
+    let value = this.get("healthCheck");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set healthCheck(value: Bytes | null) {
+    if (value === null) {
+      this.unset("healthCheck");
+    } else {
+      this.set("healthCheck", Value.fromBytes(value as Bytes));
+    }
+  }
+
+  get doHealthCheck(): boolean {
+    let value = this.get("doHealthCheck");
+    return value.toBoolean();
+  }
+
+  set doHealthCheck(value: boolean) {
+    this.set("doHealthCheck", Value.fromBoolean(value));
+  }
+
   get inQueue(): boolean {
     let value = this.get("inQueue");
     return value.toBoolean();

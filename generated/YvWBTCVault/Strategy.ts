@@ -261,6 +261,36 @@ export class Strategy extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  healthCheck(): Address {
+    let result = super.call("healthCheck", "healthCheck():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_healthCheck(): ethereum.CallResult<Address> {
+    let result = super.tryCall("healthCheck", "healthCheck():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  doHealthCheck(): boolean {
+    let result = super.call("doHealthCheck", "doHealthCheck():(bool)", []);
+
+    return result[0].toBoolean();
+  }
+
+  try_doHealthCheck(): ethereum.CallResult<boolean> {
+    let result = super.tryCall("doHealthCheck", "doHealthCheck():(bool)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
   apiVersion(): string {
     let result = super.call("apiVersion", "apiVersion():(string)", []);
 
@@ -655,6 +685,66 @@ export class ConstructorCall__Outputs {
   _call: ConstructorCall;
 
   constructor(call: ConstructorCall) {
+    this._call = call;
+  }
+}
+
+export class SetHealthCheckCall extends ethereum.Call {
+  get inputs(): SetHealthCheckCall__Inputs {
+    return new SetHealthCheckCall__Inputs(this);
+  }
+
+  get outputs(): SetHealthCheckCall__Outputs {
+    return new SetHealthCheckCall__Outputs(this);
+  }
+}
+
+export class SetHealthCheckCall__Inputs {
+  _call: SetHealthCheckCall;
+
+  constructor(call: SetHealthCheckCall) {
+    this._call = call;
+  }
+
+  get _healthCheck(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetHealthCheckCall__Outputs {
+  _call: SetHealthCheckCall;
+
+  constructor(call: SetHealthCheckCall) {
+    this._call = call;
+  }
+}
+
+export class SetDoHealthCheckCall extends ethereum.Call {
+  get inputs(): SetDoHealthCheckCall__Inputs {
+    return new SetDoHealthCheckCall__Inputs(this);
+  }
+
+  get outputs(): SetDoHealthCheckCall__Outputs {
+    return new SetDoHealthCheckCall__Outputs(this);
+  }
+}
+
+export class SetDoHealthCheckCall__Inputs {
+  _call: SetDoHealthCheckCall;
+
+  constructor(call: SetDoHealthCheckCall) {
+    this._call = call;
+  }
+
+  get _doHealthCheck(): boolean {
+    return this._call.inputValues[0].value.toBoolean();
+  }
+}
+
+export class SetDoHealthCheckCall__Outputs {
+  _call: SetDoHealthCheckCall;
+
+  constructor(call: SetDoHealthCheckCall) {
     this._call = call;
   }
 }

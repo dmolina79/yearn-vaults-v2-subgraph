@@ -2,9 +2,53 @@ import { log } from '@graphprotocol/graph-ts';
 import {
   Harvested as HarvestedEvent,
   Cloned as ClonedEvent,
+  SetHealthCheckCall,
+  SetDoHealthCheckCall,
 } from '../../generated/templates/Vault/Strategy';
 import * as strategyLibrary from '../utils/strategy/strategy';
-import { getOrCreateTransactionFromEvent } from '../utils/transaction';
+import {
+  getOrCreateTransactionFromCall,
+  getOrCreateTransactionFromEvent,
+} from '../utils/transaction';
+import { booleanToString } from '../utils/commons';
+
+export function handleSetHealthCheck(call: SetHealthCheckCall): void {
+  let strategyAddress = call.to;
+  let txHash = call.transaction.hash.toHexString();
+  log.info(
+    '[Strategy Mapping] Handle set health check {} in strategy {} and TX hash {}',
+    [
+      call.inputs._healthCheck.toHexString(),
+      strategyAddress.toHexString(),
+      txHash,
+    ]
+  );
+  let transaction = getOrCreateTransactionFromCall(call, 'SetHealthCheck');
+  strategyLibrary.healthCheckSet(
+    strategyAddress,
+    call.inputs._healthCheck,
+    transaction
+  );
+}
+
+export function handleSetDoHealthCheck(call: SetDoHealthCheckCall): void {
+  let strategyAddress = call.to;
+  let txHash = call.transaction.hash.toHexString();
+  log.info(
+    '[Strategy Mapping] Handle set do health check {} in strategy {} and TX hash {}',
+    [
+      booleanToString(call.inputs._doHealthCheck),
+      strategyAddress.toHexString(),
+      txHash,
+    ]
+  );
+  let transaction = getOrCreateTransactionFromCall(call, 'SetDoHealthCheck');
+  strategyLibrary.doHealthCheckSet(
+    strategyAddress,
+    call.inputs._doHealthCheck,
+    transaction
+  );
+}
 
 export function handleHarvested(event: HarvestedEvent): void {
   let contractAddress = event.address;

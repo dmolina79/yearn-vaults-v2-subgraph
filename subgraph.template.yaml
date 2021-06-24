@@ -368,4 +368,9 @@ templates:
           handler: handleHarvested
         - event: Cloned(indexed address)
           handler: handleCloned
+      callHandlers:
+        - function: setHealthCheck(address)
+          handler: handleSetHealthCheck
+        - function: setDoHealthCheck(boolean)
+          handler: handleSetDoHealthCheck
 

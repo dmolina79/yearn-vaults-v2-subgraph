@@ -381,6 +381,10 @@ type Strategy @entity {
   transaction: Transaction!
   "The Strategy address."
   address: Bytes!
+  "The health check contract address."
+  healthCheck: Bytes
+  "Defines whether the strategy will call the health check or not."
+  doHealthCheck: Boolean!
   "Defines whether this strategy is within the vault queue."
   inQueue: Boolean!
   "The Vault"
