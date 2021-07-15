@@ -1,8 +1,8 @@
 # Yearn Vaults V2 Subgraph
 
-This is the non-official subgraph for the Vault V2 - Yearn Protocol.
+This is the official subgraph for the Vault V2 - Yearn Protocol.
 
-It is based on [this feature branch](https://github.com/iearn-finance/yearn-vaults/tree/feat/registry-redux).
+The subgraph is being updated and fixed constantly.
 
 ## Get Started
 
@@ -29,8 +29,10 @@ At this moment, the scripts available are:
 - **yarn deploy:kovan**: build the subgraph.yaml file, and deploy it on the Kovan testnet.
 - **yarn deploy:mainnet**: build the subgraph.yaml file, and deploy it on the mainnet network.
 
+> The subgraph is only deployed on the mainnet network.
+
 ## Subgraphs
 
-TODO Add link to the subgraph.
+The official subgraph link is [this](https://thegraph.com/explorer/subgraph?id=0xf50b705e4eaba269dfe954f10c65bd34e6351e0c-0&version=0xf50b705e4eaba269dfe954f10c65bd34e6351e0c-0-0&view=Overview).
 
 ---
